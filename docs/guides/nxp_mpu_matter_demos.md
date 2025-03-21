@@ -133,7 +133,9 @@ Then setup by running the following commands:
 
 <a name="check-gpio-device"></a>
 
-**Note: The GPIO device may change, you can use the "gpioinfo" command to determine gpio-reset-device and gpio-int-device. For example, in the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip0" for gpio-reset-device and "gpio-int-device=/dev/gpiochip5" for gpio-int-device. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx-spi -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip0&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
+**Note: The GPIO device may change, you can use the "gpioinfo" command or "gpiodetect" command to determine gpio-reset-device and gpio-int-device.**
+
+**For example, in the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip0" (whose line 1 is "IWxxx_NB_IND_RST_15_4" as shown by the output of gpioinfo) for the reset functionality. Similarly, use "gpio-int-device=/dev/gpiochip5" (whose line 10 is "IWxxx_NB_SPI_INT" as shown by the output of gpioinfo) for interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx-spi -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip0&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
 
         $ gpioinfo
         gpiochip0 - 8 lines:
@@ -145,6 +147,14 @@ Then setup by running the following commands:
             ...
             line  10:       "IWxxx_NB_SPI_INT"      input consumer="THREAD_SOC_INT"
             ...
+
+**In the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip5" (whose I2C device address is 0-0020 as shown by the output of gpiodetect) for the reset functionality. Similarly, use gpio-int-device=/dev/gpiochip4 (whose I2C device address is 1-0022 as shown by the output of gpiodetect) for the interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx-spi -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip5&gpio-int-device=/dev/gpiochip4&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
+
+        & gpiodetect
+        ...
+        gpiochip4 [1-0022] (24 lines)
+        gpiochip5 [0-0020] (8 lines)
+
 
 #### For i.MX8M Mini EVK + 88W8987 + K32W platform or i.MX8ULP EVK + IW416 + K32W platform:
 

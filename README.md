@@ -369,6 +369,8 @@ On __i.MX93 FRDM, i.MX93 EVK__, we will use IW612 as Thread device, on __i.MX91 
     $ iptables -A FORWARD -i wpan0 -o mlan0 -j ACCEPT
     $ otbr-web &
 
+**Note: Please [check GPIO device](./docs/guides/nxp_mpu_matter_demos.md#check-gpio-device) to determine gpio-reset-device and gpio-int-device.**
+
 On __i.MX8M Mini EVK__, __i.MX6ULL EVK__ or __i.MX8ULP EVK__, we will use a dedicated Thread device (NXP K32W or any third part RCP):
 Plugin the Thread module into the USB OTG port of __i.MX8M Mini EVK__, __i.MX6ULL EVK__ or __i.MX8ULP EVK__. A USB device should be visible as _/dev/ttyUSB_ or _/dev/ttyACM_.
 Once the USB device is detected, start the OTBR related services.
