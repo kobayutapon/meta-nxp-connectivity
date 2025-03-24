@@ -58,7 +58,7 @@ FILES:${PN}-nxpiw610-sdio += " \
     ${nonarch_base_libdir}/firmware/nxp/sduartspi_iw610.bin.se \
     ${nonarch_base_libdir}/firmware/nxp/sdiw610_WlanCalData_ext.conf \
 "
-PACKAGES += "${PN}-nxpiw610-sdio ${PN}-all-sdio ${PN}-all-pcie"
+PACKAGES += "${PN}-all-sdio ${PN}-all-pcie"
 
 RDEPENDS:${PN}-all-sdio = " \
     ${PN}-nxp8801-sdio \
