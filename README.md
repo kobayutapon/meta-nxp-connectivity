@@ -50,10 +50,10 @@ The following Matter related binaries will be installed into the Yocto image roo
  - ot-client-ctl: OpenThread ctrl tool for OpenThread client
  - otbr-agent: OpenThread Border Router agent
  - ot-ctl: OpenThread Border Router ctrl tool
- - ot-daemon-iwxxx-spi: OpenThread Daemon for OpenThread client of the IW612 chipset and IW610 chipset
- - ot-client-iwxxx-spi: OpenThread ctrl tool for OpenThread client of the IW612 chipset and IW610 chipset
- - otbr-agent-iwxxx-spi: OpenThread Border Router agent of the IW612 chipset and IW610 chipset
- - ot-ctl-iwxxx-spi: OpenThread Border Router ctrl tool of the IW612 chipset and IW610 chipset
+ - ot-daemon-iwxxx: OpenThread Daemon for OpenThread client of the IW612 chipset and IW610 chipset
+ - ot-client-iwxxx: OpenThread ctrl tool for OpenThread client of the IW612 chipset and IW610 chipset
+ - otbr-agent-iwxxx: OpenThread Border Router agent of the IW612 chipset and IW610 chipset
+ - ot-ctl-iwxxx: OpenThread Border Router ctrl tool of the IW612 chipset and IW610 chipset
  - otbr-web: OpenThread Border Router web management daemon
 
 <a name="imx-mpu-platform"></a>
@@ -364,7 +364,7 @@ Then configure the Thread device:
 
 On __i.MX93 FRDM, i.MX93 EVK__, we will use IW612 as Thread device, on __i.MX91 EVK, i.MX91 QSB__, we will use IW610 as Thread device, execute the following commands to start the OTBR:
 
-    $ otbr-agent-iwxxx-spi -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
+    $ otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
     $ iptables -A FORWARD -i mlan0 -o wpan0 -j ACCEPT
     $ iptables -A FORWARD -i wpan0 -o mlan0 -j ACCEPT
     $ otbr-web &

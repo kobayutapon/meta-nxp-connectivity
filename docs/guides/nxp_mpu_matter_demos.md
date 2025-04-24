@@ -122,7 +122,7 @@ Then setup by running the following commands:
         ipset create -exist otbr-ingress-allow-dst-swap hash:net family inet6
         sleep 1
 
-        otbr-agent-iwxxx-spi -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
+        otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
         #These two lines are one command
 
         sleep 2
@@ -135,7 +135,7 @@ Then setup by running the following commands:
 
 **Note: The GPIO device may change, you can use the "gpioinfo" command or "gpiodetect" command to determine gpio-reset-device and gpio-int-device.**
 
-**For example, in the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip0" (whose line 1 is "IWxxx_NB_IND_RST_15_4" as shown by the output of gpioinfo) for the reset functionality. Similarly, use "gpio-int-device=/dev/gpiochip5" (whose line 10 is "IWxxx_NB_SPI_INT" as shown by the output of gpioinfo) for interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx-spi -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip0&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
+**For example, in the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip0" (whose line 1 is "IWxxx_NB_IND_RST_15_4" as shown by the output of gpioinfo) for the reset functionality. Similarly, use "gpio-int-device=/dev/gpiochip5" (whose line 10 is "IWxxx_NB_SPI_INT" as shown by the output of gpioinfo) for interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip0&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
 
         $ gpioinfo
         gpiochip0 - 8 lines:
@@ -148,7 +148,7 @@ Then setup by running the following commands:
             line  10:       "IWxxx_NB_SPI_INT"      input consumer="THREAD_SOC_INT"
             ...
 
-**In the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip5" (whose I2C device address is 0-0020 as shown by the output of gpiodetect) for the reset functionality. Similarly, use gpio-int-device=/dev/gpiochip4 (whose I2C device address is 1-0022 as shown by the output of gpiodetect) for the interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx-spi -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip5&gpio-int-device=/dev/gpiochip4&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
+**In the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip5" (whose I2C device address is 0-0020 as shown by the output of gpiodetect) for the reset functionality. Similarly, use gpio-int-device=/dev/gpiochip4 (whose I2C device address is 1-0022 as shown by the output of gpiodetect) for the interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip5&gpio-int-device=/dev/gpiochip4&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
 
         & gpiodetect
         ...
@@ -239,7 +239,7 @@ Then, you should get thread network credentials information.
     $ ot-ctl dataset active -x
     # Then you will get a dataset like "0e080000000000010000000300001035060004001fffe00208d625374d9c65c2a30708fd57eb72a74fa52505108a177ca3b66becf3bbe2149eb3d135c8030f4f70656e5468726561642d656338350102ec85041044ac05395e78940b72c1df1e6ad02a120c0402a0f7f8"
 
-***Note: please use the ot-ctl-iwxxx-spi instead of ot-ctl on i.MX9 series platform.***
+***Note: please use the ot-ctl-iwxxx instead of ot-ctl on i.MX9 series platform.***
 
 ### Factory reset lighting application on K32W DK6
 
@@ -285,7 +285,7 @@ Please use below commands to setup ot-daemon on an device:
     $ ot-daemon 'spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=1000000' &
 
     #For i.MX93 FRDM / i.MX93 EVK + IW612, i.MX91 EVK / i.MX91 QSB + IW610:
-    $ ot-daemon-iwxxx-spi 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
+    $ ot-daemon-iwxxx 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
 
 **Note: Please [check GPIO device](#check-gpio-device) to determine gpio-reset-device and gpio-int-device.**
 
@@ -297,7 +297,7 @@ Then you can form the Openthread network manually by following steps on the devi
     $ ot-client-ctl ifconfig up
     $ ot-client-ctl thread start
 
-***Note: please use the ot-client-iwxxx-spi instead of ot-client-ctl on i.MX9 series platform.***
+***Note: please use the ot-client-iwxxx instead of ot-client-ctl on i.MX9 series platform.***
 
 <a name="other-matter-demos"></a>
 

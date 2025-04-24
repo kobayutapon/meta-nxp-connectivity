@@ -1,4 +1,4 @@
-PN = "openthread-iwxxx-spi"
+PN = "openthread-iwxxx"
 SUMMARY = "OT-DAEMON on i.MX boards for IWxxx 3-radios on SPI"
 DESCRIPTION = "OPENTHREAD applications"
 LICENSE = "BSD-3-Clause"
@@ -22,5 +22,4 @@ TARGET_CFLAGS += " -Wno-error "
 inherit cmake
 
 include iw612_ot_src_rev_opts_patches.inc
-EXTRA_OECMAKE += "-DOT_POSIX_RCP_SPI_BUS=ON"
-BIN_NAME_PATTERN="-iwxxx-spi"
+BIN_NAME_PATTERN="-iwxxx"
