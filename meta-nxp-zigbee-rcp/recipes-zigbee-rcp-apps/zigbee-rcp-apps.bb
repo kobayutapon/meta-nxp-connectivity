@@ -1,0 +1,35 @@
+PN = "zigbee-rcp-apps"
+SUMMARY = "Zigbee RCP example applications on i.MX boards for IWxxx 3-radios on SPI"
+DESCRIPTION = "Zigbee RCP Applications"
+LICENSE = "CLOSED"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=87109e44b2fda96a8991f27684a7349c"
+
+S = "${UNPACKDIR}"
+FILES:${PN} += "${bindir}"
+
+DEPENDS += " readline zigbee-rcp-sdk"
+RDEPENDS_${PN} += " readline "
+
+SRC_URI = ""
+# Zigbee RCP applications
+SRC_URI += "file://CMakeLists.txt"
+SRC_URI += "file://zigbee_rcp_app.cmake"
+SRC_URI += "file://examples/cli_nxp/"
+SRC_URI += "file://examples/custom_cluster/"
+SRC_URI += "file://examples/distributed/"
+SRC_URI += "file://examples/dualpan_nxp/"
+SRC_URI += "file://examples/gp_proxy/"
+SRC_URI += "file://examples/ias_zone_sensor/"
+SRC_URI += "file://examples/level_control_sample/"
+SRC_URI += "file://examples/light_sample/ file://examples/light_sample/dimmable_light/ file://examples/light_sample/light_control/ file://examples/light_sample/light_coordinator/"
+SRC_URI += "file://examples/manuf_specific_cmds_and_attrs/"
+SRC_URI += "file://examples/multi_ep/"
+SRC_URI += "file://examples/onoff_server/"
+SRC_URI += "file://examples/ota_upgrade_nxp/"
+SRC_URI += "file://examples/r23_new_api/"
+SRC_URI += "file://examples/simple_gw/"
+SRC_URI += "file://examples/scenes/"
+SRC_URI += "file://examples/tc_swap_out/"
+SRC_URI += "file://examples/thermostat/"
+
+inherit pkgconfig cmake

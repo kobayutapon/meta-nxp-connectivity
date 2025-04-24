@@ -1,12 +1,12 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:${THISDIR}/files:"
 
 SRC_URI += "file://ota.sh"
-DEPENDS += "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx93evk-iwxxx-matter ", ' zigbee-rcp-sdk ', '', d)}"
-RDEPENDS:${PN} += "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx93evk-iwxxx-matter ", ' zigbee-rcp-sdk ', '', d)}"
+DEPENDS += "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter ", ' zigbee-rcp-sdk ', '', d)}"
+RDEPENDS:${PN} += "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter ", ' zigbee-rcp-sdk ', '', d)}"
 
 
 DEPLOY_TRUSTY = "${@bb.utils.contains('MACHINE_FEATURES', 'trusty', 'true', 'false', d)}"
-BUILD_M2ZIGBEE = "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx93evk-iwxxx-matter ",'true', 'false', d)}"
+BUILD_M2ZIGBEE = "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter ",'true', 'false', d)}"
 
 common_configure() {
     PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
