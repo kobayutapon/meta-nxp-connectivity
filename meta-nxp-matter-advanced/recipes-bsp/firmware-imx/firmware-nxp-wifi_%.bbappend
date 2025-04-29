@@ -75,5 +75,16 @@ RDEPENDS:${PN}-all-pcie = " \
     ${PN}-nxp9098-pcie \
 "
 
+FILES:${PN}-nxpiw610-usb += " \
+    ${nonarch_base_libdir}/firmware/nxp/usb*_iw610.bin.se \
+"
+
+PACKAGES += "${PN}-all-usb ${PN}-nxpiw610-usb ${PN}-nxpaw693-pcie"
+
+RDEPENDS:${PN}-all-usb = " \
+    ${PN}-nxpiw610-usb \
+"
+
 ALLOW_EMPTY:${PN}-all-sdio = "1"
 ALLOW_EMPTY:${PN}-all-pcie = "1"
+ALLOW_EMPTY:${PN}-all-usb = "1"
