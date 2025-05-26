@@ -15,6 +15,7 @@ echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-connectivity/meta-nxp-otbr\"" >>
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-connectivity/meta-nxp-connectivity-examples\"" >> conf/bblayers.conf
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-connectivity/meta-nxp-zigbee-rcp\"" >> conf/bblayers.conf
 
+echo "IMAGE_ROOTFS_SIZE = \"5242880\"" >> conf/local.conf
 
 echo ""
 echo "Now you can use below command to generate your image:"
