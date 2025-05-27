@@ -3,6 +3,10 @@
  * Copyright 2024 NXP
  */
 
+/* Supported for chipsets:
+ - IW610
+ Chip support list end */
+
 /dts-v1/;
 
 #include <dt-bindings/usb/pd.h>
@@ -13,7 +17,11 @@
 };
 
 / {
-	model = "NXP i.MX91 11X11 FRDM board";
+	// Patch for IW61x:
+	// v1: ffu_gpio_irq (make GPIO_SPI_INT interruptible)
+	// v2: gpio naming and options description in model
+	// v3: SPI 50µs interleaved
+	model = "NXP i.MX91 11X11 FRDM board for IW610-v3: IWxxx SPI INT enabled, 50µs delay";
 	compatible = "fsl,imx91-11x11-frdm", "fsl,imx91";
 
 	chosen {
@@ -119,7 +127,7 @@
 
 	sound-mqs {
 		compatible = "fsl,imx6sx-sdb-mqs",
-			     "fsl,imx-audio-mqs";
+				"fsl,imx-audio-mqs";
 		model = "mqs-audio";
 		audio-cpu = <&sai1>;
 		audio-codec = <&mqs1>;
@@ -255,6 +263,7 @@
 		#gpio-cells = <2>;
 		vcc-supply = <&reg_usdhc3_vmmc>;
 		status = "okay";
+		gpio-line-names = "IWxxx_NB_SPI_ENA", "IWxxx_NB_IND_RST_15_4";
 	};
 
 };
@@ -354,8 +363,8 @@
 		#interrupt-cells = <2>;
 		interrupt-parent = <&gpio3>;
 		interrupts = <27 IRQ_TYPE_LEVEL_LOW>;
+		gpio-line-names = "", "", "", "", "", "", "", "", "", "", "IWxxx_NB_SPI_INT", "", "", "", "", "", "", "", "", "";
 	};
-
 };
 
 &lpi2c3 {
@@ -396,7 +405,7 @@
 			try-power-role = "sink";
 			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
 			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
-				     PDO_VAR(5000, 20000, 3000)>;
+					PDO_VAR(5000, 20000, 3000)>;
 			op-sink-microwatt = <15000000>;
 			self-powered;
 		};
@@ -418,6 +427,7 @@
 
 	bluetooth {
 		compatible = "nxp,88w8987-bt";
+		fw-init-baudrate = <3000000>;
 	};
 };
 
@@ -520,6 +530,8 @@
 		reg = <0>;
 		compatible = "lwn,bk4";
 		spi-max-frequency = <1000000>;
+		spi-cs-inactive-delay-ns = <50000>;
+		label="IWxxx_SPIDEV";
 	};
 };
 

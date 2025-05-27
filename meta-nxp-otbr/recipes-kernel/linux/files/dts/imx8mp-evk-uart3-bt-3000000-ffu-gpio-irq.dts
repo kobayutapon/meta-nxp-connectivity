@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: (GPL-2.0 OR MIT)
 /*
- * Copyright 2024 NXP
+ * Copyright 2025 NXP
  */
+
+/* Supported for chipsets:
+ - 9177
+ Chip support list end */
 
 /dts-v1/;
 #include "imx8mp-evk.dts"

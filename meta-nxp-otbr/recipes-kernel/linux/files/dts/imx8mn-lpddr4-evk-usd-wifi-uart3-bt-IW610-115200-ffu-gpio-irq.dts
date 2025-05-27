@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: (GPL-2.0 OR MIT)
 /*
- * Copyright 2024 NXP
+ * Copyright 2025 NXP
  */
 
+/* Supported for chipsets:
+ - IW610
+ Chip support list end */
+
 /dts-v1/;
-#include "imx8mn-ddr3l-evk.dts"
+#include "imx8mn-evk.dts"
 
 / {
 	// Patch for IW61x:
 	// v1: ffu_gpio_irq (make GPIO_SPI_INT interruptible)
 	// v2: gpio naming and options description in model
 	// v3: IW610 RD hardware board only
-	model = "NXP i.MX8M Nano DDR3L EVK board for IW610-RD-v3: IW610 SPI INT enabled";
+	model = "NXP i.MX8M Nano LPDDR4 EVK board for IW610-RD-v3: IW610 SPI INT enabled";
 };
 
 &uart1 {

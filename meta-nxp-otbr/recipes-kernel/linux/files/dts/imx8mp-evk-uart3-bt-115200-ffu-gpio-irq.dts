@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: (GPL-2.0 OR MIT)
 /*
- * Copyright 2024 NXP
+ * Copyright 2025 NXP
  */
+
+/* Supported for chipsets:
+ - 9177
+ Chip support list end */
 
 /dts-v1/;
 #include "imx8mp-evk.dts"
@@ -10,8 +14,8 @@
 	// Patch for IW61x:
 	// v1: ffu_gpio_irq (make GPIO_SPI_INT interruptible)
 	// v2: gpio naming and options description in model
-	// v3: IW610 RD hardware board only
-	model = "NXP i.MX8M Plus EVK board for IW610-RD-v3: IW610 SPI INT enabled";
+	// v3: IW612 RD hardware board only
+	model = "NXP i.MX8M Plus EVK board for IW612-RD-v3: IW612 SPI INT enabled";
 };
 
 &uart1 {
@@ -20,7 +24,7 @@
 
 &uart3 {
 	bluetooth {
-		compatible = "nxp,88w8987-bt";
+			compatible = "nxp,88w8987-bt";
 	};
 };
 
@@ -34,7 +38,7 @@
 		interrupts = <12 IRQ_TYPE_EDGE_FALLING>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pca6416_irq>;
-		gpio-line-names = "", "", "", "", "", "", "", "", "", "", "", "", "IWxxx_NB_SPI_INT", "", "IWxxx_NB_IND_RST_15_4";
+		gpio-line-names = "", "", "", "", "", "", "", "", "", "", "", "", "IWxxx_NB_SPI_INT", "IWxxx_NB_IND_RST_15_4";
 	};
 };
 

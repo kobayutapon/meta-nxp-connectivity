@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  */
+
+/* Supported for chipsets:
+ - 9177
+ - IW610
+ Chip support list end */
 
 #include "imx91-11x11-evk.dts"
 
@@ -11,7 +16,8 @@
 	// v2: make gpio IW61x_PD_N, M2 Murata_SPI_ENABLE, IW61x_IND_RST_15_4 drivable from userspace
 	// v3: make gpio IW61x_PD_N, IW61x_IND_RST_15_4 drivable from userspace
 	// v4: gpio naming and options description in model
-	model = "NXP i.MX91 11X11 EVK board for IW61x-v4: M2 IWxxx SPI INT enabled, PDN in user space";
+	// v5: SPI 50µs interleaved
+	model = "NXP i.MX91 11X11 EVK board for IW61x-v5: M2 IWxxx SPI INT enabled, PDN in user space, 50µs delay";
 };
 
 &reg_usdhc3_vmmc {
@@ -21,16 +27,15 @@
 };
 
 &lpuart5 {
-	/* BT */
-	pinctrl-names = "default";
-	pinctrl-assert-gpios = <&pcal6524 19 GPIO_ACTIVE_HIGH>;
-	pinctrl-0 = <&pinctrl_uart5>;
-	status = "okay";
+		/* BT */
+		pinctrl-names = "default";
+		pinctrl-assert-gpios = <&pcal6524 19 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&pinctrl_uart5>;
+		status = "okay";
 
-	bluetooth {
-		compatible = "nxp,88w8987-bt";
-		fw-init-baudrate = <3000000>;
-	};
+		bluetooth {
+				compatible = "nxp,88w8987-bt";
+		};
 };
 
 &flexcan2 {
@@ -71,6 +76,7 @@
 		reg = <0>;
 		compatible = "lwn,bk4";
 		spi-max-frequency = <1000000>;
+		spi-cs-inactive-delay-ns = <50000>;
 		label="IWxxx_SPIDEV";
 	};
 };

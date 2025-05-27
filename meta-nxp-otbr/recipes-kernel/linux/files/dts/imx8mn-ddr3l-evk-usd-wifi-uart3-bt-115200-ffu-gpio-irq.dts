@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: (GPL-2.0 OR MIT)
 /*
- * Copyright 2024 NXP
+ * Copyright 2025 NXP
  */
 
-/dts-v1/;
+/* Supported for chipsets:
+ - 9177
+ Chip support list end */
 
-#include "imx8mm-evk-usd-wifi.dts"
+/dts-v1/;
+#include "imx8mn-ddr3l-evk.dts"
 
 / {
 	// Patch for IW61x:
-	// v1: ffu_gpio_irq (make GPIO_SPI_INT interruptible), bluetooth at 3M
+	// v1: ffu_gpio_irq (make GPIO_SPI_INT interruptible)
 	// v2: gpio naming and options description in model
 	// v3: IW612 RD hardware board only
-	model = "NXP i.MX8M Mini EVK board for IW612-RD-v3: IW612 SPI INT enabled, BT at 3M";
+	model = "NXP i.MX8M Nano DDR3L EVK board for IW612-RD-v3: IW612 SPI INT enabled";
 };
 
 &uart1 {
@@ -22,7 +25,6 @@
 &uart3 {
 	bluetooth {
 		compatible = "nxp,88w8987-bt";
-		fw-init-baudrate = <3000000>;
 	};
 };
 
@@ -61,34 +63,16 @@
 &iomuxc {
 	pinctrl_pca6416_irq: pca6416irq {
 		fsl,pins = <
-			MX8MM_IOMUXC_GPIO1_IO12_GPIO1_IO12		0x141
+			MX8MN_IOMUXC_GPIO1_IO12_GPIO1_IO12		0x141
 		>;
 	};
 
 	pinctrl_espi2: espi2grp {
 		fsl,pins = <
-			MX8MM_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK		0x082
-			MX8MM_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI		0x082
-			MX8MM_IOMUXC_ECSPI2_MISO_ECSPI2_MISO		0x082
-			MX8MM_IOMUXC_ECSPI2_SS0_GPIO5_IO13		0x000
+			MX8MN_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK		0x082
+			MX8MN_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI		0x082
+			MX8MN_IOMUXC_ECSPI2_MISO_ECSPI2_MISO		0x082
+			MX8MN_IOMUXC_ECSPI2_SS0_GPIO5_IO13		0x000
 		>;
-	};
-
-	trusty {
-		compatible = "android,trusty-smc-v1";
-		ranges;
-		#address-cells = <2>;
-		#size-cells = <2>;
-		trusty-irq {
-			compatible = "android,trusty-irq-v1";
-			interrupt-ranges = < 0 15 0>;
-			ipi-range = <8 15 8>;
-		};
-		trusty-virtio {
-			compatible = "android,trusty-virtio-v1";
-		};
-		trusty-log {
-			compatible = "android,trusty-log-v1";
-		};
 	};
 };

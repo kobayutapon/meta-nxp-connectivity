@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: (GPL-2.0 OR MIT)
 /*
- * Copyright 2024 NXP
+ * Copyright 2025 NXP
  */
 
+/* Supported for chipsets:
+ - IW610
+ Chip support list end */
+
 /dts-v1/;
-#include "imx8mn-evk.dts"
+#include "imx8mp-evk.dts"
 
 / {
 	// Patch for IW61x:
-	// v1: ffu_gpio_irq (make GPIO_SPI_INT interruptible), bluetooth at 3M
+	// v1: ffu_gpio_irq (make GPIO_SPI_INT interruptible)
 	// v2: gpio naming and options description in model
 	// v3: IW610 RD hardware board only
-	model = "NXP i.MX8M Nano LPDDR4 EVK board for IW610-RD-v3: IW610 SPI INT enabled, BT at 3M";
+	model = "NXP i.MX8M Plus EVK board for IW610-RD-v3: IW610 SPI INT enabled";
 };
 
 &uart1 {
@@ -21,7 +25,6 @@
 &uart3 {
 	bluetooth {
 		compatible = "nxp,88w8987-bt";
-		fw-init-baudrate = <3000000>;
 	};
 };
 
@@ -60,16 +63,16 @@
 &iomuxc {
 	pinctrl_pca6416_irq: pca6416irq {
 		fsl,pins = <
-			MX8MN_IOMUXC_GPIO1_IO12_GPIO1_IO12		0x141
+			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12		0x141
 		>;
 	};
 
 	pinctrl_espi2: espi2grp {
 		fsl,pins = <
-			MX8MN_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK		0x082
-			MX8MN_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI		0x082
-			MX8MN_IOMUXC_ECSPI2_MISO_ECSPI2_MISO		0x082
-			MX8MN_IOMUXC_ECSPI2_SS0_GPIO5_IO13		0x000
+			MX8MP_IOMUXC_ECSPI2_SCLK__ECSPI2_SCLK		0x082
+			MX8MP_IOMUXC_ECSPI2_MOSI__ECSPI2_MOSI		0x082
+			MX8MP_IOMUXC_ECSPI2_MISO__ECSPI2_MISO		0x082
+			MX8MP_IOMUXC_ECSPI2_SS0__GPIO5_IO13		0x000
 		>;
 	};
 };

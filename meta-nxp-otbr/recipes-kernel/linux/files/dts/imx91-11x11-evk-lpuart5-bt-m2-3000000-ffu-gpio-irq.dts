@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  */
 
-#include "imx93-11x11-evk.dts"
+/* Supported for chipsets:
+ - 9177
+ - IW610
+ Chip support list end */
+
+#include "imx91-11x11-evk.dts"
 
 / {
 	// Patch for IW61x:
@@ -11,13 +16,27 @@
 	// v2: make gpio IW61x_PD_N, M2 Murata_SPI_ENABLE, IW61x_IND_RST_15_4 drivable from userspace
 	// v3: make gpio IW61x_PD_N, IW61x_IND_RST_15_4 drivable from userspace
 	// v4: gpio naming and options description in model
-	model = "NXP i.MX93 11X11 EVK board for IW61x-v4: M2 IWxxx SPI INT enabled, PDN in user space";
+	// v5: SPI 50µs interleaved
+	model = "NXP i.MX91 11X11 EVK board for IW61x-v5: M2 IWxxx SPI INT enabled, PDN in user space, 50µs delay";
 };
 
 &reg_usdhc3_vmmc {
 	// Remap gpio to P1_0 which is not used AND not connected (R131: DNP) to leave pcal6524 20 free for the user space
 	gpio = <&pcal6524 9 GPIO_ACTIVE_HIGH>;
 	//gpio = <&pcal6524 20 GPIO_ACTIVE_HIGH>;
+};
+
+&lpuart5 {
+	/* BT */
+	pinctrl-names = "default";
+	pinctrl-assert-gpios = <&pcal6524 19 GPIO_ACTIVE_HIGH>;
+	pinctrl-0 = <&pinctrl_uart5>;
+	status = "okay";
+
+	bluetooth {
+		compatible = "nxp,88w8987-bt";
+		fw-init-baudrate = <3000000>;
+	};
 };
 
 &flexcan2 {
@@ -58,6 +77,7 @@
 		reg = <0>;
 		compatible = "lwn,bk4";
 		spi-max-frequency = <1000000>;
+		spi-cs-inactive-delay-ns = <50000>;
 		label="IWxxx_SPIDEV";
 	};
 };
@@ -65,10 +85,10 @@
 &iomuxc {
 	pinctrl_lpspi3: lpspi3grp {
 		fsl,pins = <
-			MX93_PAD_GPIO_IO08__GPIO2_IO08      0x3fe
-			MX93_PAD_GPIO_IO09__LPSPI3_SIN      0x3fe
-			MX93_PAD_GPIO_IO10__LPSPI3_SOUT     0x3fe
-			MX93_PAD_GPIO_IO11__LPSPI3_SCK      0x3fe
+			MX91_PAD_GPIO_IO08__GPIO2_IO8       0x3fe
+			MX91_PAD_GPIO_IO09__LPSPI3_SIN      0x3fe
+			MX91_PAD_GPIO_IO10__LPSPI3_SOUT     0x3fe
+			MX91_PAD_GPIO_IO11__LPSPI3_SCK      0x3fe
 		>;
 	};
 };

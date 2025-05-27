@@ -200,7 +200,7 @@
 
 	sound-mqs {
 		compatible = "fsl,imx6sx-sdb-mqs",
-			     "fsl,imx-audio-mqs";
+				"fsl,imx-audio-mqs";
 		model = "mqs-audio";
 		audio-cpu = <&sai1>;
 		audio-codec = <&mqs1>;
@@ -519,7 +519,7 @@
 			try-power-role = "sink";
 			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
 			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
-				     PDO_VAR(5000, 20000, 3000)>;
+					PDO_VAR(5000, 20000, 3000)>;
 			op-sink-microwatt = <15000000>;
 			self-powered;
 		};
@@ -1021,8 +1021,8 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpspi3>;
 	cs-gpios = <&gpio2 8 GPIO_ACTIVE_LOW>;
-    status = "okay";
-    pinctrl-assert-gpios = <&pcal6408 0 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+	pinctrl-assert-gpios = <&pcal6408 0 GPIO_ACTIVE_HIGH>;
 
 	spidev0: spi@0 {
 		reg = <0>;
