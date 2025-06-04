@@ -14,6 +14,15 @@ DEFAULT_MACHINES=(
     "imx6ullevk"
 )
 
+# Parse command line arguments
+FORCE_BUILD=false
+while getopts "f" opt; do
+  case $opt in
+    f) FORCE_BUILD=true ;;
+    *) ;;
+  esac
+done
+
 # Show SCP configuration menu
 show_scp_menu() {
     local MENU_HEIGHT=10
@@ -63,10 +72,14 @@ show_scp_menu() {
 
 # Show machine selection menu
 show_machine_menu() {
-    local machine_list=()
-    for machine in "${DEFAULT_MACHINES[@]}"; do
-        machine_list+=("$machine" " " ON)
-    done
+    # If force build is enabled, use all default machines
+    if [ "$FORCE_BUILD" = true ]; then
+        SELECTED_MACHINES=("${DEFAULT_MACHINES[@]}")
+        MACHINE_LIST=$(printf " %s" "${SELECTED_MACHINES[@]}")
+        export MACHINE_LIST
+        show_scp_menu
+        return
+    fi
 
     local selected
     selected=$(whiptail --title "Select build target" \
@@ -159,6 +172,39 @@ log() {
     echo "${timestamp} [${level}] ${message}" >> "${LOG_FILE}"
 }
 
+# Ensure target directory exists before SCP
+ensure_target_directory() {
+    if [ -z "${SCP_TARGET_PATH}" ]; then
+        return 0
+    fi
+
+    # Extract the target host and path
+    local target_host=$(echo "${SCP_TARGET_PATH}" | cut -d':' -f1)
+    local target_path=$(echo "${SCP_TARGET_PATH}" | cut -d':' -f2)
+
+    if [ -z "$target_path" ]; then
+        log "WARNING" "Invalid SCP target path format. Expected format: user@host:path"
+        return 1
+    fi
+
+    log "INFO" "Checking if target directory exists: ${target_path}"
+
+    # Check if directory exists and create if it doesn't
+    if ! ssh "$target_host" "[ -d \"$target_path\" ]"; then
+        log "INFO" "Target directory does not exist, creating: ${target_path}"
+        if ssh "$target_host" "mkdir -p \"$target_path\""; then
+            log "SUCCESS" "Successfully created target directory: ${target_path}"
+        else
+            log "ERROR" "Failed to create target directory: ${target_path}"
+            return 1
+        fi
+    else
+        log "INFO" "Target directory already exists: ${target_path}"
+    fi
+
+    return 0
+}
+
 # Scp the image to target folder if needed
 copy_images() {
     if [ -z "${SCP_TARGET_PATH}" ]; then
@@ -167,6 +213,13 @@ copy_images() {
     fi
 
     log "INFO" "Starting to copy all built images"
+
+    # Ensure target directory exists before copying
+    if ! ensure_target_directory; then
+        log "ERROR" "Failed to ensure target directory exists"
+        return 1
+    fi
+
     local failed_copies=""
 
     for machine_name in ${MACHINE_LIST}; do
