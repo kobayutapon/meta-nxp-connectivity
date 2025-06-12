@@ -303,12 +303,14 @@ static void app_do_next_test_step(zb_uint8_t param)
 
     switch (g_current_test_step)
     {
+      zb_uint16_t short_addr;
+
       case STEP_SET_CONFIGURATION:
       {
         WCS_TRACE_INFO("app_do_next_test_step : STEP_SET_CONFIGURATION");
         /* Set global configuration parameters for ZED.
          * Can be used for initial setup of the R23 device */
-        zb_uint16_t short_addr = zb_address_short_by_ieee(g_r23_zed_ieee_addr);
+        short_addr = zb_address_short_by_ieee(g_r23_zed_ieee_addr);
         app_send_configuration_req(param, short_addr);
       }
       break;
@@ -318,7 +320,7 @@ static void app_do_next_test_step(zb_uint8_t param)
         WCS_TRACE_INFO("app_do_next_test_step : STEP_BEACON_SURVEY");
         /* Send beacon survey req to ZED.
          * Beacon survey req uses to determine how many potential parents ZED has */
-        zb_uint16_t short_addr = zb_address_short_by_ieee(g_r23_zed_ieee_addr);
+        short_addr = zb_address_short_by_ieee(g_r23_zed_ieee_addr);
         app_send_beacon_survey(param, short_addr);
       }
       break;
@@ -330,7 +332,7 @@ static void app_do_next_test_step(zb_uint8_t param)
          * Clear binding via decommission req.
          * Check binding with mgmt_bind_req again */
         WCS_TRACE_INFO("app_do_next_test_step : STEP_DECOMMISSION");
-        zb_uint16_t short_addr = zb_address_short_by_ieee(g_r23_zr_ieee_addr);
+        short_addr = zb_address_short_by_ieee(g_r23_zr_ieee_addr);
         app_send_bind_req(param, short_addr);
       }
       break;

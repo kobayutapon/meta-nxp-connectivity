@@ -74,9 +74,10 @@ static void thermostat_cmd_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);;
 
-  menu_printf("thermostat_cmd_cb() %s", wcs_get_error_str(cmd_send_status->status));
+  menu_printf("thermostat_cmd_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 /* since raise/lower command has 3 modes, dedicate its own function*/

@@ -161,9 +161,10 @@ static void groups_cmd_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);
 
-  menu_printf("groups_cmd_cb() %d: %s", cmd_send_status->status, wcs_get_error_str(cmd_send_status->status));
+  menu_printf("groups_cmd_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -712,9 +713,10 @@ static void scenes_cmd_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);
 
-  menu_printf("scenes_cmd_cb() %d: %s", cmd_send_status->status, wcs_get_error_str(cmd_send_status->status));
+  menu_printf("scenes_cmd_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -1444,7 +1446,7 @@ static zb_ret_t cluster_scenes_srv_device_value_cb(zb_zcl_device_callback_param_
           case ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG: my_cluster_attr_len = sizeof(g_general_on_off_switch_attr); break;
           case ZB_ZCL_CLUSTER_ID_OTA_UPGRADE:          my_cluster_attr_len = sizeof(g_general_ota_upgrade_attr);   break;
           case ZB_ZCL_CLUSTER_ID_THERMOSTAT:           my_cluster_attr_len = sizeof(g_general_thermostat_attr);   break;
-#warning TO UPDATE when adding a new cluster support
+//TODO : review ext_field_set_t management : not all attributes can be part of that
 //          case : my_cluster_attr_len = sizeof()); break;
           }
           if(fieldset->fieldset_length > my_cluster_attr_len)
@@ -1540,7 +1542,7 @@ static zb_ret_t cluster_scenes_srv_device_value_cb(zb_zcl_device_callback_param_
           case ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG: memcpy(this_efs->data, &g_general_on_off_switch_attr, this_efs->len); break;
           case ZB_ZCL_CLUSTER_ID_OTA_UPGRADE:          memcpy(this_efs->data, &g_general_ota_upgrade_attr,   this_efs->len); break;
           case ZB_ZCL_CLUSTER_ID_THERMOSTAT:           memcpy(this_efs->data, &g_general_thermostat_attr,    this_efs->len); break;
-#warning TO UPDATE when adding a new cluster support
+//TODO : review ext_field_set_t management : not all attributes can be part of that
 //          case :          memcpy(this_efs->data, &,   this_efs->len); break;
           }
         }
@@ -1604,7 +1606,7 @@ static zb_ret_t cluster_scenes_srv_device_value_cb(zb_zcl_device_callback_param_
           case ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG: memcpy(&g_general_on_off_switch_attr, this_efs->data, this_efs->len); break;
           case ZB_ZCL_CLUSTER_ID_OTA_UPGRADE:          memcpy(&g_general_ota_upgrade_attr,   this_efs->data, this_efs->len); break;
           case ZB_ZCL_CLUSTER_ID_THERMOSTAT:           memcpy(&g_general_thermostat_attr,    this_efs->data, this_efs->len); break;
-#warning TO UPDATE when adding a new cluster support
+//TODO : review ext_field_set_t management : not all attributes can be part of that
 //          case :          memcpy(this_efs->data, &,   this_efs->len); break;
           }
         }
@@ -1942,9 +1944,10 @@ static void onoff_cmd_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);;
 
-  menu_printf("onoff_cmd_cb() %s", wcs_get_error_str(cmd_send_status->status));
+  menu_printf("onoff_cmd_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 

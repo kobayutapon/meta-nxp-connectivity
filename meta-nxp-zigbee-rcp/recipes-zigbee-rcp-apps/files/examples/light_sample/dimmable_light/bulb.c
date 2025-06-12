@@ -47,8 +47,10 @@ void assert_indication_cb(zb_uint16_t file_id, zb_int_t line_number);
 
 #define ZCL_ONOFF_ENABLE_OPTIONAL_ATTRIBUTES 0
 
+#ifndef ZB_EXAMPLE_REOPEN_ZIGBEE_NETWORK
 static void open_network(zb_uint8_t param);
 static void close_network(zb_uint8_t param);
+#endif
 static void permit_joining(zb_uint8_t param, zb_uint8_t permit_duration);
 static void permit_joining_cb(zb_uint8_t param);
 
@@ -475,6 +477,7 @@ zb_uint8_t zcl_specific_cluster_cmd_handler(zb_uint8_t param)
   return ZB_FALSE;
 }
 
+#ifndef ZB_EXAMPLE_REOPEN_ZIGBEE_NETWORK
 static void open_network(zb_uint8_t param)
 {
   TRACE_MSG(TRACE_APP1, ">> open_network, param %hd", (FMT__H, param));
@@ -506,6 +509,7 @@ static void close_network(zb_uint8_t param)
 
   TRACE_MSG(TRACE_APP1, "<< close_network", (FMT__0));
 }
+#endif
 
 static void permit_joining(zb_uint8_t param, zb_uint8_t permit_duration)
 {

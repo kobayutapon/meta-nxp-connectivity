@@ -192,9 +192,10 @@ static void custnxp_cmd_payload_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);
 
-  menu_printf("custnxp_cmd_payload_cb() %d: %s", cmd_send_status->status, wcs_get_error_str(cmd_send_status->status));
+  menu_printf("custnxp_cmd_payload_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 /**

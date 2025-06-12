@@ -28,7 +28,7 @@
 me=$0
 
 # Zboss host (stack 41.41, build 16.0)
-zboss_host_tag=019.216
+zboss_host_tag=019.245
 zboss_stack=zoi_release-4.1.4.2
 
 # Firmware (stack 18.99, build 3p23.0)

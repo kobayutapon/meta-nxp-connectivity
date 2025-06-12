@@ -109,7 +109,9 @@ static zb_ret_t network_form(int argc, char *argv[])
  */
 static void network_open_cb(zb_uint8_t param)
 {
-  menu_printf("network opened");
+  zb_uint8_t status = zb_buf_get_status(param);
+
+  menu_printf("network_open_cb() %s", get_zdp_status_str(status));
   zb_buf_free(param);
 }
 
@@ -167,7 +169,6 @@ static zb_ret_t network_open(int argc, char *argv[])
   }
 
   /* Could block until network_open_cb() is called... */
-  WCS_TRACE_DEBUG("network open %d s, dest %04x", duration, request->dest_addr);
 
   return RET_OK;
 }
@@ -257,7 +258,9 @@ zb_ret_t network_do_join(zb_bool_t distributed)
  */
 static void network_leave_cb(zb_uint8_t param)
 {
-  menu_printf("left network");
+  zb_zdo_callback_info_t *resp = (zb_zdo_callback_info_t *)zb_buf_begin(param);
+
+  menu_printf("network_leave_cb() %s", get_zdp_status_str(resp->status));
   zb_buf_free(param);
 }
 

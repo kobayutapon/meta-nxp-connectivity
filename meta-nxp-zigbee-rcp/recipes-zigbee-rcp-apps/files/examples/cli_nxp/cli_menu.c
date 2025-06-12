@@ -22,8 +22,6 @@
 
 #define ZB_TRACE_FILE_ID 33617
 #include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 #include "zboss_api.h"
 #include "zboss_api_error.h"
 #include "cli_menu.h"
@@ -48,17 +46,19 @@ typedef struct {
 } cli_menu;
 
 
-static zb_ret_t menu_help(int argc, char *argv[]);  static zb_ret_t help_help(void);
-static zb_ret_t menu_sleep(int argc, char *argv[]); static zb_ret_t help_sleep(void);
+static zb_ret_t menu_help(int argc, char *argv[]);    static zb_ret_t help_help(void);
+static zb_ret_t menu_sleep(int argc, char *argv[]);   static zb_ret_t help_sleep(void);
+static zb_ret_t menu_wait_cb(int argc, char *argv[]);
 static zb_ret_t menu_quit(int argc, char *argv[]);
 
 static cli_menu_cmd menu_direct[] = {
-  /* name, args,          align, function,   help,       description */
-  { "help", "", "             ", menu_help,  help_help,  "this help"             },
-  { "sleep", " [duration]", " ", menu_sleep, help_sleep, "delay in seconds"      },
-  { "quit", "", "             ", menu_quit,  help_empty, "leave the application" },
+  /* name, args,          align, function,     help,       description */
+  { "help", "", "                   ", menu_help,    help_help,  "this help"                                        },
+  { "sleep", " [duration]", "       ", menu_sleep,   help_sleep, "delay in seconds"                                 },
+  { "wait_cb", " [nb] [timeout]", " ", menu_wait_cb, help_empty, "wait numbers [0-255] callbacks or signals to occur for at most timeout [0-65535] in ms" },
+  { "quit", "", "                   ", menu_quit,    help_empty, "leave the application"                            },
   /* Add new commands above here */
-  { NULL, NULL,            NULL, NULL,       NULL,       NULL                    }
+  { NULL, NULL,            NULL, NULL,         NULL,       NULL                                                 }
 };
 
 static cli_menu menu[] = {
@@ -77,43 +77,20 @@ static void menu_process_line(char *line);
 static zb_ret_t menu_handle(int argc, char *argv[]);
 static zb_ret_t call_cmd_help(char *menu_name, cli_menu_cmd *this_cmd);
 
-void menu_printf(const char *format , ...)
-{
-  va_list args;
-  char msgStr[1024];
-
-  va_start (args, format);
-  vsnprintf(msgStr, 1024, format, args);
-  va_end (args);
-
-  printf("%s\r\n", msgStr);
-}
-
-
-void menu_process(void)
-{
-  char *line;
-
-  line = readline("zbcli> ");
-
-  if(line && strlen(line) > 0)
-  {
-    char *savep;
-    char *p = strtok_r(line, "\n", &savep);
-    while(p)
-    {
-      menu_process_line(p);
-      p = strtok_r(0, "\n", &savep);
-    }
-  }
-
-  free(line);
-}
-
 
 zb_ret_t help_empty(void)
 {
   return RET_OK;
+}
+
+
+static zb_uint32_t count_cb_events = 0;
+static zb_uint32_t wait_cb_events  = 0;
+
+void menu_cb_occured(void)
+{
+//  WCS_TRACE_DBGREL("stack2app callback occured");
+  count_cb_events++;
 }
 
 
@@ -135,7 +112,7 @@ static void menu_process_line(char *line)
     return;
   }
 
-  add_history(line);
+  menu_add_history(line);
   /* echo the command */
   menu_printf("command: %s", line);
 
@@ -278,6 +255,47 @@ static zb_ret_t help_sleep(void)
 }
 
 
+/* Static command menu
+ * command wait_cb
+ *
+ * wait_cb [nb] [timeout]
+ */
+static zb_ret_t menu_wait_cb(int argc, char *argv[])
+{
+  zb_ret_t ret;
+  zb_uint8_t nb;
+  zb_uint16_t timeout, count = 0;
+
+  if(argc != 2)
+    return RET_INVALID_PARAMETER;
+
+  /* get [nb] */
+  TOOLS_GET_ARG(ret, uint8, argv, 0, &nb);
+
+  /* get [timeout] */
+  TOOLS_GET_ARG(ret, uint16, argv, 1, &timeout);
+
+  wait_cb_events = count_cb_events + nb;
+  while(count < timeout && count_cb_events != wait_cb_events)
+  {
+    usleep(1000);
+    count++;
+  }
+
+  if(count < timeout)
+    menu_printf("wait_cb done (within %u ms)", count);
+  else
+    menu_printf("wait_cb timeout");
+
+  return RET_OK;
+}
+
+
+/* Static command menu
+ * command quit
+ *
+ * quit
+ */
 static zb_ret_t menu_quit(int argc, char *argv[])
 {
   ZVUNUSED(argv);

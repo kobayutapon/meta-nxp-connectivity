@@ -8,29 +8,29 @@ SRCBRANCH = "lf-6.6.52_2.2.0"
 SRCREV = "2978f3c88d6bcc5695a7b45f1936f18d31eebfa8"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
-SRC_URI += "file://IW612-Q2-25-RC1.2-p25.1/sduart_nw61x_v1.bin.se"
-SRC_URI += "file://IW612-Q2-25-RC1.2-p25.1/sd_w61x_v1.bin.se"
-SRC_URI += "file://IW612-Q2-25-RC1.2-p25.1/uartspi_n61x_v1.bin.se"
+SRC_URI += "file://IW612-Q2-25-RC3.1-p25.10/sduart_nw61x_v1.bin.se"
+SRC_URI += "file://IW612-Q2-25-RC3.1-p25.10/sd_w61x_v1.bin.se"
+SRC_URI += "file://IW612-Q2-25-RC3.1-p25.10/uartspi_n61x_v1.bin.se"
 
-SRC_URI += "file://IW610-Q2-25-RC1.2-p58/sd_iw610.bin.se"
-SRC_URI += "file://IW610-Q2-25-RC1.2-p58/sduart_iw610.bin.se"
-SRC_URI += "file://IW610-Q2-25-RC1.2-p58/uart_iw610_bt.bin.se"
-SRC_URI += "file://IW610-Q2-25-RC1.2-p58/uartspi_iw610.bin.se"
-SRC_URI += "file://IW610-Q2-25-RC1.2-p58/sduartspi_iw610.bin.se"
+SRC_URI += "file://IW610-Q2-25-RC3.1-p65/sd_iw610.bin.se"
+SRC_URI += "file://IW610-Q2-25-RC3.1-p65/sduart_iw610.bin.se"
+SRC_URI += "file://IW610-Q2-25-RC3.1-p65/uart_iw610_bt.bin.se"
+SRC_URI += "file://IW610-Q2-25-RC3.1-p65/uartspi_iw610.bin.se"
+SRC_URI += "file://IW610-Q2-25-RC3.1-p65/sduartspi_iw610.bin.se"
 SRC_URI += "file://0001-Add-IW610-15.4-firmware-calibration-file-and-use-it-.patch"
 
 do_install:prepend() {
     rm -f ${S}/nxp/FwImage_IW612_SD/*.se
-    cp ${UNPACKDIR}/IW612-Q2-25-RC1.2-p25.1/sduart_nw61x_v1.bin.se ${S}/nxp/FwImage_IW612_SD
-    cp ${UNPACKDIR}/IW612-Q2-25-RC1.2-p25.1/sd_w61x_v1.bin.se ${S}/nxp/FwImage_IW612_SD
-    cp ${UNPACKDIR}/IW612-Q2-25-RC1.2-p25.1/uartspi_n61x_v1.bin.se ${S}/nxp/FwImage_IW612_SD
+    cp ${UNPACKDIR}/IW612-Q2-25-RC3.1-p25.10/sduart_nw61x_v1.bin.se ${S}/nxp/FwImage_IW612_SD
+    cp ${UNPACKDIR}/IW612-Q2-25-RC3.1-p25.10/sd_w61x_v1.bin.se ${S}/nxp/FwImage_IW612_SD
+    cp ${UNPACKDIR}/IW612-Q2-25-RC3.1-p25.10/uartspi_n61x_v1.bin.se ${S}/nxp/FwImage_IW612_SD
 
     rm -f ${S}/nxp/FwImage_IW610_SD/*.se
-    cp ${UNPACKDIR}/IW610-Q2-25-RC1.2-p58/sd_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
-    cp ${UNPACKDIR}/IW610-Q2-25-RC1.2-p58/sduart_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
-    cp ${UNPACKDIR}/IW610-Q2-25-RC1.2-p58/uart_iw610_bt.bin.se ${S}/nxp/FwImage_IW610_SD
-    cp ${UNPACKDIR}/IW610-Q2-25-RC1.2-p58/uartspi_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
-    cp ${UNPACKDIR}/IW610-Q2-25-RC1.2-p58/sduartspi_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
+    cp ${UNPACKDIR}/IW610-Q2-25-RC3.1-p65/sd_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
+    cp ${UNPACKDIR}/IW610-Q2-25-RC3.1-p65/sduart_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
+    cp ${UNPACKDIR}/IW610-Q2-25-RC3.1-p65/uart_iw610_bt.bin.se ${S}/nxp/FwImage_IW610_SD
+    cp ${UNPACKDIR}/IW610-Q2-25-RC3.1-p65/uartspi_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
+    cp ${UNPACKDIR}/IW610-Q2-25-RC3.1-p65/sduartspi_iw610.bin.se ${S}/nxp/FwImage_IW610_SD
 }
 
 do_install() {

@@ -107,6 +107,8 @@ static zb_ret_t ic_policy(int argc, char *argv[])
 static void installcode_add_cb(zb_ret_t status)
 {
   menu_printf("installcode_add_cb(): %s", wcs_get_error_str(status));
+
+  menu_cb_occured();
 }
 /* Static command installcode
  * command add
@@ -197,6 +199,7 @@ static void ic_remove_all_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 /* Static stack callback function
  * response for zb_secur_ic_remove
@@ -215,6 +218,7 @@ static void ic_remove_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 /* Static command installcode
  * command remove
@@ -324,6 +328,7 @@ static void ic_list_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 /* Static command installcode
  * command list

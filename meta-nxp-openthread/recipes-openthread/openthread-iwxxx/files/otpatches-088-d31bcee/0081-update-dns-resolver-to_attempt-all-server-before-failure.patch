@@ -1,0 +1,109 @@
+*  Copyright 2025 NXP
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions are met:
+*  1. Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*  2. Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in the
+*     documentation and/or other materials provided with the distribution.
+*  3. Neither the name of the copyright holder nor the
+*     names of its contributors may be used to endorse or promote products
+*     derived from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+*  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+*  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+*  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+*  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+*  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+*  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+*  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/*
+* Header for patch information.
+* Description : Attempt all servers before reporting server failure in DNS query response.
+* Version : v001
+* Mandatory/Optional : Mandatory
+* Impact if not applied : thread 1.4 might failed.
+*/
+
+Upstream-Status: Backport
+
+commit 078c6f1dc509ce341e314bfb5fb047a69756c253
+Author: Yang Song <yangsongcn@google.com>
+Date:   Wed May 14 22:54:54 2025 +0800
+
+    [posix] update dns `Resolver` to attempt all servers before reporting failure (#11495)
+    
+    This commit addresses a defect in the Resolver::Query function where
+    it would error out if the attempt to send a DNS query to any single
+    configured server failed. This could lead to query failures even if
+    other DNS servers were available and operational.
+
+diff --git a/src/posix/platform/resolver.cpp b/src/posix/platform/resolver.cpp
+index 97b43ced9..1b86bd1fc 100644
+--- a/src/posix/platform/resolver.cpp
++++ b/src/posix/platform/resolver.cpp
+@@ -248,6 +248,8 @@ otError Resolver::SendQueryToServer(Transaction        *aTxn,
+                      error = OT_ERROR_NO_ROUTE);
+     }
+ 
++    LogInfo("Forwarded DNS query %p to %s", static_cast<void *>(aTxn), Ip6AddressString(&aServerAddress).AsCString());
++
+ exit:
+     return error;
+ }
+@@ -255,9 +257,10 @@ exit:
+ void Resolver::Query(otPlatDnsUpstreamQuery *aTxn, const otMessage *aQuery)
+ {
+     char         packet[kMaxDnsMessageSize];
+-    otError      error  = OT_ERROR_NONE;
+-    uint16_t     length = otMessageGetLength(aQuery);
+-    Transaction *txn    = nullptr;
++    otError      error       = OT_ERROR_NONE;
++    uint16_t     length      = otMessageGetLength(aQuery);
++    uint32_t     serverCount = 0;
++    Transaction *txn         = nullptr;
+ 
+     VerifyOrExit(length <= kMaxDnsMessageSize, error = OT_ERROR_NO_BUFS);
+     VerifyOrExit(otMessageRead(aQuery, 0, &packet, sizeof(packet)) == length, error = OT_ERROR_NO_BUFS);
+@@ -268,22 +271,23 @@ void Resolver::Query(otPlatDnsUpstreamQuery *aTxn, const otMessage *aQuery)
+ 
+     for (uint32_t i = 0; i < mRecursiveDnsServerCount; i++)
+     {
+-        SuccessOrExit(error = SendQueryToServer(txn, mRecursiveDnsServerList[i], packet, length));
+-
+-        LogInfo("Forwarded DNS query %p to %s", static_cast<void *>(aTxn),
+-                Ip6AddressString(&mRecursiveDnsServerList[i]).AsCString());
++        if (SendQueryToServer(txn, mRecursiveDnsServerList[i], packet, length) == OT_ERROR_NONE)
++        {
++            serverCount++;
++        }
+     }
+ 
+     for (uint32_t i = 0; i < mUpstreamDnsServerCount; i++)
+     {
+-        SuccessOrExit(error = SendQueryToServer(txn, mUpstreamDnsServerList[i], packet, length));
+-
+-        LogInfo("Forwarded DNS query %p to %s", static_cast<void *>(aTxn),
+-                Ip6AddressString(&mUpstreamDnsServerList[i]).AsCString());
++        if (SendQueryToServer(txn, mUpstreamDnsServerList[i], packet, length) == OT_ERROR_NONE)
++        {
++            serverCount++;
++        }
+     }
+ 
+-    LogInfo("Forwarded DNS query %p to %d server(s).", static_cast<void *>(aTxn),
+-            mRecursiveDnsServerCount + mUpstreamDnsServerCount);
++    VerifyOrExit(serverCount > 0, error = OT_ERROR_NO_ROUTE);
++
++    LogInfo("Forwarded DNS query %p to %u server(s).", static_cast<void *>(aTxn), serverCount);
+ 
+ exit:
+     if (error != OT_ERROR_NONE)

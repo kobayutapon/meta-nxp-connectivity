@@ -32,6 +32,10 @@
 #include "cli_nvram.h"
 #include "cli_tools.h"
 
+#ifndef CONFIG_MENU_TERMINATE_ENTRIES
+#define CONFIG_MENU_TERMINATE_ENTRIES   { NULL, NULL,                         NULL, NULL,                NULL,                NULL }
+#endif
+
 typedef enum {
 	role_unknown = 0,
 #if defined(ZB_COORDINATOR_ROLE)
@@ -76,8 +80,11 @@ typedef struct {
   zb_uint8_t      max_children;
   zb_bool_t       concentrator;
 #endif
+#ifdef ZB_MAC_CONFIGURABLE_TX_POWER
 #define TX_POWER_NOT_INITIALIZED -128
-  zb_int8_t       tx_power;
+  zb_uint8_t      tx_power_index; /* current channel */
+  zb_int8_t       tx_power_per_channel[27-11];
+#endif
   zb_bool_t       once;
   zb_bool_t       signal_skip_startup;
   zb_bool_t       signal_steering;
@@ -120,7 +127,10 @@ static zb_ret_t config_extpanid(int argc, char *argv[]);      static zb_ret_t he
 static zb_ret_t config_max_children(int argc, char *argv[]);  static zb_ret_t help_max_children(void);
 static zb_ret_t config_concentrator(int argc, char *argv[]);  static zb_ret_t help_concentrator(void);
 #endif
+#ifdef ZB_MAC_CONFIGURABLE_TX_POWER
 static zb_ret_t config_tx_power(int argc, char *argv[]);      static zb_ret_t help_tx_power(void);
+static zb_ret_t config_tx_ppch(int argc, char *argv[]);       static zb_ret_t help_tx_ppch(void);
+#endif
 static zb_ret_t config_factory_reset(int argc, char *argv[]); static zb_ret_t help_factory_reset(void);
 /* create endpoint */
 /* create cluster */
@@ -130,9 +140,15 @@ static zb_ret_t config_status(int argc, char *argv[]);
 #ifdef ZB_ZBOSS_DEINIT
 static zb_ret_t config_stop(int argc, char *argv[]);
 #endif
+#ifdef NXP_DUALPAN_SENSE_PAN_CHANNEL
 static zb_ret_t config_pan_channel(int argc, char *argv[]);    static zb_ret_t help_pan_channel(void);
+#endif
+#ifdef NXP_GET_TXPOWER_CAPABILITIES
 static zb_ret_t config_power_capa(int argc, char *argv[]);     static zb_ret_t help_power_capa(void);
+#endif
+#ifdef NXP_GET_RX_SENSITIVITY
 static zb_ret_t config_rx_sensitivity(int argc, char *argv[]); static zb_ret_t help_rx_sensitivity(void);
+#endif
 static zb_ret_t config_manuf_code(int argc, char *argv[]);
 #ifdef ZB_ZCL_ALLOW_DYNAMIC_MANUFACTURER_SPECIFIC_PROFILE
 static zb_ret_t config_custom_msp(int argc, char *argv[]);     static zb_ret_t help_custom_msp(void);
@@ -149,43 +165,54 @@ static zb_ret_t config_dbgtty(int argc, char *argv[]);        static zb_ret_t he
 /* Menu config */
 cli_menu_cmd menu_config[] = {
   /* name, args,                       align, function,             help,               description */
-  { "ieee_addr", " [IEEE]", "              ", config_ieee_addr,     help_ieee_addr,     "configure the IEEE address: [AA:AA:AA:AA:AA:AA:AA:AA]" },
-  { "role", " [role]", "                   ", config_role,          help_role,          "configure the role: [ "CONFIG_ROLES" ]" },
-  { "channel", " [channel]", "             ", config_channel,       help_channel,       "configure the channel number or mask: [11-26|0xMMMMMMMM]" },
-  { "behavior", " [behavior]", "           ", config_behavior,      help_behavior,      "configure the stack behavior [r22|r23]" },
-  { "nwk_distrib", " [distrib]", "         ", config_nwk_distrib,   help_nwk_distrib,   "configure network distributed: [0-1]" },
-  { "nwk_key", " [idx] [KEY128]", "        ", config_nwk_key,       help_nwk_key,       "configure secur network key index: [0-3] key [KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK]" },
+  { "ieee_addr", " [IEEE]", "               ", config_ieee_addr,     help_ieee_addr,     "configure the IEEE address: [AA:AA:AA:AA:AA:AA:AA:AA]" },
+  { "role", " [role]", "                    ", config_role,          help_role,          "configure the role: [ "CONFIG_ROLES" ]" },
+  { "channel", " [channel]", "              ", config_channel,       help_channel,       "configure the channel number or mask: [11-26|0xMMMMMMMM]" },
+  { "behavior", " [behavior]", "            ", config_behavior,      help_behavior,      "configure the stack behavior [r22|r23]" },
+  { "nwk_distrib", " [distrib]", "          ", config_nwk_distrib,   help_nwk_distrib,   "configure network distributed: [0-1]" },
+  { "nwk_key", " [idx] [KEY128]", "         ", config_nwk_key,       help_nwk_key,       "configure secur network key index: [0-3] key [KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK:KK]" },
 #if defined(ZB_COORDINATOR_ROLE) || defined(ZB_ROUTER_ROLE)
-  { "panid", " [panid]", "                 ", config_panid,         help_panid,         "configure the panid: [0x0~0xFFFF]" },
-  { "extpanid", " [extpanid]", "           ", config_extpanid,      help_extpanid,      "configure the extpanid: [EE:EE:EE:EE:EE:EE:EE:EE]" },
-  { "max_children", " [nb]", "             ", config_max_children,  help_max_children,  "configure max devices to join, nb: [0-MAX_ED]" },
-  { "concentrator", " [time] [radius]", "  ", config_concentrator,  help_concentrator,  "configure device as concentrator, time: the time in seconds between concentrator route discoveries [0x0~0xFFFFFFFF], radius the hop count radius for concentrator route discoveries [0-255]" },
+  { "panid", " [panid]", "                  ", config_panid,         help_panid,         "configure the panid: [0x0~0xFFFF]" },
+  { "extpanid", " [extpanid]", "            ", config_extpanid,      help_extpanid,      "configure the extpanid: [EE:EE:EE:EE:EE:EE:EE:EE]" },
+  { "max_children", " [nb]", "              ", config_max_children,  help_max_children,  "configure max devices to join, nb: [0-MAX_ED]" },
+  { "concentrator", " [time] [radius]", "   ", config_concentrator,  help_concentrator,  "configure device as concentrator, time: the time in seconds between concentrator route discoveries [0x0~0xFFFFFFFF], radius the hop count radius for concentrator route discoveries [0-255]" },
 #endif
-  { "tx_power", " [power_value]", "        ", config_tx_power,      help_tx_power,      "configure tx power: [-20, 22] dBm" },
-  { "factory_reset", " [factory_reset]", " ", config_factory_reset, help_factory_reset, "configure start with factory reset: [0-1], deprecated" },
-  { "print", "", "                         ", config_print,         help_empty,         "printf config values" },
-  { "start", "", "                         ", config_start,         help_empty,         "start ZigBee stack" },
-  { "status", "", "                        ", config_status,        help_empty,         "status ZigBee stack" },
+#if defined(ZB_ED_ROLE)
+#endif
+#ifdef ZB_MAC_CONFIGURABLE_TX_POWER
+  { "tx_power", " <power_value>", "         ", config_tx_power,      help_tx_power,      "configure or read tx power: [-20, 22] dBm" },
+  { "tx_ppch", "[channel] <power_value>", " ", config_tx_ppch,       help_tx_ppch,       "configure or read tx power per channel [11-26]: [-20, 22] dBm" },
+#endif
+  { "factory_reset", " [factory_reset]", "  ", config_factory_reset, help_factory_reset, "configure start with factory reset: [0-1], deprecated" },
+  { "print", "", "                          ", config_print,         help_empty,         "printf config values" },
+  { "start", "", "                          ", config_start,         help_empty,         "start ZigBee stack" },
+  { "status", "", "                         ", config_status,        help_empty,         "status ZigBee stack" },
 #ifdef ZB_ZBOSS_DEINIT
-  { "stop", "", "                          ", config_stop,          help_empty,         "stop ZigBee stack" },
+  { "stop", "", "                           ", config_stop,          help_empty,         "stop ZigBee stack" },
 #endif
-  { "pan_channel", " [get|set] <ch>", "    ", config_pan_channel,   help_pan_channel,   "get or set the pan channel (shared with OpenThread)" },
-  { "power_capa", "", "                    ", config_power_capa,    help_power_capa,    "get tx power capabilities" },
-  { "rx_sensitivity", "", "                ", config_rx_sensitivity,help_rx_sensitivity,"get rx sensitivity" },
-  { "manuf_code", " [manuf_code]", "       ", config_manuf_code,    help_empty,         "configure the manufacturer code: [0xMMMM]" },
+#ifdef NXP_DUALPAN_SENSE_PAN_CHANNEL
+  { "pan_channel", " [get|set] <ch>", "     ", config_pan_channel,   help_pan_channel,   "get or set the pan channel (shared with OpenThread)" },
+#endif
+#ifdef NXP_GET_TXPOWER_CAPABILITIES
+  { "power_capa", "", "                     ", config_power_capa,    help_power_capa,    "get tx power capabilities" },
+#endif
+#ifdef NXP_GET_RX_SENSITIVITY
+  { "rx_sensitivity", "", "                 ", config_rx_sensitivity,help_rx_sensitivity,"get rx sensitivity" },
+#endif
+  { "manuf_code", " [manuf_code]", "        ", config_manuf_code,    help_empty,         "configure the manufacturer code: [0xMMMM]" },
 #ifdef ZB_ZCL_ALLOW_DYNAMIC_MANUFACTURER_SPECIFIC_PROFILE
-  { "custom_msp", " [profile] [index]", "  ", config_custom_msp,    help_custom_msp,    "register a custom manufacturer specific profile [0xC000~0xFFFF] at index [0~19]" },
+  { "custom_msp", " [profile] [index]", "   ", config_custom_msp,    help_custom_msp,    "register a custom manufacturer specific profile [0xC000~0xFFFF] at index [0~19]" },
 #endif
 #ifdef ZB_ZCL_ALLOW_FRAGMENTATION_ON_MANUFACTURER_SPECIFIC_CLUSTER
-  { "frag_on_msc", " [cluster] [index]", " ", config_frag_on_msc,   help_frag_on_msc,   "register a manufacturer specific cluster allowing APS fragmentation [0xFC00~0xFFFF] at index [0~19]" },
+  { "frag_on_msc", " [cluster] [index]", "  ", config_frag_on_msc,   help_frag_on_msc,   "register a manufacturer specific cluster allowing APS fragmentation [0xFC00~0xFFFF] at index [0~19]" },
 #endif
-  { "get_version", " [version_type]", "    ", config_get_version,   help_empty,         "get software version [host|stack|firmware]"},
+  { "get_version", " [version_type]", "     ", config_get_version,   help_empty,         "get software version [host|stack|firmware]"},
 #if defined(ZB_TRACE_LEVEL)
-  { "trace", " [level] [mask]", "          ", config_trace,         help_trace,         "configure the zboss log, level [0-4], mask [0x0~0xFFFFFFFF] " },
+  { "trace", " [level] [mask]", "           ", config_trace,         help_trace,         "configure the zboss log, level [0-4], mask [0x0~0xFFFFFFFF] " },
 #endif
-  { "dbgtty", " [level]", "                ", config_dbgtty,        help_dbgtty,        "configure debug TTY frames, level: [0-3]" },
+  { "dbgtty", " [level]", "                 ", config_dbgtty,        help_dbgtty,        "configure debug TTY frames, level: [0-3]" },
   /* Add new commands above here */
-  { NULL, NULL,                         NULL, NULL,                NULL,                NULL }
+  CONFIG_MENU_TERMINATE_ENTRIES
 };
 
 
@@ -197,7 +224,6 @@ void config_init_default(void)
   char *dumpTtyStr = getenv("DUMP_TTY");
 
   memset(&config, 0, sizeof(config));
-  config.state = STATE_INITTING;
   config.manufacturer_code = ZB_DEFAULT_MANUFACTURER_CODE;
   zb_get_long_address(config.ieee_addr);
 #if defined(ZB_COORDINATOR_ROLE) || defined(ZB_ROUTER_ROLE)
@@ -205,9 +231,13 @@ void config_init_default(void)
   zb_get_extended_pan_id(config.extpanid);
   config.max_children = zb_nwk_get_max_ed_capacity();
 #endif
-  config.tx_power = TX_POWER_NOT_INITIALIZED;
+#ifdef ZB_MAC_CONFIGURABLE_TX_POWER
+  memset(config.tx_power_per_channel, TX_POWER_NOT_INITIALIZED, sizeof(config.tx_power_per_channel));
+#endif
   if(dumpTtyStr) config.dbgtty = atoi(dumpTtyStr);
   else           config.dbgtty = 0;
+
+  config_set_state(STATE_INITTING);
 }
 
 
@@ -298,6 +328,7 @@ zb_cfg_state_e config_get_state(void)
   return config.state;
 }
 
+#ifdef DEBUG
 static char *stateStr(zb_cfg_state_e state)
 {
   char *str = "???";
@@ -315,16 +346,19 @@ static char *stateStr(zb_cfg_state_e state)
 
   return str;
 }
+#endif
 
 /* Global function
  * check the stack is start
  */
 void config_set_state(zb_cfg_state_e state)
 {
+#ifdef DEBUG
   if(config.state != state)
   {
     WCS_TRACE_DEBUG("STATE %s -> %s", stateStr(config.state), stateStr(state));
   }
+#endif
   config.state = state;
 }
 
@@ -392,6 +426,7 @@ void config_got_signal(zb_zdo_app_signal_type_t signal, zb_zdo_app_signal_hdr_t 
       break;
 #endif
    }
+   menu_cb_occured();
 }
 
 static zb_bool_t config_got_error(zb_uint8_t severity, zb_ret_t error_code, void *additional_info)
@@ -413,6 +448,8 @@ static zb_bool_t config_got_error(zb_uint8_t severity, zb_ret_t error_code, void
       menu_printf("error_cb() severity: %s, error code: %s", get_err_sev_str(severity), wcs_get_error_str(error_code));
       break;
   }
+
+  menu_cb_occured();
 
   /* return TRUE to prevent default error handling by the stack: ZB_RESET_AUTORESTART */
   return ret;
@@ -478,7 +515,7 @@ static zb_ret_t config_apply_role_and_channel(void);
 zb_bool_t config_update(zb_uint8_t channel, zb_uint16_t panid, zb_ext_pan_id_t ext_panid)
 {
   if((config.channel.type == CHANNEL_TYPE_NUMBER && config.channel.val.number != channel) ||
-     (config.channel.type == CHANNEL_TYPE_MASK && config.channel.val.mask != (1l<< channel)))
+     (config.channel.type == CHANNEL_TYPE_MASK && config.channel.val.mask != (1l << channel)))
   {
     menu_printf("config channel %d", channel);
     config.channel.type = CHANNEL_TYPE_NUMBER;
@@ -785,6 +822,9 @@ static void app_nwk_mgmt_change_panid_cb(zb_uint8_t param)
   {
     menu_printf("change_panid_cb() Error counter: %d No change PANID performed", params->error_cnt);
   }
+
+  /* don't free param, it is used by zb_start_panid_change() */
+  menu_cb_occured();
 }
 
 /* Static command config
@@ -877,18 +917,21 @@ static zb_ret_t config_max_children(int argc, char *argv[])
 
   /* get [nb] */
   TOOLS_GET_ARG(ret, uint8, argv, 0, &new_max_children);
-  if(new_max_children > ZB_MAX_ED_CAPACITY_DEFAULT)
-    return RET_INVALID_PARAMETER_1;
 
   config.max_children = new_max_children;
 
-  zb_nwk_set_max_ed_capacity(config.max_children);
+  ret = zb_nwk_set_max_ed_capacity(config.max_children);
 
-  return RET_OK;
+  return ret;
 }
 static zb_ret_t help_max_children(void)
 {
-  menu_printf("pre-start OPTIONAL config, max value %u", ZB_MAX_ED_CAPACITY_DEFAULT);
+  menu_printf("pre-start OPTIONAL config"
+#ifdef ZB_MAX_ED_CAPACITY_DEFAULT
+              " (max value: %u)", ZB_MAX_ED_CAPACITY_DEFAULT
+#endif
+              );
+
   return RET_OK;
 }
 
@@ -945,39 +988,46 @@ static zb_ret_t help_concentrator(void)
 #endif
 
 
+#ifdef ZB_MAC_CONFIGURABLE_TX_POWER
 /* Static stack callback function
  * response for zb_get/set_tx_power_async
  */
-static void tx_power_cb(zb_uint8_t param)
+static void tx_power_cb(zb_uint8_t param, char *fct_name)
 {
  zb_tx_power_params_t *resp = zb_buf_begin(param);
 
   switch (resp->status)
   {
     case RET_OK:
-      config.tx_power = resp->tx_power;
-      menu_printf("tx_power_cb() Ok: %d", config.tx_power);
+      config.tx_power_per_channel[resp->channel-11] = resp->tx_power;
+      menu_printf("%s() Ok: channel %u, tx_power: %d", fct_name, resp->channel, config.tx_power_per_channel[resp->channel-11]);
       break;
     
     case RET_INVALID_PARAMETER_1:
-      menu_printf("tx_power_cb() Error: INVALID_PARAM_1 (page %u): %d %d", resp->page, resp->tx_power, config.tx_power);
+      menu_printf("%s() Error: INVALID_PARAM_1 (page %u): %d %d", fct_name, resp->page, resp->tx_power, config.tx_power_per_channel[resp->channel-11]);
       break;
 
     case RET_INVALID_PARAMETER_2:
-      menu_printf("tx_power_cb() Error: INVALID_PARAM_2 (channel %u): %d %d", resp->channel, resp->tx_power, config.tx_power);
+      menu_printf("%s() Error: INVALID_PARAM_2 (channel %u): %d %d", fct_name, resp->channel, resp->tx_power, config.tx_power_per_channel[resp->channel-11]);
       break;
 
     case RET_INVALID_PARAMETER_3:
-      menu_printf("tx_power_cb() Error: INVALID_PARAM_3 (tx_power %d): %d", resp->tx_power, config.tx_power);
+      menu_printf("%s() Error: INVALID_PARAM_3 (tx_power %d): %d", fct_name, resp->tx_power, config.tx_power_per_channel[resp->channel-11]);
       break;
     
     default:
-      menu_printf("tx_power_cb() Error: %s (req %u, %u %d): %d", wcs_get_error_str(resp->status), resp->page, resp->channel, resp->tx_power, config.tx_power);
+      menu_printf("%s() Error: %s (req %u, %u %d): %d", fct_name, wcs_get_error_str(resp->status), resp->page, resp->channel, resp->tx_power, config.tx_power_per_channel[resp->channel-11]);
       break;
   }
 
+  if(config.dbgtty)
+    wcs_print_buf((zb_uint8_t *)resp, sizeof(zb_tx_power_params_t), "tx_power_resp: page: %d, ch: %d, pwr: %d", resp->page, resp->channel, resp->tx_power);
+
   zb_buf_free(param);
+  menu_cb_occured();
 }
+static void get_tx_power_cb(zb_uint8_t param) { return tx_power_cb(param, "get_tx_power_cb"); }
+static void set_tx_power_cb(zb_uint8_t param) { return tx_power_cb(param, "set_tx_power_cb"); }
 
 /* Static scheduled function
  * command get_tx_power
@@ -989,8 +1039,11 @@ static void get_tx_power(zb_uint8_t param)
 //  req = ZB_BUF_GET_PARAM(param, zb_tx_power_params_t);
   req = zb_buf_initial_alloc(param, sizeof(zb_tx_power_params_t));
   req->page    = ZB_CHANNEL_PAGE0_2_4_GHZ;
-  req->channel = zb_get_current_channel();
-  req->cb      = tx_power_cb;
+  req->channel = config.tx_power_index+11;
+  req->cb      = get_tx_power_cb;
+
+  if(config.dbgtty)
+    wcs_print_buf((zb_uint8_t *)req, sizeof(zb_tx_power_params_t), "get_tx_power: page: %d, ch: %d, pwr: %d", req->page, req->channel, req->tx_power);
 
   ZB_SCHEDULE_APP_CALLBACK(zb_get_tx_power_async, param);
 }
@@ -1005,9 +1058,12 @@ static void set_tx_power(zb_uint8_t param)
 //  req = ZB_BUF_GET_PARAM(param, zb_tx_power_params_t);
   req = zb_buf_initial_alloc(param, sizeof(zb_tx_power_params_t));
   req->page     = ZB_CHANNEL_PAGE0_2_4_GHZ;
-  req->channel  = zb_get_current_channel();
-  req->tx_power = config.tx_power;
-  req->cb       = tx_power_cb;
+  req->channel  = config.tx_power_index+11;
+  req->tx_power = config.tx_power_per_channel[config.tx_power_index];
+  req->cb       = set_tx_power_cb;
+
+  if(config.dbgtty)
+    wcs_print_buf((zb_uint8_t *)req, sizeof(zb_tx_power_params_t), "set_tx_power: page: %d, ch: %d, pwr: %d", req->page, req->channel, req->tx_power);
 
   ZB_SCHEDULE_APP_CALLBACK(zb_set_tx_power_async, param);
 }
@@ -1016,33 +1072,102 @@ static void set_tx_power(zb_uint8_t param)
 /* Static command config
  * command tx_power
  *
- * config tx_power [power_value]
+ * config tx_power <power_value>
  */
 static zb_ret_t config_tx_power(int argc, char *argv[])
 {
   zb_ret_t ret;
-  zb_int8_t new_tx_power;
+  zb_uint8_t current_channel;
+  zb_int8_t new_tx_power = TX_POWER_NOT_INITIALIZED;
 
-  if(argc != 1)
+  if(argc > 1)
     return RET_INVALID_PARAMETER;
 
-  /* get [power_value] */
-  TOOLS_GET_ARG(ret, int8, argv, 0, &new_tx_power);
+  current_channel = zb_get_current_channel();
+  if(current_channel < 11 || current_channel > 26)
+    return RET_UNAUTHORIZED;
 
-  config.tx_power = new_tx_power;
+  /* get <power_value> */
+  ret = tools_arg_get_int8(argv, 0, &new_tx_power, ARG_DEC);
+  if(ret != RET_OK && ret != RET_EOF) /* found or ot found */
+    return ret;
+
+  config.tx_power_index = current_channel-11;
+  if(new_tx_power != TX_POWER_NOT_INITIALIZED)
+    config.tx_power_per_channel[config.tx_power_index] = new_tx_power;
 
   if(config.state >= STATE_RUNNING)
-    set_tx_power(zb_buf_get_out());
+  {
+    if(new_tx_power != TX_POWER_NOT_INITIALIZED)
+      set_tx_power(zb_buf_get_out());
+    else
+      get_tx_power(zb_buf_get_out());
+  }
   else
-    zb_buf_get_out_delayed(set_tx_power);
+  {
+    if(new_tx_power != TX_POWER_NOT_INITIALIZED)
+      zb_buf_get_out_delayed(set_tx_power);
+    /* no need to do a else, the get is done automatically */
+  }
 
   return RET_OK;
 }
 static zb_ret_t help_tx_power(void)
 {
-  menu_printf("runtime config");
+  menu_printf("runtime config, set tx power if power_value is provided else get tx_power");
   return RET_OK;
 }
+
+
+/* Static command config
+ * command tx_power per channel
+ *
+ * config tx_ppch [channel] <power_value>
+ */
+static zb_ret_t config_tx_ppch(int argc, char *argv[])
+{
+  zb_ret_t ret;
+  zb_uint8_t new_channel;
+  zb_int8_t new_tx_power = TX_POWER_NOT_INITIALIZED;
+
+  if(argc < 1 || argc > 2)
+    return RET_INVALID_PARAMETER;
+
+  TOOLS_GET_ARG(ret, uint8, argv, 0, &new_channel);
+  if(new_channel < 11 || new_channel > 26)
+    return RET_INVALID_PARAMETER_1;
+
+  /* get <power_value> */
+  ret = tools_arg_get_int8(argv, 1, &new_tx_power, ARG_DEC);
+  if(ret != RET_OK && ret != RET_EOF) /* found or ot found */
+    return ret;
+
+  config.tx_power_index = new_channel-11;
+  if(new_tx_power != TX_POWER_NOT_INITIALIZED)
+    config.tx_power_per_channel[config.tx_power_index] = new_tx_power;
+
+  if(config.state >= STATE_RUNNING)
+  {
+    if(new_tx_power != TX_POWER_NOT_INITIALIZED)
+      set_tx_power(zb_buf_get_out());
+    else
+      get_tx_power(zb_buf_get_out());
+  }
+  else
+  {
+    if(new_tx_power != TX_POWER_NOT_INITIALIZED)
+      zb_buf_get_out_delayed(set_tx_power);
+    /* no need to do a else, the get is done automatically */
+  }
+
+  return RET_OK;
+}
+static zb_ret_t help_tx_ppch(void)
+{
+  menu_printf("runtime config, set tx power per channel if power_value is provided else get tx_power per channel");
+  return RET_OK;
+}
+#endif
 
 
 /* Static command config
@@ -1129,7 +1254,17 @@ static zb_ret_t config_print(int argc, char *argv[])
   menu_printf("max_children:     %u",               config.max_children);
   menu_printf("concentrator:     %s", (config.concentrator)?("enabled"):("disabled"));
 #endif
-  menu_printf("tx_power:         %d",               config.tx_power);
+#ifdef ZB_MAC_CONFIGURABLE_TX_POWER
+  menu_printf("tx_power:         %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+    config.tx_power_per_channel[11-11], config.tx_power_per_channel[12-11],
+    config.tx_power_per_channel[13-11], config.tx_power_per_channel[14-11],
+    config.tx_power_per_channel[15-11], config.tx_power_per_channel[16-11],
+    config.tx_power_per_channel[17-11], config.tx_power_per_channel[18-11],
+    config.tx_power_per_channel[19-11], config.tx_power_per_channel[20-11],
+    config.tx_power_per_channel[21-11], config.tx_power_per_channel[22-11],
+    config.tx_power_per_channel[23-11], config.tx_power_per_channel[24-11],
+    config.tx_power_per_channel[25-11], config.tx_power_per_channel[26-11]);
+#endif
   menu_printf("state:            %u",               config.state);
 #if defined(ZB_TRACE_LEVEL)
   menu_printf("trace:            %u 0x%08x", g_trace_level, g_trace_mask);
@@ -1192,11 +1327,31 @@ static zb_ret_t config_start(int argc, char *argv[])
     cluster_init(cli_ctx.ep_desc_list[i]->ep_id);
   }
 
-  if(config.tx_power == TX_POWER_NOT_INITIALIZED)
+#ifdef ZB_MAC_CONFIGURABLE_TX_POWER
+  if(config.channel.type == CHANNEL_TYPE_NUMBER)
+    config.tx_power_index = config.channel.val.number-11;
+  else
+  {
+    config.tx_power_index = 0xFF;
+    for(int ch=11; ch<=26; ch++)
+      if((1l<<ch) & config.channel.val.mask)
+      {
+        config.tx_power_index = ch-11;
+        break;
+      }
+    if(config.tx_power_index == 0xFF)
+    {
+      menu_printf("no valid channel found");
+      return RET_INVALID_PARAMETER;
+    }
+  }
+
+  if(config.tx_power_per_channel[config.tx_power_index] == TX_POWER_NOT_INITIALIZED)
   {
     /* Request to get tx_power */
     zb_buf_get_out_delayed(get_tx_power);
   }
+#endif
 
   /* It will be really started by the main thread */
   config_set_state(STATE_RUN);
@@ -1264,6 +1419,8 @@ static zb_ret_t config_stop(int argc, char *argv[])
 }
 #endif
 
+
+#ifdef NXP_GET_RX_SENSITIVITY
 /* Static stack callback function
  * response for get_rx_sensitivity_cb
  */
@@ -1271,22 +1428,11 @@ static void get_rx_sensitivity_cb(zb_uint8_t param)
 {
   zb_rx_sensitivity_params_t *resp = (zb_rx_sensitivity_params_t *)zb_buf_begin(param);
 
-  menu_printf("get_rx_sensitivity_cb()");
+  menu_printf("get_rx_sensitivity_cb() %s", wcs_get_error_str(resp->status));
   menu_printf("\tRX SENSITIVITY: %d", resp->rx_sensitivity);
+
   zb_buf_free(param);
-}
-
-/* Static scheduled function
- * command get_rx_sensitivity
- */
-static void get_rx_sensitivity(zb_uint8_t param)
-{
-  zb_rx_sensitivity_params_t *req;
-
-  req = zb_buf_initial_alloc(param, sizeof(zb_rx_sensitivity_params_t));
-  req->cb = get_rx_sensitivity_cb;
-
-  ZB_SCHEDULE_APP_CALLBACK(zb_get_rx_sensitivity, param);
+  menu_cb_occured();
 }
 
 /* Static command config
@@ -1301,10 +1447,20 @@ static zb_ret_t config_rx_sensitivity(int argc, char *argv[])
   if(argc != 0)
     return RET_INVALID_PARAMETER;
 
-  if(config.state >= STATE_RUNNING)
-    get_rx_sensitivity(zb_buf_get_out());
-  else
-    zb_buf_get_out_delayed(get_rx_sensitivity);
+  if(config.state < STATE_RUNNING)
+    return RET_UNAUTHORIZED;
+
+  {
+    zb_bufid_t buffer = ZB_BUF_INVALID;
+    zb_rx_sensitivity_params_t *req;
+
+    buffer = zb_buf_get_out();
+
+    req = zb_buf_initial_alloc(buffer, sizeof(zb_rx_sensitivity_params_t));
+    req->cb = get_rx_sensitivity_cb;
+    zb_get_rx_sensitivity(buffer);
+
+  }
 
   return  RET_OK;
 }
@@ -1314,8 +1470,10 @@ static zb_ret_t help_rx_sensitivity(void)
   menu_printf("runtime config");
   return RET_OK;
 }
+#endif
 
 
+#ifdef NXP_DUALPAN_SENSE_PAN_CHANNEL
 /* Static stack callback function
  * response for <get|set>_pan_channel
  */
@@ -1333,6 +1491,7 @@ static void get_pan_channel_cb(zb_bufid_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 static void set_pan_channel_cb(zb_bufid_t param)
 {
@@ -1348,6 +1507,7 @@ static void set_pan_channel_cb(zb_bufid_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 /* Static command config
@@ -1424,8 +1584,10 @@ static zb_ret_t help_pan_channel(void)
   menu_printf("pan channel set [channel]: write the pan channel [11~26]");
   return RET_OK;
 }
+#endif
 
 
+#ifdef NXP_GET_TXPOWER_CAPABILITIES
 /* Static stack callback function
  * response for get_tx_power_capabilities
  */
@@ -1433,25 +1595,14 @@ static void get_tx_power_capa_cb(zb_uint8_t param)
 {
   zb_tx_power_capabilities_params_t *resp = zb_buf_begin(param);
 
-  menu_printf("get_tx_power_capa_cb()");
+  menu_printf("get_tx_power_capa_cb() %s", wcs_get_error_str(resp->status));
   for(zb_uint8_t i=0; i<16; i++)
   {
     menu_printf("\tCHANNEL[%u]: tx_power in { %d, %d }", 11+i, resp->min[i], resp->max[i]);
   }
+
   zb_buf_free(param);
-}
-
-/* Static scheduled function
- * command get_tx_power_capabilities
- */
-static void get_tx_power_capa(zb_uint8_t param)
-{
-  zb_tx_power_capabilities_params_t *req;
-
-  req = zb_buf_initial_alloc(param, sizeof(zb_tx_power_capabilities_params_t));
-  req->cb = get_tx_power_capa_cb;
-
-  ZB_SCHEDULE_APP_CALLBACK(zb_get_tx_power_capabilities, param);
+  menu_cb_occured();
 }
 
 /* Static command config
@@ -1466,18 +1617,28 @@ static zb_ret_t config_power_capa(int argc, char *argv[])
   if(argc != 0)
     return RET_INVALID_PARAMETER;
 
-  if(config.state >= STATE_RUNNING)
-    get_tx_power_capa(zb_buf_get_out());
-  else
-    zb_buf_get_out_delayed(get_tx_power_capa);
+  if(config.state < STATE_RUNNING)
+    return  RET_UNAUTHORIZED;
 
-  return  RET_OK;
+  {
+    zb_bufid_t buffer = ZB_BUF_INVALID;
+    zb_tx_power_capabilities_params_t *req;
+
+    buffer = zb_buf_get_out();
+
+    req = zb_buf_initial_alloc(buffer, sizeof(zb_tx_power_capabilities_params_t));
+    req->cb = get_tx_power_capa_cb;
+    zb_get_tx_power_capabilities(buffer);
+  }
+
+  return RET_OK;
 }
 static zb_ret_t help_power_capa(void)
 {
   menu_printf("runtime config");
   return RET_OK;
 }
+#endif
 
 
 /* Static stack callback function
@@ -1486,6 +1647,8 @@ static zb_ret_t help_power_capa(void)
 static void manuf_code_cb(zb_ret_t status)
 {
   menu_printf("manuf_code_cb() %s", wcs_get_error_str(status));
+
+  menu_cb_occured();
 }
 
 /* Static command config

@@ -128,6 +128,8 @@ static zb_uint16_t get_app_size_cb(zb_uint8_t bank_idx)
 
   menu_printf("nvram_get_app%u_data_size(): %u", bank_idx+1, app_data_info[bank_idx].size);
 
+  menu_cb_occured();
+
   return app_data_info[bank_idx].size;
 }
 static zb_uint16_t get_app1_size_cb(void) { return get_app_size_cb(0); }
@@ -159,6 +161,7 @@ static void read_app_cb(zb_uint8_t bank_idx, zb_uint8_t page, zb_uint32_t pos, z
       menu_printf_app_data(app_data_info[bank_idx].data, 0, payload_length, "READ");
     }
   }
+  menu_cb_occured();
 }
 static void read_app1_cb(zb_uint8_t page, zb_uint32_t pos, zb_uint16_t payload_length) { read_app_cb(0, page, pos, payload_length); }
 static void read_app2_cb(zb_uint8_t page, zb_uint32_t pos, zb_uint16_t payload_length) { read_app_cb(1, page, pos, payload_length); }
@@ -182,6 +185,8 @@ static zb_ret_t write_app_cb(zb_uint8_t bank_idx, zb_uint8_t page, zb_uint32_t p
       menu_printf("nvram_write_app%d_cb(): write OK %u bytes at page 0x%x pos 0x%x ", bank_idx+1, app_data_info[bank_idx].size, page, pos);
       menu_printf_app_data(app_data_info[bank_idx].data, 0, app_data_info[bank_idx].size, "WRITE");
   }
+
+  menu_cb_occured();
 
   return ret;
 }

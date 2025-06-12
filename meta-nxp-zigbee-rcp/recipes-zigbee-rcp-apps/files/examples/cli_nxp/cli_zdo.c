@@ -32,7 +32,9 @@
 #include "cli_network.h" /* for network_do_join() */
 #endif
 
+#ifdef ZBOSS_ZDO_APP_TSN_ENABLE
 static zb_uint8_t aps_tsn_value = 0x00;
+#endif
 
 /* Commands zdo handlers */
 static zb_ret_t zdo_get_short_addr(int argc, char *argv[]);
@@ -44,6 +46,7 @@ static zb_ret_t zdo_get_power_desc(int argc, char *argv[]);
 static zb_ret_t zdo_get_simp_desc(int argc, char *argv[]);
 static zb_ret_t zdo_get_match_desc(int argc, char *argv[]);      static zb_ret_t help_get_match_desc(void);
 static zb_ret_t zdo_get_route(int argc, char *argv[]);
+static zb_ret_t zdo_get_lqi(int argc, char *argv[]);
 static zb_ret_t zdo_active_scan(int argc, char *argv[]);         static zb_ret_t help_active_scan(void);
 #if defined(ZB_COORDINATOR_ROLE) || defined(ZB_ROUTER_ROLE)
 static zb_ret_t zdo_energy_scan(int argc, char *argv[]);         static zb_ret_t help_energy_scan(void);
@@ -60,13 +63,14 @@ cli_menu_cmd menu_zdo[] = {
   /* name, args,                             align,      function,             help,        description */
   { "get_short_addr", " [ieee]", "                                 ", zdo_get_short_addr, help_empty,          "\r\n\tget from local ieee_addr_table the specific device at addr [AA:AA:AA:AA:AA:AA:AA:AA]" },
   { "get_ieee_addr", " [addr]", "                                  ", zdo_get_ieee_addr,  help_empty,          "\r\n\tsend ZDO IEEE Address Req to a specific device at addr [0xAAAA]" },
-  { "get_active", " [addr]", "                                     ", zdo_get_active,     help_empty,          "\r\n\tsend ZDO Active Endpoint Req to a specific device at addr [0xAAAA]" },
-  { "get_bind_table", " [addr] [index]", "                         ", zdo_get_bind_table, help_empty,          "\r\n\tsend ZDO Mgmt Bind Req to a specific device at addr [0xAAAA] from index [0~255]" },
-  { "get_node_desc", " [addr]", "                                  ", zdo_get_node_desc,  help_empty,          "\r\n\tsend ZDO Node Descriptor Req to a specific device at addr [0xAAAA]" },
-  { "get_power_desc", " [addr]", "                                 ", zdo_get_power_desc, help_empty,          "\r\n\tsend ZDO Power Descriptor Req to a specific device at addr [0xAAAA]" },
-  { "get_simple_desc", " [addr] [endpoint]", "                     ", zdo_get_simp_desc,  help_empty,          "\r\n\tsend ZDO Simple Descriptor Req to a specific device at addr [0xAAAA] endpoint [0-255]" },
-  { "get_match_desc", " [addr] [profile] [#in:#out] [clusters]", " ", zdo_get_match_desc, help_get_match_desc, "\r\n\tsend ZDO Match Descriptor Request to a specific device at dest_addr [0xAAAA] profile [0xPPPP|initials] numbers of input:output clusters [0~255:0~255], at least one, list of clusters [0xCCC1] ... [0xCCCn] (n:#in + #out)" },
-  { "get_route", " [addr] [idx]", "                                ", zdo_get_route,      help_empty,          "\r\n\tsend ZDO Route Table Req to a specific device at addr [0xAAAA] starting at index [0-255]" },
+  { "get_active", " [addr]", "                                     ", zdo_get_active,     help_empty,          "\r\n\tsend ZDO Active Endpoint Req to a specific device at addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA]" },
+  { "get_bind_table", " [addr] [index]", "                         ", zdo_get_bind_table, help_empty,          "\r\n\tsend ZDO Mgmt Bind Req to a specific device at addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] from index [0~255]" },
+  { "get_node_desc", " [addr]", "                                  ", zdo_get_node_desc,  help_empty,          "\r\n\tsend ZDO Node Descriptor Req to a specific device at addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA]" },
+  { "get_power_desc", " [addr]", "                                 ", zdo_get_power_desc, help_empty,          "\r\n\tsend ZDO Power Descriptor Req to a specific device at addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA]" },
+  { "get_simple_desc", " [addr] [endpoint]", "                     ", zdo_get_simp_desc,  help_empty,          "\r\n\tsend ZDO Simple Descriptor Req to a specific device at addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] endpoint [0-255]" },
+  { "get_match_desc", " [addr] [profile] [#in:#out] [clusters]", " ", zdo_get_match_desc, help_get_match_desc, "\r\n\tsend ZDO Match Descriptor Request to a specific device at dest_addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] profile [0xPPPP|initials] numbers of input:output clusters [0~255:0~255], at least one, list of clusters [0xCCC1] ... [0xCCCn] (n:#in + #out)" },
+  { "get_route", " [addr] [idx]", "                                ", zdo_get_route,      help_empty,          "\r\n\tsend ZDO Route Table Req to a specific device at addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] starting at index [0-255]" },
+  { "get_lqi", " [addr] [idx]", "                                  ", zdo_get_lqi,        help_empty,          "\r\n\tsend ZDO Link Quality Req to a specific device at addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] starting at index [0-255]" },
   { "active_scan", " [duration] [channel_mask] <panid2join>", "    ", zdo_active_scan,    help_active_scan,    "\r\n\tsend ZDO Active Scan Req for duration [0-14] on channel mask [0xMMMMMMMM], optional panid to join <0xPPPP>" },
 #if defined(ZB_COORDINATOR_ROLE) || defined(ZB_ROUTER_ROLE)
   { "energy_scan", " [duration] [channel_mask]", "                 ", zdo_energy_scan,    help_energy_scan,    "\r\n\tsend ZDO Energy Scan Req for duration [0-14] on channel mask [0xMMMMMMMM]" },
@@ -126,7 +130,7 @@ static void get_ieee_addr_cb(zb_uint8_t param)
 
   if(resp->status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("get_ieee_addr_cb(0x%04x) failed: %s", resp->nwk_addr_remote_dev, get_zcl_status_str(resp->status));
+    menu_printf("get_ieee_addr_cb(0x%04x) failed: %s", resp->nwk_addr_remote_dev, get_zdp_status_str(resp->status));
   }
   else
   {
@@ -134,6 +138,7 @@ static void get_ieee_addr_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -156,12 +161,13 @@ static zb_ret_t zdo_get_ieee_addr(int argc, char *argv[])
   /* Do it */
   {
     zb_bufid_t buffer = ZB_BUF_INVALID;
-    zb_zdo_ieee_addr_req_t *req;
+    zb_zdo_ieee_addr_req_param_t *req;
     zb_uint8_t seq_num;
 
     buffer = zb_buf_get_out();
-    req = zb_buf_initial_alloc(buffer, sizeof(zb_zdo_ieee_addr_req_t));
+    req = ZB_BUF_GET_PARAM(buffer, zb_zdo_ieee_addr_req_param_t);
     req->nwk_addr     = new_short_addr;
+    req->dst_addr     = new_short_addr;
     req->start_index  = 0;
     req->request_type = 0;
     seq_num = zb_zdo_ieee_addr_req(buffer, get_ieee_addr_cb);
@@ -183,7 +189,7 @@ static void get_active_cb(zb_uint8_t param)
 
   if(resp->status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("get_active_ep_cb(0x%04x) failed: %s", resp->nwk_addr, get_zcl_status_str(resp->status));
+    menu_printf("get_active_ep_cb(0x%04x) failed: %s", resp->nwk_addr, get_zdp_status_str(resp->status));
   }
   else
   {
@@ -193,6 +199,7 @@ static void get_active_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -209,8 +216,8 @@ static zb_ret_t zdo_get_active(int argc, char *argv[])
   if(argc != 1)
     return RET_INVALID_PARAMETER;
 
-  /* get [addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 0, &new_short_addr);
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
 
   /* Do it */
   {
@@ -240,7 +247,7 @@ static void get_bind_table_cb(zb_uint8_t param)
 
   if(resp->status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("bind_table_cb(0x%04x) trans. seq num: %hhu failed: %s", bind_table_dest_addr[resp->tsn], resp->tsn, get_zcl_status_str(resp->status));
+    menu_printf("bind_table_cb(0x%04x) trans. seq num: %hhu failed: %s", bind_table_dest_addr[resp->tsn], resp->tsn, get_zdp_status_str(resp->status));
   }
   else
   {
@@ -284,6 +291,7 @@ static void get_bind_table_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -301,8 +309,8 @@ static zb_ret_t zdo_get_bind_table(int argc, char *argv[])
   if(argc != 2)
     return RET_INVALID_PARAMETER;
 
-  /* get [addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 0, &new_short_addr);
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
 
   /* get [index] */
   TOOLS_GET_ARG(ret, uint8,  argv, 1, &new_start_index);
@@ -314,7 +322,7 @@ static zb_ret_t zdo_get_bind_table(int argc, char *argv[])
     zb_uint8_t seq_num;
 
     buffer = zb_buf_get_out();
-    req = zb_buf_initial_alloc(buffer, sizeof(zb_zdo_mgmt_bind_param_t));
+    req = ZB_BUF_GET_PARAM(buffer, zb_zdo_mgmt_bind_param_t);
     req->dst_addr = new_short_addr;
     req->start_index = new_start_index;
     seq_num = zb_zdo_mgmt_bind_req(buffer, get_bind_table_cb);
@@ -336,7 +344,7 @@ static void get_node_desc_cb(zb_uint8_t param)
 
   if(resp->hdr.status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("get_node_desc_cb(0x%04x) failed: %s", resp->hdr.nwk_addr, get_zcl_status_str(resp->hdr.status));
+    menu_printf("get_node_desc_cb(0x%04x) failed: %s", resp->hdr.nwk_addr, get_zdp_status_str(resp->hdr.status));
   }
   else
   {
@@ -355,6 +363,7 @@ static void get_node_desc_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -371,8 +380,8 @@ static zb_ret_t zdo_get_node_desc(int argc, char *argv[])
   if(argc != 1)
     return RET_INVALID_PARAMETER;
 
-  /* get [addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 0, &new_short_addr);
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
 
   /* Do it */
   {
@@ -398,7 +407,7 @@ static void get_power_desc_cb(zb_uint8_t param)
 
   if(resp->hdr.status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("get_power_desc_cb(0x%04x) failed: %s", resp->hdr.nwk_addr, get_zcl_status_str(resp->hdr.status));
+    menu_printf("get_power_desc_cb(0x%04x) failed: %s", resp->hdr.nwk_addr, get_zdp_status_str(resp->hdr.status));
   }
   else
   {
@@ -412,6 +421,7 @@ static void get_power_desc_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -428,8 +438,8 @@ static zb_ret_t zdo_get_power_desc(int argc, char *argv[])
   if(argc != 1)
     return RET_INVALID_PARAMETER;
 
-  /* get [addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 0, &new_short_addr);
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
 
   /* Do it */
   {
@@ -455,7 +465,7 @@ static void get_simp_desc_cb(zb_uint8_t param)
 
   if(resp->hdr.status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("get_simp_desc_cb(0x%04x, %u) failed: %s", resp->hdr.nwk_addr, resp->simple_desc.endpoint, get_zcl_status_str(resp->hdr.status));
+    menu_printf("get_simp_desc_cb(0x%04x, %u) failed: %s", resp->hdr.nwk_addr, resp->simple_desc.endpoint, get_zdp_status_str(resp->hdr.status));
   }
   else
   {
@@ -484,6 +494,7 @@ static void get_simp_desc_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -501,8 +512,8 @@ static zb_ret_t zdo_get_simp_desc(int argc, char *argv[])
   if(argc != 2)
     return RET_INVALID_PARAMETER;
 
-  /* get [addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 0, &new_short_addr);
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
 
   /* get [endpoint] */
   TOOLS_GET_ARG(ret, uint8,  argv, 1, &new_ep_id);
@@ -535,7 +546,7 @@ static void get_match_desc_cb(zb_uint8_t param)
 
   if(resp->status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("get_match_desc_cb(0x%04x) failed: %s", resp->nwk_addr, get_zcl_status_str(resp->status));
+    menu_printf("get_match_desc_cb(0x%04x) failed: %s", resp->nwk_addr, get_zdp_status_str(resp->status));
   }
   else if(zb_buf_len(param) < sizeof(zb_zdo_match_desc_resp_t)+(resp->match_len*sizeof(zb_uint8_t)))
   {
@@ -557,6 +568,7 @@ static void get_match_desc_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -578,8 +590,8 @@ static zb_ret_t zdo_get_match_desc(int argc, char *argv[])
   if(argc < 4)
     return RET_INVALID_PARAMETER;
 
-  /* get [addr] */
-  TOOLS_GET_ARG(ret, uint16, argv, 0, &new_short_addr);
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
 
   /* get [profile] */
   TOOLS_GET_ARG(ret, profile, argv, 1, &new_profile);
@@ -656,7 +668,7 @@ static void get_route_cb(zb_uint8_t param)
 
   if(resp->status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("get_route_cb(0x%04x, %hhu) failed: %s", dest2get_route, resp->tsn, get_zcl_status_str(resp->status));
+    menu_printf("get_route_cb(0x%04x, %hhu) failed: %s", dest2get_route, resp->tsn, get_zdp_status_str(resp->status));
   }
   else
   {
@@ -678,6 +690,7 @@ static void get_route_cb(zb_uint8_t param)
 
     if(resp->start_index + resp->routing_table_list_count < resp->routing_table_entries)
     {
+      zb_ret_t ret;
       zb_zdo_mgmt_rtg_param_t *req;
       req = ZB_BUF_GET_PARAM(param, zb_zdo_mgmt_rtg_param_t);
       req->dst_addr = dest2get_route;
@@ -685,13 +698,17 @@ static void get_route_cb(zb_uint8_t param)
 
       menu_printf("do_next: zdo get_route 0x%04x %u", req->dst_addr, req->start_index);
 
-      (void)zb_zdo_mgmt_rtg_req(param, get_route_cb);
-       param = 0; // not to free it
+      ret = zb_zdo_mgmt_rtg_req(param, get_route_cb);
+      if(ret == RET_OK)
+        param = 0; // not to free it, it will be done by get_route_cb()
+      else
+        menu_printf("zdo get_route failed: %s", wcs_get_error_str(ret));
     }
   }
 
   if (param != 0)
     zb_buf_free(param);
+  menu_cb_occured();
 }
 
 /* Static command zdo
@@ -708,8 +725,8 @@ static zb_ret_t zdo_get_route(int argc, char *argv[])
   if(argc != 2)
     return RET_INVALID_PARAMETER;
 
-  /* get [addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 0, &new_short_addr);
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
 
   /* get [index] */
   TOOLS_GET_ARG(ret, uint8 , argv, 1, &new_index);
@@ -718,13 +735,108 @@ static zb_ret_t zdo_get_route(int argc, char *argv[])
   {
     zb_bufid_t buffer = ZB_BUF_INVALID;
     zb_zdo_mgmt_rtg_param_t *req;
+    zb_uint8_t seq_num;
 
     buffer = zb_buf_get_out();
     req = ZB_BUF_GET_PARAM(buffer, zb_zdo_mgmt_rtg_param_t);
     req->dst_addr    = new_short_addr;
     req->start_index = new_index;
     dest2get_route = new_short_addr;
-    (void)zb_zdo_mgmt_rtg_req(buffer, get_route_cb);
+    seq_num = zb_zdo_mgmt_rtg_req(buffer, get_route_cb);
+
+    menu_printf("get_route(0x%04x) trans. seq num %hhu", req->dst_addr, seq_num);
+  }
+
+  return RET_OK;
+}
+
+
+/* Static stack callback function
+ * response for zb_zdo_mgmt_lqi_req
+ */
+static zb_uint16_t dest2get_lqi;
+zb_ret_t zdo_get_diag_data(zb_uint16_t short_address, zb_uint8_t *lqa, zb_int8_t *rssi);
+static void get_lqi_cb(zb_uint8_t param)
+{
+  zb_zdo_mgmt_lqi_resp_t *resp = (zb_zdo_mgmt_lqi_resp_t *)zb_buf_begin(param);
+
+  if(resp->status != ZB_ZDP_STATUS_SUCCESS)
+  {
+    menu_printf("get_lqi_cb(0x%04x, %hhu) failed: %s", dest2get_lqi, resp->tsn, get_zdp_status_str(resp->status));
+  }
+  else
+  {
+    zb_uindex_t neighbor_index;
+
+    menu_printf("get_lqi_cb(0x%04x, %hhu) %s, index %u, nb %u, total %u", dest2get_lqi, resp->tsn, get_zcl_status_str(resp->status),
+      resp->start_index,
+      resp->neighbor_table_list_count,
+      resp->neighbor_table_entries);
+
+    for(neighbor_index = 0; neighbor_index < resp->neighbor_table_list_count; neighbor_index++)
+    {
+      const void *neighbors_list = (const void*)(resp + 1);
+      const zb_zdo_neighbor_table_record_t *neighbor = &((const zb_zdo_neighbor_table_record_t*) neighbors_list)[neighbor_index];
+      zb_uint8_t lqi = ZB_MAC_LQI_UNDEFINED;
+      zb_int8_t rssi = ZB_MAC_RSSI_UNDEFINED;
+
+      zb_zdo_get_diag_data(dest2get_lqi, &lqi, &rssi);
+
+      if(lqi != ZB_MAC_LQI_UNDEFINED && rssi != ZB_MAC_RSSI_UNDEFINED)
+        menu_printf("\tLQI[%hd]: dest 0x%04x, lqa %hd (diag_data: lqi: %hu, rssi: %hd)",
+          neighbor_index,
+          neighbor->network_addr,
+          neighbor->lqa,
+          lqi,
+          rssi);
+      else
+        menu_printf("\tLQI[%hd]: dest 0x%04x, lqa %hu (diag_data error)",
+          neighbor_index,
+          neighbor->network_addr,
+          neighbor->lqa);
+    }
+  }
+
+  if (param != 0)
+    zb_buf_free(param);
+  menu_cb_occured();
+}
+
+
+/* Static command zdo
+ * command get_lqi
+ *
+ * zdo get_lqi [addr] [idx]
+ */
+static zb_ret_t zdo_get_lqi(int argc, char *argv[])
+{
+  zb_ret_t ret;
+  zb_uint16_t new_short_addr;
+  zb_uint8_t new_index;
+
+  if(argc != 2)
+    return RET_INVALID_PARAMETER;
+
+  /* get [addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 0, new_short_addr);
+
+  /* get [index] */
+  TOOLS_GET_ARG(ret, uint8 , argv, 1, &new_index);
+
+  /* Do it */
+  {
+    zb_bufid_t buffer = ZB_BUF_INVALID;
+    zb_zdo_mgmt_lqi_param_t *req;
+    zb_uint8_t seq_num;
+
+    buffer = zb_buf_get_out();
+    req = ZB_BUF_GET_PARAM(buffer, zb_zdo_mgmt_lqi_param_t);
+    req->dst_addr    = new_short_addr;
+    req->start_index = new_index;
+    dest2get_lqi = new_short_addr;
+    seq_num = zb_zdo_mgmt_lqi_req(buffer, get_lqi_cb);
+
+    menu_printf("get_lqi(0x%04x) trans. seq num %hhu", req->dst_addr, seq_num);
   }
 
   return RET_OK;
@@ -807,6 +919,7 @@ static void get_active_scan_cb(zb_uint8_t param)
 
   zb_buf_free(param);
   panid2join = 0xFFFF;
+  menu_cb_occured();
 }
 
 
@@ -879,11 +992,10 @@ static void get_energy_scan_cb(zb_uint8_t param)
 {
   zb_energy_detect_list_t *ed_list = ZB_BUF_GET_PARAM(param, zb_energy_detect_list_t);
   zb_ret_t status = zb_buf_get_status(param);
-  zb_uint8_t nwk_status = (status & 0x00FF);
 
-  if(status != 0x00 /*ZB_NWK_STATUS_SUCCESS*/)
+  if(status != RET_OK)
   {
-    menu_printf("energy_scan_cb() Error: %02x, channel_cnt %u", nwk_status, ed_list->channel_count);
+    menu_printf("energy_scan_cb() Error: %s channel_cnt %u", wcs_get_error_str(status), ed_list->channel_count);
   }
   else
   {
@@ -899,6 +1011,7 @@ static void get_energy_scan_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -968,7 +1081,7 @@ static void raw_cmd_cb(zb_uint8_t param)
 
   if(resp_hdr->status != ZB_ZDP_STATUS_SUCCESS)
   {
-    menu_printf("raw_cmd_cb(0x%04x, %hhu) failed: %s", resp_hdr->nwk_addr, resp_hdr->tsn, get_zcl_status_str(resp_hdr->status));
+    menu_printf("raw_cmd_cb(0x%04x, %hhu) failed: %s", resp_hdr->nwk_addr, resp_hdr->tsn, get_zdp_status_str(resp_hdr->status));
   }
   else
   {
@@ -988,6 +1101,7 @@ static void raw_cmd_cb(zb_uint8_t param)
   }
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -1109,14 +1223,16 @@ static zb_uint8_t data_indication(zb_uint8_t param)
   zb_apsde_data_indication_t *data_ind = ZB_BUF_GET_PARAM(param, zb_apsde_data_indication_t);
   zb_bool_t processed = ZB_FALSE;
 
-  menu_printf("Recv DATA_IND from 0x%04x ep %u to 0x%04x ep %u group 0x%04x profileid: 0x%04x clusterid 0x%04x:",
+  menu_printf("Recv DATA_IND from 0x%04x ep %u to 0x%04x ep %u group 0x%04x profileid: 0x%04x clusterid 0x%04x lqi: %hu, rssi: %hd",
     data_ind->src_addr,
     data_ind->src_endpoint,
     data_ind->dst_addr,
     data_ind->dst_endpoint,
     data_ind->group_addr,
     data_ind->profileid,
-    data_ind->clusterid
+    data_ind->clusterid,
+    data_ind->lqi,
+    data_ind->rssi
     );
 
   aps_payload_size = zb_buf_len(param);
@@ -1251,6 +1367,7 @@ static void zdo_aps_cmd_cb(zb_uint8_t param)
   if(app_tsn_entry)
     zb_zdo_app_tsn_release(param);
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 

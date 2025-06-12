@@ -32,4 +32,6 @@ SRC_URI += "file://examples/scenes/"
 SRC_URI += "file://examples/tc_swap_out/"
 SRC_URI += "file://examples/thermostat/"
 
+SRC_URI += "file://docs.tar"
+
 inherit pkgconfig cmake

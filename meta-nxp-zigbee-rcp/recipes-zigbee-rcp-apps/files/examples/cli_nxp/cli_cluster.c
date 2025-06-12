@@ -259,7 +259,7 @@ void cluster_init(uint8_t ep_id)
 static zb_ret_t cluster_create(int argc, char *argv[]);        static zb_ret_t help_create(void);
 static zb_ret_t cluster_bind(int argc, char *argv[]);
 static zb_ret_t cluster_unbind(int argc, char *argv[]);
-static zb_ret_t cluster_disc_attr(int argc, char *argv[]);
+static zb_ret_t cluster_disc_attr(int argc, char *argv[]);     static zb_ret_t help_disc_attr(void);
 static zb_ret_t cluster_read_attr(int argc, char *argv[]);
 static zb_ret_t cluster_write_attr(int argc, char *argv[]);
 static zb_ret_t cluster_read_local(int argc, char *argv[]);
@@ -275,14 +275,14 @@ cli_menu_cmd menu_cluster[] = {
   { "create", " [endpoint] [cluster] [role] <manuf_code>", "                 ", cluster_create,          help_create,       "\r\n\tcreate a cluster on endpoint id [0-255], cluster [0xCCCC or initials] role [server|client], optional manuf_code <0xMMMM>" },
   { "bind", " [endpoint] [ieee] [short] [ep] [cluster] [mode]", "            ", cluster_bind,            help_empty,        "\r\n\tbind a cluster on endpoint id [0-255] to a device at addr [IEEE] [0xSSSS] endpoint [0-255] cluster [0xCCCC or initials] mode [ieee|group]" },
   { "unbind", " [endpoint] [ieee] [short] [ep] [cluster] [mode]", "          ", cluster_unbind,          help_empty,        "\r\n\tunbind a cluster on endpoint id [0-255] to a device at addr [IEEE] [0xSSSS] endpoint [0-255] cluster [0xCCCC or initials] mode [ieee|group]" },
-  { "disc_attr", " [endpoint] [addr] [ep] [cluster] [start] [max]", "        ", cluster_disc_attr,       help_empty,        "\r\n\tdiscover attribute on endpoint id [0-255] to a device at dest_addr [0xAAAA] dest_ep [0-255] cluster [0xCCCC or initials] starting attr_id [0xAAAA] max number [0-255]" },
-  { "read_attr", " [endpoint] [addr] [ep] [cluster] [attr]", "               ", cluster_read_attr,       help_empty,        "\r\n\tread attribute on endpoint id [0-255] to a device at dest_addr [0xAAAA] dest_ep [0-255] cluster [0xCCCC or initials] attribute [0xAAAA]" },
-  { "write_attr", " [endpoint] [addr] [ep] [cluster] [attr] [type] [val]", " ", cluster_write_attr,      help_empty,        "\r\n\twrite attribute on endpoint id [0-255] to a device at dest_addr [0xAAAA] dest_ep [0-255] cluster [0xCCCC or initials] attribute [0xAAAA] type [0xTT] val in hex [VV:VV....VV:VV]" },
+  { "disc_attr", " [endpoint] [addr] [ep] [cluster] [start] [max]", "        ", cluster_disc_attr,       help_disc_attr,    "\r\n\tdiscover attribute on endpoint id [0-255] to a device at dest_addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] dest_ep [0-255] cluster [0xCCCC or initials] starting attr_id [0xAAAA] max number [0-255]" },
+  { "read_attr", " [endpoint] [addr] [ep] [cluster] [attr]", "               ", cluster_read_attr,       help_empty,        "\r\n\tread attribute on endpoint id [0-255] to a device at dest_addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] dest_ep [0-255] cluster [0xCCCC or initials] attribute [0xAAAA]" },
+  { "write_attr", " [endpoint] [addr] [ep] [cluster] [attr] [type] [val]", " ", cluster_write_attr,      help_empty,        "\r\n\twrite attribute on endpoint id [0-255] to a device at dest_addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] dest_ep [0-255] cluster [0xCCCC or initials] attribute [0xAAAA] type [0xTT] val in hex [VV:VV....VV:VV]" },
   { "read_local", " [endpoint] [cluster] [role] [attr]", "                   ", cluster_read_local,      help_empty,        "\r\n\tread local attribute on endpoint id [0-255] cluster [0xCCCC or initials] role [client|server] attribute [0xAAAA]" },
   { "write_local", " [endpoint] [cluster] [role] [attr] [type] [val]", "     ", cluster_write_local,     help_empty,        "\r\n\twrite local attribute on endpoint id [0-255] cluster [0xCCCC or initials] role [client|server] attribute [0xAAAA] type [0xTT] val in hex [VV:VV....VV:VV]" },
-  { "raw_cmd", " [endpoint] [addr] [ep] [cluster] [cmd] <payload>", "        ", cluster_raw_cmd,         help_empty,        "\r\n\tsend ZCL Cluster command on endpoint id [0-255] to a device at dest_addr [0xAAAA] dest_ep [0-255] cluster [0xCCCC or initials] command [0xCC] optional payload <P1:P2....Pn>" },
-  { "profile_cmd", " [endpoint] [addr] [ep] [cluster] [cmd] <payload>", "    ", cluster_profile_cmd,     help_empty,        "\r\n\tsend ZCL Profile command on endpoint id [0-255] to a device at dest_addr [0xAAAA] dest_ep [0-255] cluster [0xCCCC or initials] command [0xCC] optional payload <P1:P2....Pn>" },
-  { "aps_cmd", " [endpoint] [addr] [ep] [cluster] [type] [cmd] <payload>", " ", cluster_zcl_aps_cmd,     help_empty,        "\r\n\tsend APS ZCL command on endpoint id [0-255] to a device at dest_addr [0xAAAA] dest_ep [0-255] cluster [0xCCCC or initials] cmd type [0x00|0x01] command [0xCC] optional payload <P1:P2....Pn>" },
+  { "raw_cmd", " [endpoint] [addr] [ep] [cluster] [cmd] <payload>", "        ", cluster_raw_cmd,         help_empty,        "\r\n\tsend ZCL Cluster command on endpoint id [0-255] to a device at dest_addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] dest_ep [0-255] cluster [0xCCCC or initials] command [0xCC] optional payload <P1:P2....Pn>" },
+  { "profile_cmd", " [endpoint] [addr] [ep] [cluster] [cmd] <payload>", "    ", cluster_profile_cmd,     help_empty,        "\r\n\tsend ZCL Profile command on endpoint id [0-255] to a device at dest_addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] dest_ep [0-255] cluster [0xCCCC or initials] command [0xCC] optional payload <P1:P2....Pn>" },
+  { "aps_cmd", " [endpoint] [addr] [ep] [cluster] [type] [cmd] <payload>", " ", cluster_zcl_aps_cmd,     help_empty,        "\r\n\tsend APS ZCL command on endpoint id [0-255] to a device at dest_addr [0xAAAA|AA:AA:AA:AA:AA:AA:AA:AA] dest_ep [0-255] cluster [0xCCCC or initials] cmd type [0x00|0x01] command [0xCC] optional payload <P1:P2....Pn>" },
   { "onoff_cmd", "", "                                                       ", cluster_onoff_submenu,   help_onoff_cmds,   "SUBMENU ON/OFF Commands" },
   { "groups_cmd", "", "                                                      ", cluster_groups_submenu,  help_groups_cmds,  "SUBMENU GROUPS Commands" },
   { "scenes_cmd", "", "                                                      ", cluster_scenes_submenu,  help_scenes_cmds,  "SUBMENU SCENES Commands" },
@@ -405,9 +405,10 @@ static void bind_cb(zb_uint8_t param)
 {
   zb_zdo_bind_resp_t *resp = (zb_zdo_bind_resp_t*)zb_buf_begin(param);
 
-  menu_printf("bind_cb() %s, status %u, tsn %u", (resp->status == ZB_ZDP_STATUS_SUCCESS)?("Ok"):("failed"), resp->status, resp->tsn);
+  menu_printf("bind_cb() %s, tsn %u", get_zdp_status_str(resp->status), resp->tsn);
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 /* Static command cluster
@@ -489,9 +490,10 @@ static void unbind_cb(zb_uint8_t param)
 {
   zb_zdo_bind_resp_t *resp = (zb_zdo_bind_resp_t*)zb_buf_begin(param);
 
-  menu_printf("unbind_cb() %s, status %u, tsn %u", (resp->status == ZB_ZDP_STATUS_SUCCESS)?("Ok"):("failed"), resp->status, resp->tsn);
+  menu_printf("unbind_cb() %s, tsn %u", get_zdp_status_str(resp->status), resp->tsn);
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 /* Static command cluster
@@ -573,9 +575,10 @@ static void write_attr_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);
 
-  menu_printf("write_attr_cb() %d: %s", cmd_send_status->status, wcs_get_error_str(cmd_send_status->status));
+  menu_printf("write_attr_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -605,8 +608,8 @@ static zb_ret_t cluster_write_attr(int argc, char *argv[])
   /*  get [endpoint] */
   TOOLS_GET_ARG_ENDPOINT_W_CL(ret, argv, 0, &this_ep, 0xFFFF, 0);
 
-  /* get [dest_addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 1, &dest_short_addr);
+  /* get [dest_addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 1, dest_short_addr);
 
   /* get [dest_ep] */
   TOOLS_GET_ARG(ret, uint8,  argv, 2, &dest_ep_id);
@@ -679,7 +682,7 @@ static void disc_attr_cb(zb_uint8_t param)
 
   if(cmd_send_status->status != RET_OK)
   {
-    menu_printf("disc_attr_cb() failed: %s", wcs_get_error_str(cmd_send_status->status));
+    menu_printf("disc_attr_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
   }
   else
   {
@@ -701,12 +704,13 @@ static void disc_attr_cb(zb_uint8_t param)
         cmd_send_status->dst_addr.u.src_id);
   }
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 /* Static command cluster
  * command disc_attr
  *
- * cluster disc_attr [endpoint] [addr] [ep] [cluster] [start] [max]
+ * cluster disc_attr [endpoint] [addr] [ep] [cluster] [start] [max] <aps_secured> <disable_aps_ack> <delay>
  */
 static zb_ret_t cluster_disc_attr(int argc, char *argv[])
 {
@@ -717,18 +721,22 @@ static zb_ret_t cluster_disc_attr(int argc, char *argv[])
   zb_cluster_entry *dest_cluster = NULL;
   zb_uint16_t new_start_index;
   zb_uint8_t new_max_number;
+  zb_bool_t use_extra_options = ZB_FALSE;
+  zb_uint8_t aps_secured;
+  zb_uint8_t disable_aps_ack;
+  zb_uint16_t delay;
 
   if(!config_is_started())
     return RET_UNAUTHORIZED;
 
-  if(argc != 6)
+  if(argc != 6 && argc != 9)
     return RET_INVALID_PARAMETER;
 
   /*  get [endpoint] */
   TOOLS_GET_ARG_ENDPOINT_W_CL(ret, argv, 0, &this_ep, 0xFFFF, 0);
 
-  /* get [dest_addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 1, &dest_short_addr);
+  /* get [dest_addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 1, dest_short_addr);
 
   /* get [dest_ep] */
   TOOLS_GET_ARG(ret, uint8,  argv, 2, &dest_ep_id);
@@ -742,6 +750,26 @@ static zb_ret_t cluster_disc_attr(int argc, char *argv[])
   /* get [max] */
   TOOLS_GET_ARG(ret, uint8,  argv, 5, &new_max_number);
 
+  if(argc == 9)
+  {
+    /* get [aps_secured] */
+    TOOLS_GET_ARG(ret, uint8,  argv, 6, &aps_secured);
+
+    /* get [disable_aps_ack] */
+    TOOLS_GET_ARG(ret, uint8,  argv, 7, &disable_aps_ack);
+
+    /* get [max] */
+    TOOLS_GET_ARG(ret, uint16,  argv, 8, &delay);
+
+    use_extra_options = ZB_TRUE;
+  }
+  else
+  {
+    aps_secured = ZB_ZCL_SU_AUTO;
+    disable_aps_ack = ZB_FALSE;
+    delay = 0;
+  }
+
   if (!ZB_JOINED())
     return RET_UNAUTHORIZED;
 
@@ -753,9 +781,10 @@ static zb_ret_t cluster_disc_attr(int argc, char *argv[])
 
     buffer = zb_buf_get_out();
 
-    ZVUNUSED(cmd_ptr);
-    /* @brief Discover attribute command
+    /* ZB_ZCL_GENERAL_DISC_READ_ATTR_REQ:
+      @brief Discover attribute command
       @params buffer, def_resp, start_attr_id, max_len, addr, dst_addr_mode, dst_ep, ep, profile_id, cluster_id, cb */
+/*
     ZB_ZCL_GENERAL_DISC_READ_ATTR_REQ(buffer, ZB_ZCL_ENABLE_DEFAULT_RESPONSE,
                                       new_start_index,
                                       new_max_number,
@@ -765,8 +794,29 @@ static zb_ret_t cluster_disc_attr(int argc, char *argv[])
                                       this_ep->profile_id,
                                       dest_cluster->id,
                                       disc_attr_cb);
+*/
+    cmd_ptr = ZB_ZCL_START_PACKET(buffer);
+    ZB_ZCL_CONSTRUCT_GENERAL_COMMAND_REQ_FRAME_CONTROL(cmd_ptr, ZB_ZCL_ENABLE_DEFAULT_RESPONSE);
+    ZB_ZCL_CONSTRUCT_COMMAND_HEADER(cmd_ptr, ZB_ZCL_GET_SEQ_NUM(), ZB_ZCL_CMD_DISC_ATTRIB);
+    ZB_ZCL_PACKET_PUT_DATA16_VAL(cmd_ptr, new_start_index);
+    ZB_ZCL_PACKET_PUT_DATA8(cmd_ptr, new_max_number);
+    if(use_extra_options)
+    {
+      ZB_ZCL_FINISH_N_SEND_PACKET(buffer, cmd_ptr, dest_short_addr, ZB_APS_ADDR_MODE_16_ENDP_PRESENT, dest_ep_id, this_ep->ep_id, this_ep->profile_id, dest_cluster->id, disc_attr_cb);
+    }
+    else
+    {
+      ZB_ZCL_FINISH_N_SEND_PACKET_NEW(buffer, cmd_ptr, dest_short_addr, ZB_APS_ADDR_MODE_16_ENDP_PRESENT, dest_ep_id, this_ep->ep_id, this_ep->profile_id, dest_cluster->id, disc_attr_cb, aps_secured, disable_aps_ack, delay);
+    }
   }
 
+  return RET_OK;
+}
+static zb_ret_t help_disc_attr(void)
+{
+  menu_printf("extra options:  <aps_secured>:     enable  tx option Security transmission");
+  menu_printf("extra options:  <disable_aps_ack>: disable tx option Acknowledged transmission");
+  menu_printf("extra options:  <delay>:           delay the APS request");
   return RET_OK;
 }
 
@@ -778,9 +828,10 @@ static void read_attr_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);
 
-  menu_printf("read_attr_cb() %d: %s", cmd_send_status->status, wcs_get_error_str(cmd_send_status->status));
+  menu_printf("read_attr_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -807,8 +858,8 @@ static zb_ret_t cluster_read_attr(int argc, char *argv[])
   /*  get [endpoint] */
   TOOLS_GET_ARG_ENDPOINT_W_CL(ret, argv, 0, &this_ep, 0xFFFF, 0);
 
-  /* get [dest_addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 1, &dest_short_addr);
+  /* get [dest_addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 1, dest_short_addr);
 
   /* get [dest_ep] */
   TOOLS_GET_ARG(ret, uint8,  argv, 2, &dest_ep_id);
@@ -1007,9 +1058,10 @@ static void raw_cmd_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);
 
-  menu_printf("raw_cmd_cb() %d: %s", cmd_send_status->status, wcs_get_error_str(cmd_send_status->status));
+  menu_printf("raw_cmd_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -1038,8 +1090,8 @@ static zb_ret_t cluster_raw_cmd(int argc, char *argv[])
   /*  get [endpoint] */
   TOOLS_GET_ARG_ENDPOINT_W_CL(ret, argv, 0, &this_ep, 0xFFFF, 0);
 
-  /* get [dest_addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 1, &dest_short_addr);
+  /* get [dest_addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 1, dest_short_addr);
 
   /* get [dest_ep] */
   TOOLS_GET_ARG(ret, uint8,  argv, 2, &dest_ep_id);
@@ -1106,9 +1158,10 @@ static void profile_cmd_cb(zb_uint8_t param)
 {
   zb_zcl_command_send_status_t *cmd_send_status = ZB_BUF_GET_PARAM(param, zb_zcl_command_send_status_t);
 
-  menu_printf("profile_cmd_cb() %d: %s", cmd_send_status->status, wcs_get_error_str(cmd_send_status->status));
+  menu_printf("profile_cmd_cb(0x%04x) %s", cmd_send_status->dst_addr.u.short_addr, wcs_get_error_str(cmd_send_status->status));
 
   zb_buf_free(param);
+  menu_cb_occured();
 }
 
 
@@ -1137,8 +1190,8 @@ static zb_ret_t cluster_profile_cmd(int argc, char *argv[])
   /*  get [endpoint] */
   TOOLS_GET_ARG_ENDPOINT_W_CL(ret, argv, 0, &this_ep, 0xFFFF, 0);
 
-  /* get [dest_addr] */
-  TOOLS_GET_ARG_HEXA(ret, uint16, argv, 1, &dest_short_addr);
+  /* get [dest_addr] ieee_addr converted to short */
+  TOOLS_GET_ARG_SHORT_ADDR(ret, argv, 1, dest_short_addr);
 
   /* get [dest_ep] */
   TOOLS_GET_ARG(ret, uint8,  argv, 2, &dest_ep_id);

@@ -675,16 +675,6 @@ void zboss_signal_handler(zb_uint8_t param)
         test_restart_join_nwk(leave_params->leave_type);
       }
       break;
-/* [signal_can_sleep] */
-      case ZB_COMMON_SIGNAL_CAN_SLEEP:
-      {
-        /* zb_zdo_signal_can_sleep_params_t *can_sleep_params = ZB_ZDO_SIGNAL_GET_PARAMS(sg_p, zb_zdo_signal_can_sleep_params_t); */
-#ifdef ZB_USE_SLEEP
-        zb_sleep_now();
-#endif
-        break;
-      }
-/* [signal_can_sleep] */
       case ZB_ZDO_SIGNAL_PRODUCTION_CONFIG_READY:
       {
         TRACE_MSG(TRACE_APP1, "Production config is ready", (FMT__0));

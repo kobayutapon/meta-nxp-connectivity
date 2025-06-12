@@ -31,20 +31,11 @@
 #include "cli_endpoint.h"
 #include "cli_menu.h"
 
-#if defined ZB_COORDINATOR_ROLE || defined ZB_ROUTER_ROLE
-#define APP_NAME "cli_nxp_zczr"
-#elif defined ZB_ED_ROLE
-#define APP_NAME "cli_nxp_zed"
-#else
-#error invalid config ZB_COORDINATOR_ROLE / ZB_ROUTER_ROLE / ZB_ED_ROLE
-#endif
-
 zb_ieee_addr_t g_zr_addr = {0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
 
 static void *cli_main(void *arg)
 {
-  while(1)
-    menu_process();
+  menu_run();
 
   return arg;
 }
@@ -55,21 +46,42 @@ MAIN()
   zb_bool_t running = ZB_TRUE;
   zb_ret_t ret;
 
-  ARGV_UNUSED;
+  ZVUNUSED(argc);
 
   ZB_SET_TRAF_DUMP_ON();
 
+
+  ret = menu_init();
+  if(ret != RET_OK)
+  {
+    MAIN_RETURN(1);
+  }
 
   pthread_create(&cli_thread, NULL, cli_main, NULL);
 
   while(running) {
     switch(config_get_state()) {
       case STATE_INIT:
-          ZB_INIT(APP_NAME);
-          config_init_default();
+          {
+            char *name = argv[0];
+            char *tmp;
+
+            tmp = strstr(name, "/");
+            while(tmp)
+            {
+              tmp++;
+              name = tmp;
+              tmp = strstr(tmp, "/");
+            }
+
+            ZB_INIT(name);
+            config_init_default();
+          }
         break;
       case STATE_INITTING:
         sleep(1);
+        if(osif_is_term_sig_received())
+          running = ZB_FALSE;
         break;
       case STATE_RUN:
         ret = zboss_start_no_autostart();
@@ -86,6 +98,8 @@ MAIN()
 #endif
         if(!ZB_SCHEDULER_IS_STOP())
           zboss_main_loop_iteration();
+        else
+          running = ZB_FALSE;
         break;
 #ifdef ZB_ZBOSS_DEINIT
       case STATE_STOP:
@@ -108,6 +122,7 @@ MAIN()
   }
 
   pthread_join(cli_thread, NULL);
+  menu_shutdown();
 
   TRACE_DEINIT();
 

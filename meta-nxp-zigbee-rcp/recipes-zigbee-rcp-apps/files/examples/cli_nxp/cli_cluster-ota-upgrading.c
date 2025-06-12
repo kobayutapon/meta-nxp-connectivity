@@ -354,6 +354,12 @@ static zb_ret_t cluster_ota_srv_add_file(int argc, char *argv[])
   if(access(new_file, F_OK) != 0)
     return RET_INVALID_PARAMETER_2;
 
+  if(ota_srv_nb_files >= MAX_OTA_FILES)
+  {
+    menu_printf("cannot add more than %d files, abort", MAX_OTA_FILES);
+    return RET_NO_RESOURCES;
+  }
+
   /* Do it */
   {
     char *tmp;
@@ -377,6 +383,18 @@ static zb_ret_t cluster_ota_srv_add_file(int argc, char *argv[])
     {
       menu_printf("Error: file path too long");
       return RET_INVALID_PARAMETER_2;
+    }
+
+    /* Check if that file has already been added */
+    for(zb_uint8_t i=0; i<ota_srv_nb_files; i++)
+    {
+      if(ota_file->header.manufacturer_code == ota_srv_files[i].header.manufacturer_code &&
+         ota_file->header.image_type        == ota_srv_files[i].header.image_type        &&
+         ota_file->header.file_version      == ota_srv_files[i].header.file_version)
+      {
+        menu_printf("cannot add %s, file already added, abort", file_name);
+        return RET_ALREADY_EXISTS;
+      }
     }
 
     snprintf(ota_file->name, sizeof(ota_file->name), "%s", new_file);

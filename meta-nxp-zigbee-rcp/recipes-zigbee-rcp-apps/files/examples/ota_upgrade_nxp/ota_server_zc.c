@@ -441,6 +441,9 @@ zb_ret_t next_data_ind_cb(zb_uint8_t index,
       struct timespec now, elapsed;
       size_t baud_rate;
       time_t eta;
+      zb_uint8_t lqi = ZB_MAC_LQI_UNDEFINED;
+      zb_int8_t rssi = ZB_MAC_RSSI_UNDEFINED;
+      zb_uint16_t short_addr= zcl_hdr->addr_data.common_data.source.u.short_addr;
 
       clock_gettime(CLOCK_BOOTTIME, &now);
       elapsed.tv_sec = now.tv_sec - ota_file->start.tv_sec;
@@ -452,9 +455,6 @@ zb_ret_t next_data_ind_cb(zb_uint8_t index,
       }
       baud_rate = file_offset / elapsed.tv_sec;
       eta = (ota_file->size - file_offset)/baud_rate;
-      zb_uint8_t lqi = ZB_MAC_LQI_UNDEFINED;
-      zb_int8_t rssi = ZB_MAC_RSSI_UNDEFINED;
-      zb_uint16_t short_addr = zcl_hdr->addr_data.common_data.source.u.short_addr;
 
       zb_zdo_get_diag_data(short_addr, &lqi, &rssi);
 

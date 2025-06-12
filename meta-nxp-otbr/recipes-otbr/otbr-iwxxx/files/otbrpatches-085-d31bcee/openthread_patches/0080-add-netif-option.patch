@@ -1,0 +1,101 @@
+*  Copyright 2025 NXP
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions are met:
+*  1. Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*  2. Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in the
+*     documentation and/or other materials provided with the distribution.
+*  3. Neither the name of the copyright holder nor the
+*     names of its contributors may be used to endorse or promote products
+*     derived from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+*  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+*  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+*  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+*  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+*  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+*  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+*  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/*
+* Header for patch information.
+* Description : Add option to specify NetifIdentifier.
+* Version : v001
+* Mandatory/Optional : Mandatory
+* Impact if not applied : thread 1.4 test fails.
+*/
+
+Upstream-Status: Backport
+
+commit 7f2828657a8254f722cc8a970a96ea479f2d8a60 (HEAD)
+Author: Cristian Bulacu <127317648+Cristib05@users.noreply.github.com>
+Date:   Thu Mar 13 17:31:48 2025 +0200
+
+    [secure-transport] Add option to specify NetifIdentifier (#11338)
+
+    This commit aims to add the possibility to specify a netif identifier for
+    SecureTransport::Open method. This method has now a default parameter,
+    kNetifUnspecified, if no argument is explicitly passed by the user.
+
+    Signed-off-by: Cristian Bulacu <cristian.bulacu@nxp.com>
+
+diff --git a/src/core/meshcop/joiner.cpp b/src/core/meshcop/joiner.cpp
+index 0173940aa..78d1d6fa8 100644
+--- a/src/core/meshcop/joiner.cpp
++++ b/src/core/meshcop/joiner.cpp
+@@ -137,7 +137,7 @@ Error Joiner::Start(const char      *aPskd,
+     Get<Mac::Mac>().SetExtAddress(randomAddress);
+     Get<Mle::MleRouter>().UpdateLinkLocalAddress();
+
+-    SuccessOrExit(error = Get<Tmf::SecureAgent>().Open());
++    SuccessOrExit(error = Get<Tmf::SecureAgent>().Open(Ip6::NetifIdentifier::kNetifThreadInternal));
+     SuccessOrExit(error = Get<Tmf::SecureAgent>().Bind(kJoinerUdpPort));
+     Get<Tmf::SecureAgent>().SetConnectCallback(HandleSecureCoapClientConnect, this);
+     Get<Tmf::SecureAgent>().SetPsk(joinerPskd);
+diff --git a/src/core/meshcop/secure_transport.cpp b/src/core/meshcop/secure_transport.cpp
+index 3ac1c89d0..a9546ad81 100644
+--- a/src/core/meshcop/secure_transport.cpp
++++ b/src/core/meshcop/secure_transport.cpp
+@@ -676,13 +676,13 @@ SecureTransport::SecureTransport(Instance &aInstance, LinkSecurityMode aLayerTwo
+     OT_UNUSED_VARIABLE(mVerifyPeerCertificate);
+ }
+
+-Error SecureTransport::Open(void)
++Error SecureTransport::Open(Ip6::NetifIdentifier aNetifIdentifier)
+ {
+     Error error;
+
+     VerifyOrExit(!mIsOpen, error = kErrorAlready);
+
+-    SuccessOrExit(error = mSocket.Open(Ip6::kNetifUnspecified));
++    SuccessOrExit(error = mSocket.Open(aNetifIdentifier));
+     mIsOpen                      = true;
+     mRemainingConnectionAttempts = mMaxConnectionAttempts;
+
+diff --git a/src/core/meshcop/secure_transport.hpp b/src/core/meshcop/secure_transport.hpp
+index 63eb40444..5e2c14f0e 100644
+--- a/src/core/meshcop/secure_transport.hpp
++++ b/src/core/meshcop/secure_transport.hpp
+@@ -592,10 +592,13 @@ public:
+     /**
+      * Opens the transport.
+      *
++     * @param[in] aNetifIdentifier A network interface identifier. If not explicitly provided, kNetifUnspecified will
++     *                             be used by default.
++     *
+      * @retval kErrorNone     Successfully opened the socket.
+      * @retval kErrorAlready  The connection is already open.
+      */
+-    Error Open(void);
++    Error Open(Ip6::NetifIdentifier aNetifIdentifier = Ip6::NetifIdentifier::kNetifUnspecified);
+
+     /**
+      * Sets the maximum number of allowed connection requests before socket is automatically closed.

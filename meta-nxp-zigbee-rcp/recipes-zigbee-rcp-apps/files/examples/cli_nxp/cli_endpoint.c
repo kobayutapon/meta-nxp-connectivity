@@ -428,6 +428,8 @@ static zb_uint8_t endpoint_commands_handler(zb_uint8_t param)
       cmd_info->seq_number);
   }
 
+  menu_cb_occured();
+
   /* CAUTION: if TRUE is returned:
    * - It means this command is processed by the command handler
    * - Stack will not handle any processing
@@ -452,6 +454,8 @@ static void endpoint_identify_notification_handler(zb_uint8_t param)
   {
     /* LED dentify off */
   }
+
+  menu_cb_occured();
 }
 
 

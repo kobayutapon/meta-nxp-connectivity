@@ -40,10 +40,16 @@ typedef struct {
 } cli_menu_cmd;
 
 
-void menu_process(void);
+zb_ret_t menu_init(void);
+void menu_run(void);
+void menu_add_history(char *line);
+void menu_shutdown(void);
+
 void menu_printf(const char *format , ...);
 
 zb_ret_t help_empty(void);
+
+void menu_cb_occured(void);
 
 
 #endif /* CLI_NXP_MENU_H */

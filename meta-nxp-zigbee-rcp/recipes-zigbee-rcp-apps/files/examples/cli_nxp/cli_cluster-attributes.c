@@ -133,6 +133,8 @@ void cluster_attributes_cb(zb_uint8_t param)
     menu_print_cluster_attributes(device_cb_params, this_ep);
     break;
   }
+
+  menu_cb_occured();
 }
 
 

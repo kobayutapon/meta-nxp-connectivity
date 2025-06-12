@@ -863,7 +863,7 @@ void simple_gw_send_leave_req(zb_uint8_t param, zb_uint16_t short_addr, zb_bool_
     zb_zdo_mgmt_leave_param_t *req_param;
     zb_address_ieee_ref_t addr_ref;
 
-    if (zb_address_by_short(short_addr, ZB_FALSE, ZB_FALSE, &addr_ref) == RET_OK)
+    if (zb_address_get_by_short(short_addr, &addr_ref) == RET_OK)
     {
       req_param = ZB_BUF_GET_PARAM(buf, zb_zdo_mgmt_leave_param_t);
       ZB_BZERO(req_param, sizeof(zb_zdo_mgmt_leave_param_t));

@@ -83,6 +83,23 @@ typedef struct {
   if(ret != RET_OK)                                                        \
     return ret
 
+#define TOOLS_GET_ARG_SHORT_ADDR(ret, argv, argnb, short_addr)                                   \
+  ret = tools_arg_get_uint16(argv, argnb, &short_addr, ARG_HEX);                                 \
+  if(ret != RET_OK)                                                                              \
+  { /* Try to search ieee addr & convert it to short */                                          \
+    zb_ieee_addr_t ieee_addr = { 0 };                                                            \
+    ret = tools_arg_get_ieee(argv, argnb, ieee_addr, ARG_HEX);                                   \
+    if(ret == RET_OK)                                                                            \
+    {                                                                                            \
+      short_addr = zb_address_short_by_ieee(ieee_addr);                                          \
+      if(short_addr != ZB_UNKNOWN_SHORT_ADDR)                                                    \
+        menu_printf(TRACE_FORMAT_64" -> 0x%04x", TRACE_ARG_64(ieee_addr), short_addr);           \
+      else                                                                                       \
+        ret = ERROR_CODE(ERROR_CATEGORY_GENERIC, ERROR_GET_CODE(RET_INVALID_PARAMETER_1)+argnb); \
+    }                                                                                            \
+  }                                                                                              \
+  if(ret != RET_OK)                                                                              \
+    return ret;
 zb_ret_t tools_arg_get_int(char *argv[], int argnb, zb_int_t *val, zb_arg_format_t format);
 
 zb_ret_t tools_arg_get_int8(char *argv[], int argnb, zb_int8_t *val, zb_arg_format_t format);
