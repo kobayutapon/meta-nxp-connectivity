@@ -49,14 +49,12 @@ TARGET_CPU = "${@get_target_cpu(d)}"
 TARGET_ARM_ARCH = "${@get_arm_arch(d)}"
 TARGET_ARM_CPU = "${@get_arm_cpu(d)}"
 
-USE_ELE = "${@bb.utils.contains_any('MACHINE', 'imx93evk-iwxxx-matter imx91evk-iwxxx-matter imx91qsb-iwxxx-matter imx91frdm-iwxxx-matter', 1, 0, d)}"
-
 S = "${WORKDIR}/git"
 
 common_configure() {
     PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
     PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
-    gn gen out/aarch64 --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=${USE_ELE} enable_exceptions=true chip_with_linux_ncp_host=1 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+    gn gen out/aarch64 --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
         import("//build_overrides/build.gni")
         target_cflags=[
                         "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
