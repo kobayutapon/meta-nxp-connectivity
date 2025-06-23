@@ -428,7 +428,7 @@ function otbr_firewall_config()
 UPSTREAM_INTERFACE="eth0"
 WPAN_INTERFACE="wpan0"
 
-PD_DAEMON_DIR="/etc/dhcpv6"
+PD_DAEMON_DIR="/etc"
 DHCPCD_ENTER_HOOK="${PD_DAEMON_DIR}/dhcpcd.enter-hook"
 DHCPCD_EXIT_HOOK="${PD_DAEMON_DIR}/dhcpcd.exit-hook"
 

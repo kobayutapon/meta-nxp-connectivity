@@ -66,14 +66,13 @@ do_install:append() {
     cp ${UNPACKDIR}/start_openthread.sh ${D}${sbindir}
     chmod +x ${D}${sbindir}/start_openthread.sh
 
-    mkdir ${D}${sysconfdir}/dhcpv6
-    echo "Moving ${D}${systemd_system_unitdir}/dhcp6_pd_daemon.py into ${D}${sysconfdir}/dhcpv6"
-    mv ${D}${systemd_system_unitdir}/dhcp6_pd_daemon.py ${D}${sysconfdir}/dhcpv6
-    chmod +x ${D}${sysconfdir}/dhcpv6/dhcp6_pd_daemon.py
-    echo "Moving ${D}${systemd_system_unitdir}/dhcpcd.enter-hook into ${D}${sysconfdir}/dhcpv6"
-    mv ${D}${systemd_system_unitdir}/dhcpcd.enter-hook ${D}${sysconfdir}/dhcpv6
-    echo "Moving ${D}${systemd_system_unitdir}/dhcpcd.exit-hook into ${D}${sysconfdir}/dhcpv6"
-    mv ${D}${systemd_system_unitdir}/dhcpcd.exit-hook ${D}${sysconfdir}/dhcpv6
+    echo "Moving ${D}${systemd_system_unitdir}/dhcp6_pd_daemon.py into ${D}${sysconfdir}"
+    mv ${D}${systemd_system_unitdir}/dhcp6_pd_daemon.py ${D}${sysconfdir}
+    chmod +x ${D}${sysconfdir}/dhcp6_pd_daemon.py
+    echo "Moving ${D}${systemd_system_unitdir}/dhcpcd.enter-hook into ${D}${sysconfdir}"
+    mv ${D}${systemd_system_unitdir}/dhcpcd.enter-hook ${D}${sysconfdir}
+    echo "Moving ${D}${systemd_system_unitdir}/dhcpcd.exit-hook into ${D}${sysconfdir}"
+    mv ${D}${systemd_system_unitdir}/dhcpcd.exit-hook ${D}${sysconfdir}
 
     echo "Renaming ${D}${sysconfdir}/default/otbr-agent into ${D}${sysconfdir}/default/otbr-agent${BIN_NAME_PATTERN}"
     mv ${D}${sysconfdir}/default/otbr-agent ${D}${sysconfdir}/default/otbr-agent${BIN_NAME_PATTERN}
