@@ -26,7 +26,7 @@ This document describes how to use the Matter demos on the i.MX MPU platforms. I
 
 - i.MX8ULP EVK + IW416(WiFi-BT combo module)  → Role: Matter controller or Matter end device
 
-- i.MX91 EVK / i.MX91 QSB + IW610(WiFi-BT-Thread tri-radio chipset)  → Role: Matter controller or Matter end device
+- i.MX91 EVK / i.MX91 QSB / i.MX91 FRDM + IW610(WiFi-BT-Thread tri-radio chipset)  → Role: Matter controller or Matter end device
 
    For more information on the details of the i.MX MPU Matter platforms, please visit [NXP MPU Matter platform](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/mpu-linux-hosted-matter-development-platform:MPU-LINUX-MATTER-DEV-PLATFORM).
 
@@ -57,7 +57,7 @@ For devices that support the Thread protocol, this guide uses the NXP K32W DK6 m
 
  <img src="../images/matter_demos/imx9-otbr.png" width = "500"/>
 
-Figure Matter with OTBR network topology diagram for i.MX93 FRDM, i.MX93 EVK, i.MX91 EVK and i.MX91 QSB
+Figure Matter with OTBR network topology diagram for i.MX93 FRDM, i.MX93 EVK, i.MX91 EVK, i.MX91 QSB and i.MX91 FRDM
 
  <img src="../images/matter_demos/imx8mm_imx6ull_imx8ulp-otbr.png" width = "500"/>
 
@@ -81,7 +81,7 @@ step1. Save the Wi-Fi SSID and password to a file.
 
 Step2. Connecting to the Wi-Fi AP, Enabling BT, and Setting Up OTBR on the i.MX MPU Platform.
 
-#### For i.MX93 FRDM / i.MX93 EVK + IW612 and i.MX91 EVK / i.MX91 QSB + IW610 platform:
+#### For i.MX93 FRDM / i.MX93 EVK + IW612 and i.MX91 EVK / i.MX91 QSB / i.MX91 FRDM + IW610 platform:
 
 For i.MX93 FRDM, it is essential to modify the fdtfile for it to work properly. You should enter uboot mode and run follow commands to set the fdtfile, save fdtfile setting, and boot the board.
 
@@ -284,7 +284,7 @@ Please use below commands to setup ot-daemon on an device:
     #For i.MX8M Mini EVK + 88W8987, i.MX8ULP EVK and i.MX6ULL EVK + 88W8987 with K32W RCP:
     $ ot-daemon 'spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=1000000' &
 
-    #For i.MX93 FRDM / i.MX93 EVK + IW612, i.MX91 EVK / i.MX91 QSB + IW610:
+    #For i.MX93 FRDM / i.MX93 EVK + IW612, i.MX91 EVK / i.MX91 QSB / i.MX91 FRDM + IW610:
     $ ot-daemon-iwxxx 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
 
 **Note: Please [check GPIO device](#check-gpio-device) to determine gpio-reset-device and gpio-int-device.**
