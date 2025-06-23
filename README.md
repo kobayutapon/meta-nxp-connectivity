@@ -26,6 +26,7 @@ This repository contains the i.MX MPU project Matter related Yocto recipes. The 
  - **OpenThread** Daemon: https://github.com/openthread/openthread
  - **OpenThread Border Router**: https://github.com/openthread/ot-br-posix
  - **Zigbee** Stack and application examples: [meta-nxp-zigbee-rcp](./docs/guides/meta-nxp-connectivity-iwxxx-dualpan.md) and [zbcoord](./meta-nxp-connectivity-examples/recipes-zbcoord/zbcoord)
+ - **Matter-NCP** [nxp-matter-ncp](./docs/guides/nxp_matter_ncp_guide.md)
 
 All the software components revisions are based on [Matter v1.4](https://github.com/project-chip/connectedhomeip/tree/v1.4-branch)
 
