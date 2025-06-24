@@ -74,17 +74,75 @@ do_configure() {
     cd ${S}
     touch build_overrides/pigweed_environment.gni
     cd ${S}/examples/all-clusters-app/nxp/linux_ncp
-    common_configure
+
+    # Configuration for IF_TYPE=1 (usb)
+    PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
+    PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
+    gn gen out/aarch64_usb --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=1 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+        import("//build_overrides/build.gni")
+        target_cflags=[
+                        "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
+                       ]
+        custom_toolchain="${build_root}/toolchain/custom"
+        target_cc="${CC}"
+        target_cxx="${CXX}"
+        target_ar="${AR}"'
+
+    # Configuration for IF_TYPE=2 (uart)
+    PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
+    PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
+    gn gen out/aarch64_uart --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=2 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+        import("//build_overrides/build.gni")
+        target_cflags=[
+                        "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
+                       ]
+        custom_toolchain="${build_root}/toolchain/custom"
+        target_cc="${CC}"
+        target_cxx="${CXX}"
+        target_ar="${AR}"'
+
+    # Configuration for IF_TYPE=3 (spi)
+    PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
+    PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
+    gn gen out/aarch64_spi --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=3 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+        import("//build_overrides/build.gni")
+        target_cflags=[
+                        "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
+                       ]
+        custom_toolchain="${build_root}/toolchain/custom"
+        target_cc="${CC}"
+        target_cxx="${CXX}"
+        target_ar="${AR}"'
+
+    # Configuration for IF_TYPE=4 (sdio)
+    PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
+    PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
+    gn gen out/aarch64_sdio --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=4 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+        import("//build_overrides/build.gni")
+        target_cflags=[
+                        "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
+                       ]
+        custom_toolchain="${build_root}/toolchain/custom"
+        target_cc="${CC}"
+        target_cxx="${CXX}"
+        target_ar="${AR}"'
 }
 
 do_compile() {
     cd ${S}/examples/all-clusters-app/nxp/linux_ncp
-    ninja -C out/aarch64
+    ninja -C out/aarch64_usb
+    ninja -C out/aarch64_uart
+    ninja -C out/aarch64_spi
+    ninja -C out/aarch64_sdio
 }
 
 do_install() {
     install -d -m 755 ${D}${bindir}
-    install ${S}/examples/all-clusters-app/nxp/linux_ncp/out/aarch64/chip-all-clusters-app ${D}${bindir}/chip-all-clusters-app-ncp
+    install ${S}/examples/all-clusters-app/nxp/linux_ncp/out/aarch64_usb/chip-all-clusters-app ${D}${bindir}/chip-all-clusters-app-ncp-usb
+    install ${S}/examples/all-clusters-app/nxp/linux_ncp/out/aarch64_uart/chip-all-clusters-app ${D}${bindir}/chip-all-clusters-app-ncp-uart
+    install ${S}/examples/all-clusters-app/nxp/linux_ncp/out/aarch64_spi/chip-all-clusters-app ${D}${bindir}/chip-all-clusters-app-ncp-spi
+    install ${S}/examples/all-clusters-app/nxp/linux_ncp/out/aarch64_sdio/chip-all-clusters-app ${D}${bindir}/chip-all-clusters-app-ncp-sdio
 }
 
 INSANE_SKIP_${PN} = "ldflags"
+
