@@ -563,6 +563,8 @@ To perform OTA, two devices must be connected to the same Wi-Fi AP or connect to
     $ modprobe moal mod_para=nxp/wifi_mod_para.conf
     $ wpa_supplicant -d -B -i mlan0 -c ./wifiap.conf
 
+<a name="ota_request"></a>
+
 Run the following commands on the i.MX ota requestor device to start the ota request.
 
     # OTA request for the 88W8987 firmware
@@ -581,6 +583,8 @@ Then, copy the ota file to i.MX ota provider device, and run the following comma
     $ chip-tool pairing onnetwork-long 0x1234567890 20202021 18
     $ chip-tool accesscontrol write acl '[{"fabricIndex": 1, "privilege": 5, "authMode": 2, "subjects": [112233], "targets": null}, {"fabricIndex": 1, "privilege": 3, "authMode": 2, "subjects": null, "targets": null}]' 0xDEADBEEF 0
     $ chip-tool otasoftwareupdaterequestor announce-otaprovider 0xDEADBEEF 0 0 0 0x1234567890 0
+
+<a name="ota_check"></a>
 
 If the ota update is successful, for firmware ota, the i.MX ota requestor device will display the log "OTA update FW succeeded, Please reboot the i.MX device and re-setup the Wi-Fi and BT.", you should reboot the device and then reload the WiFi firmware and driver. For nxp-thermostat-app ota, the i.MX ota requestor device will display the log "OTA update nxp-thermostat-app succeeded.", you can start using the updated nxp-thermostat-app without any further intervention.
 
