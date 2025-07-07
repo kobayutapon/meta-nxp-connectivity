@@ -1,0 +1,58 @@
+From f6b9cd2c32e7c122df362b7f469bb4c8f4caf797 Mon Sep 17 00:00:00 2001
+From: Haoran Wang <elven.wang@nxp.com>
+Date: Wed, 9 Jul 2025 16:28:58 +0800
+Subject: [PATCH] workaround in copyfile to bypass target dir issue
+
+Upstream-Status: Inappropriate  [platform specific changes]
+Change-Id: Id17a68ddc3007bf746bea148e53d2fe120dc0ca5
+Signed-off-by: Haoran Wang <elven.wang@nxp.com>
+---
+ scripts/copyfiles.py | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/scripts/copyfiles.py b/scripts/copyfiles.py
+index 0a48bb3aec..f686827870 100755
+--- a/scripts/copyfiles.py
++++ b/scripts/copyfiles.py
+@@ -54,6 +54,7 @@ __LOG_LEVELS__ = {
+     default=None,
+     required=True,
+     help='Target directory to copy into')
++
+ @click.argument('filenames', nargs=-1, type=click.Path(exists=True))
+ def main(log_level, source_dir: str, target_dir: str, filenames: list[str]):
+     if _has_coloredlogs:
+@@ -65,10 +66,30 @@ def main(log_level, source_dir: str, target_dir: str, filenames: list[str]):
+             format='%(asctime)s %(levelname)-7s %(message)s',
+             datefmt='%Y-%m-%d %H:%M:%S'
+         )
++    #This is a workaround to remove the prefix of paths like //out/aarch64/gen/third_party/connectedhomeip/examples
++    def extract_gen_part(path):
++        if not path.startswith('//out'):
++            return path
++
++        normalized_path = '/'.join(path.split('/'))
++
++        parts = [p for p in normalized_path.split('/') if p]
++
++        try:
++            out_index = parts.index('out')
++        except ValueError:
++            return path
++
++        if (out_index + 2 < len(parts)) and parts[out_index + 2] == 'gen':
++            return '/'.join(parts[out_index + 2:])
++        else:
++            return path
++
+ 
+     # code ALWAYS uses absolute paths since we replace path prefixes
+     source_dir = os.path.abspath(source_dir)
+     target_dir = os.path.abspath(target_dir)
++    target_dir = extract_gen_part(target_dir)
+ 
+     # We are copying to target ...
+     if not os.path.exists(target_dir):
+-- 
+2.34.1
+
