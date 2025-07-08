@@ -10,7 +10,32 @@ The i.MX8M Mini EVK which running the chip-all-clusters-app-ncp apps connect wit
 
 - RDRW612 A2 BGA board
 
-The RDRW612 acts as ncp-device, and ensure the BLE antenna is connected to RDRW612 board to prevent the BLE disconnection during BLE pairing. 
+The RDRW612 acts as ncp-device, and ensure the BLE antenna is connected to RDRW612 board to prevent the BLE disconnection during BLE pairing.
+
+The four interfaces USB, UART, SPI and SDIO are supported between all-clusters-app-ncp and ncp-device, you can refer to this ncp user manual below to setup:
+https://www.nxp.com/webapp/Download?colCode=UM12095
+
+- Compilation of ncp device
+
+Please refer to the user manual: https://www.nxp.com/webapp/Download?colCode=UM12095
+
+Go to sdk-next/mcuxsdk/examples/ncp_examples/ncp_device/app_config.cmake, and change as below:
+
+    set(CONFIG_NCP_WIFI           1)
+    set(CONFIG_NCP_BLE            1)
+    set(CONFIG_NCP_OT             0)
+
+Choose the interface you want to verify
+
+    set(CONFIG_NCP_UART           0)
+    set(CONFIG_NCP_SPI            0)
+    set(CONFIG_NCP_USB            1)
+    set(CONFIG_NCP_SDIO           0)
+
+Close mDNS
+Go to sdk-next/mcuxsdk/examples/_boards/rdrw612bga/ncp_examples/ncp_device/app_config.h and change as below:
+
+    #define CONFIG_NCP_MDNS_ENABLE      0
 
 ## Verification about ble-wifi commissioning
 
