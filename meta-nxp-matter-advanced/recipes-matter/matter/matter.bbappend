@@ -25,11 +25,12 @@ RDEPENDS:${PN} += "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnd
 #MATTER_APPLICATIONS:append = " ${@bb.utils.contains_any('MACHINE', 'imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter', \
 #    "'bridge-app/nxp/linux-M2ZigbeeRcp-bridge|M2ZigbeeRcp-bridge|aarch64||M2ZigbeeRcp-bridge'", '', d)}"
 
+#    'nxp-thermostat/linux|nxp-thermostat-app|aarch64-trusty|chip_with_trusty_os=true|nxp-thermostat-app-trusty'
+#     'nxp-media-app/linux|nxp-media-app|aarch64-trusty|chip_with_trusty_os=true|nxp-media-app-trusty'
+
 MATTER_APPLICATIONS:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'trusty', " \
     'lighting-app/linux|chip-lighting-app|aarch64-trusty|chip_with_trusty_os=true|chip-lighting-app-trusty' \
     'chip-tool|chip-tool|aarch64-trusty|chip_with_trusty_os=true|chip-tool-trusty' \
-    'nxp-thermostat/linux|nxp-thermostat-app|aarch64-trusty|chip_with_trusty_os=true|nxp-thermostat-app-trusty' \
-    'nxp-media-app/linux|nxp-media-app|aarch64-trusty|chip_with_trusty_os=true|nxp-media-app-trusty' \
 ", '', d)}"
 
 do_configure:prepend() {

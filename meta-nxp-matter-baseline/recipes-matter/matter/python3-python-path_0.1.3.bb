@@ -1,11 +1,14 @@
-SUMMARY = "A modern parsing library for Python"
-HOMEPAGE = "https://github.com/lark-parser/lark"
+SUMMARY = "A path manipulation library for Python"
+HOMEPAGE = "https://github.com/cgarciae/python_path"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
-SRC_URI[sha256sum] = "15fa5236490824c2c4aba0e22d2d6d823575dcaf4cdd1848e34b6ad836240fba"
 
 inherit pypi
 BBCLASSEXTEND = "native"
+
+# Add the following lines to your recipe
+PYPI_PACKAGE = "python_path"
+SRC_URI[sha256sum] = "b62d9aac1da4daee3f036ed088532cf8b68666d3aa103567dc22b6539316c8b3"
 
 DEPENDS += " \
     python3-build-native \
