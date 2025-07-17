@@ -23,8 +23,6 @@ FILES:${PN} += "usr/share"
 
 INSANE_SKIP:${PN} += "dev-so debug-deps strip"
 
-#MATTER_ADVANCED = "${@bb.utils.contains('MACHINE_FEATURES', 'matteradvanced', 'true', 'false', d)}"
-
 def get_target_cpu(d):
     for arg in (d.getVar('TUNE_FEATURES') or '').split():
         if arg == "cortexa7":
@@ -60,7 +58,6 @@ S = "${WORKDIR}/git"
 # Defines Matter applications to build. Format is a pipe-separated string:
 # app-path|binary-name|output-dir|extra-gn-args|install-binary-name
 #    'bridge-app/nxp/linux-imx|imx-chip-bridge-app|aarch64||imx-chip-bridge-app'
-#    'nxp-thermostat/linux|nxp-thermostat-app|aarch64||nxp-thermostat-app'
 
 MATTER_APPLICATIONS = " \
     'lighting-app/linux|chip-lighting-app|aarch64||chip-lighting-app' \
@@ -72,6 +69,7 @@ MATTER_APPLICATIONS = " \
     'bridge-app/linux|chip-bridge-app|aarch64||chip-bridge-app' \
     'energy-management-app/linux|chip-energy-management-app|aarch64||chip-energy-management-app' \
     'chip-tool|chip-tool-web2|aarch64-web|chip_with_web2=1 enable_rtti=true|chip-tool-web2' \
+    'nxp-thermostat/linux|nxp-thermostat-app|aarch64||nxp-thermostat-app' \
 "
 
 do_configure() {
