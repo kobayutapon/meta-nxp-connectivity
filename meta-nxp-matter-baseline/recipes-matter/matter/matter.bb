@@ -63,12 +63,12 @@ MATTER_APPLICATIONS = " \
     'lighting-app/linux|chip-lighting-app|aarch64||chip-lighting-app' \
     'all-clusters-app/linux|chip-all-clusters-app|aarch64||chip-all-clusters-app' \
     'thermostat/linux|thermostat-app|aarch64||thermostat-app' \
-    'chip-tool|chip-tool|aarch64||chip-tool' \
+    'chip-tool|chip-tool|aarch64|chip_with_imx_ele=false|chip-tool' \
     'ota-provider-app/linux|chip-ota-provider-app|aarch64||chip-ota-provider-app' \
     'ota-requestor-app/linux|chip-ota-requestor-app|aarch64||chip-ota-requestor-app' \
     'bridge-app/linux|chip-bridge-app|aarch64||chip-bridge-app' \
     'energy-management-app/linux|chip-energy-management-app|aarch64||chip-energy-management-app' \
-    'chip-tool|chip-tool-web2|aarch64-web|chip_with_web2=1 enable_rtti=true|chip-tool-web2' \
+    'chip-tool|chip-tool-web2|aarch64-web|chip_with_web2=1 enable_rtti=true chip_with_imx_ele=false|chip-tool-web2' \
     'nxp-thermostat/linux|nxp-thermostat-app|aarch64||nxp-thermostat-app' \
 "
 
