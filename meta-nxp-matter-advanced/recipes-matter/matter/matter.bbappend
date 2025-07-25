@@ -21,6 +21,10 @@ MATTER_APPLICATIONS += " \
     'nxp-water-heater-app/linux|chip-nxp-water-heater-app|aarch64||chip-nxp-water-heater-app' \
 "
 
+MATTER_APPLICATIONS += " \
+    'rvc-app/linux|chip-rvc-app|aarch64||chip-rvc-app' \
+"
+
 # For platform which support M2Zigbee RCP bridge
 #MATTER_APPLICATIONS:append = " ${@bb.utils.contains_any('MACHINE', 'imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter', \
 #    "'bridge-app/nxp/linux-M2ZigbeeRcp-bridge|M2ZigbeeRcp-bridge|aarch64||M2ZigbeeRcp-bridge'", '', d)}"
