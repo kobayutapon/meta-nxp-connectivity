@@ -51,7 +51,7 @@ TARGET_CPU = "${@get_target_cpu(d)}"
 TARGET_ARM_ARCH = "${@get_arm_arch(d)}"
 TARGET_ARM_CPU = "${@get_arm_cpu(d)}"
 
-USE_ELE = "${@bb.utils.contains_any('MACHINE', 'imx93evk-iwxxx-matter imx91evk-iwxxx-matter imx91qsb-iwxxx-matter imx91frdm-iwxxx-matter', "true", "false", d)}"
+USE_ELE ?= "false"
 
 S = "${WORKDIR}/git"
 

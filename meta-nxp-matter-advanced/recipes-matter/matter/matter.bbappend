@@ -1,8 +1,8 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:${THISDIR}/files:"
 
 SRC_URI += "file://ota.sh"
-DEPENDS += "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter ", ' zigbee-rcp-sdk ', '', d)}"
-RDEPENDS:${PN} += "${@bb.utils.contains_any('MACHINE', "imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter ", ' zigbee-rcp-sdk ', '', d)}"
+DEPENDS += "${@bb.utils.contains('MACHINE_FEATURES', 'has-iwxxx', ' zigbee-rcp-sdk ', '', d)}"
+RDEPENDS:${PN} += "${@bb.utils.contains('MACHINE_FEATURES', 'has-iwxxx', ' zigbee-rcp-sdk ', '', d)}"
 
 MATTER_APPLICATIONS += " \
     'nxp-media-app/linux|nxp-media-app|aarch64||nxp-media-app' \
@@ -26,7 +26,7 @@ MATTER_APPLICATIONS += " \
 "
 
 # For platform which support M2Zigbee RCP bridge
-#MATTER_APPLICATIONS:append = " ${@bb.utils.contains_any('MACHINE', 'imx8mmevk-matter imx8mnddr3levk-matter imx8mnevk-matter imx8mpevk-matter imx91evk-iwxxx-matter imx93evk-iwxxx-matter', \
+#MATTER_APPLICATIONS:append = " ${@bb.utils.contains_any('MACHINE_FEATURES', 'has-iwxxx', \
 #    "'bridge-app/nxp/linux-M2ZigbeeRcp-bridge|M2ZigbeeRcp-bridge|aarch64||M2ZigbeeRcp-bridge'", '', d)}"
 
 MATTER_APPLICATIONS:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'trusty', " \
