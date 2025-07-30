@@ -1,0 +1,166 @@
+/*
+*  Copyright (c) 2020, The OpenThread Authors.
+*  Copyright 2024-2025 NXP
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions are met:
+*  1. Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*  2. Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in the
+*     documentation and/or other materials provided with the distribution.
+*  3. Neither the name of the copyright holder nor the
+*     names of its contributors may be used to endorse or promote products
+*     derived from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+*  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+*  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+*  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+*  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+*  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+*  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+*  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/*
+* Header for patch information.
+* Description : This will avoid the problem that scope id or ifindex remains 0 for a link-local transmission.
+* Version : v001
+* Mandatory/Optional : Mandatory
+* Impact if not applied : It is mandatory to achive thread 1.4 test 12.x.
+*/
+
+Upstream-Status: Backport
+
+commit 180427327686d6913a4335f223ba46cb6faf3d7d
+Author: Esko Dijk <EskoDijk@users.noreply.github.com>
+Date:   Tue Jun 3 18:22:41 2025 +0200
+
+    [posix] set sin6_scope_id / ipi6_ifindex for all transmits to link-local (#11555)
+    
+    This will avoid the problem that scope id or ifindex remains 0 for a
+    link-local transmission. If 0, the OS cannot decide which network
+    interface to use based on address alone.
+
+Upstream-Status: Inappropriate  [platform specific changes]
+
+diff --git a/examples/platforms/simulation/simul_utils.h b/examples/platforms/simulation/simul_utils.h
+index d366c69e4..bc36f80ff 100644
+--- a/examples/platforms/simulation/simul_utils.h
++++ b/examples/platforms/simulation/simul_utils.h
+@@ -47,7 +47,7 @@ typedef struct utilsSocket
+     union
+     {
+         struct sockaddr_in  mSockAddr4; ///< The IPv4 group sock address.
+-        struct sockaddr_in6 mSockAddr6; ///< The IPv4 group sock address.
++        struct sockaddr_in6 mSockAddr6; ///< The IPv6 group sock address.
+     } mGroupAddr;                       ///< The group sock address for simulating radio.
+ } utilsSocket;
+ 
+diff --git a/src/posix/platform/udp.cpp b/src/posix/platform/udp.cpp
+index 46cb4779e..702580790 100644
+--- a/src/posix/platform/udp.cpp
++++ b/src/posix/platform/udp.cpp
+@@ -55,6 +55,7 @@
+ 
+ #if OPENTHREAD_CONFIG_PLATFORM_UDP_ENABLE
+ 
++#include "posix/platform/infra_if.hpp"
+ #include "posix/platform/ip6_utils.hpp"
+ #include "posix/platform/mainloop.hpp"
+ #include "posix/platform/udp.hpp"
+@@ -92,10 +93,21 @@ otError transmitPacket(int aFd, uint8_t *aPayload, uint16_t aLength, const otMes
+     peerAddr.sin6_family = AF_INET6;
+     CopyIp6AddressTo(aMessageInfo.mPeerAddr, &peerAddr.sin6_addr);
+ 
+-    if (IsIp6AddressLinkLocal(aMessageInfo.mPeerAddr) && !aMessageInfo.mIsHostInterface)
++    // sin6_scope_id must be set >0 only for link-local, for other scopes it remains 0.
++    if (IsIp6AddressLinkLocal(aMessageInfo.mPeerAddr))
+     {
+-        // sin6_scope_id only works for link local destinations
+-        peerAddr.sin6_scope_id = gNetifIndex;
++        if (aMessageInfo.mIsHostInterface)
++        {
++#if OPENTHREAD_POSIX_CONFIG_INFRA_IF_ENABLE
++            peerAddr.sin6_scope_id = ot::Posix::InfraNetif::Get().GetNetifIndex();
++#else
++            // remains 0 if we cannot determine a host ifIndex
++#endif
++        }
++        else
++        {
++            peerAddr.sin6_scope_id = gNetifIndex;
++        }
+     }
+ 
+     memset(control, 0, sizeof(control));
+@@ -133,7 +145,8 @@ otError transmitPacket(int aFd, uint8_t *aPayload, uint16_t aLength, const otMes
+         cmsg->cmsg_type  = IPV6_PKTINFO;
+         cmsg->cmsg_len   = CMSG_LEN(sizeof(pktinfo));
+ 
+-        pktinfo.ipi6_ifindex = aMessageInfo.mIsHostInterface ? 0 : gNetifIndex;
++        // link-local requires ifindex to be >0, 0 is allowed for other scopes
++        pktinfo.ipi6_ifindex = peerAddr.sin6_scope_id;
+ 
+         CopyIp6AddressTo(aMessageInfo.mSockAddr, &pktinfo.ipi6_addr);
+         memcpy(CMSG_DATA(cmsg), &pktinfo, sizeof(pktinfo));
+@@ -144,7 +157,7 @@ otError transmitPacket(int aFd, uint8_t *aPayload, uint16_t aLength, const otMes
+ #ifdef __APPLE__
+     msg.msg_controllen = static_cast<socklen_t>(controlLength);
+ #else
+-    msg.msg_controllen           = controlLength;
++    msg.msg_controllen = controlLength;
+ #endif
+ 
+     rval = sendmsg(aFd, &msg, 0);
+@@ -302,7 +315,7 @@ otError otPlatUdpBindToNetif(otUdpSocket *aUdpSocket, otNetifIdentifier aNetifId
+ #else  // __NetBSD__ || __FreeBSD__ || __APPLE__
+         unsigned int netifIndex = 0;
+         VerifyOrExit(setsockopt(fd, IPPROTO_IPV6, IPV6_BOUND_IF, &netifIndex, sizeof(netifIndex)) == 0,
+-                               error = OT_ERROR_FAILED);
++                     error = OT_ERROR_FAILED);
+ #endif // __linux__
+         break;
+     }
+@@ -313,7 +326,7 @@ otError otPlatUdpBindToNetif(otUdpSocket *aUdpSocket, otNetifIdentifier aNetifId
+                      error = OT_ERROR_FAILED);
+ #else  // __NetBSD__ || __FreeBSD__ || __APPLE__
+         VerifyOrExit(setsockopt(fd, IPPROTO_IPV6, IPV6_BOUND_IF, &gNetifIndex, sizeof(gNetifIndex)) == 0,
+-                               error = OT_ERROR_FAILED);
++                     error = OT_ERROR_FAILED);
+ #endif // __linux__
+         break;
+     }
+@@ -382,8 +395,8 @@ otError otPlatUdpConnect(otUdpSocket *aUdpSocket)
+ 
+         if (getsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &netifName, &len) != 0)
+         {
+-                      ot::Posix::Udp::LogWarn("Failed to read socket bound device: %s", strerror(errno));
+-                      len = 0;
++            ot::Posix::Udp::LogWarn("Failed to read socket bound device: %s", strerror(errno));
++            len = 0;
+         }
+ 
+         // There is a bug in linux that connecting to AF_UNSPEC does not disconnect.
+@@ -394,11 +407,11 @@ otError otPlatUdpConnect(otUdpSocket *aUdpSocket)
+ 
+         if (len > 0 && netifName[0] != '\0')
+         {
+-                      fd = FdFromHandle(aUdpSocket->mHandle);
+-                      VerifyOrExit(setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &netifName, len) == 0, {
+-                          ot::Posix::Udp::LogWarn("Failed to bind to device: %s", strerror(errno));
+-                          error = OT_ERROR_FAILED;
+-                      });
++            fd = FdFromHandle(aUdpSocket->mHandle);
++            VerifyOrExit(setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &netifName, len) == 0, {
++                ot::Posix::Udp::LogWarn("Failed to bind to device: %s", strerror(errno));
++                error = OT_ERROR_FAILED;
++            });
+         }
+ 
+         ExitNow();
