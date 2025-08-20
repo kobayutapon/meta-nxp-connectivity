@@ -12,7 +12,7 @@ FILES:${PN} += "usr/share"
 FILES:${PN} += "usr/lib"
 
 DEPENDS += " jsoncpp avahi boost pkgconfig-native mdns libnetfilter-queue ipset libnftnl nftables protobuf-c protobuf protobuf-native "
-RDEPENDS:${PN} += " jsoncpp mdns radvd libnetfilter-queue ipset libnftnl nftables bash protobuf protobuf-c dhcpcd"
+RDEPENDS:${PN} += " jsoncpp mdns radvd libnetfilter-queue ipset libnftnl nftables bash protobuf protobuf-c "
 
 do_configure:prepend () {
     export OTBRWEB_PREBUILT_FRONTEND=1
