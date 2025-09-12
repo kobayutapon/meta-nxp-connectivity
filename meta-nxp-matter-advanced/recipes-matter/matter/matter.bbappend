@@ -6,6 +6,7 @@ RDEPENDS:${PN} += "${@bb.utils.contains('MACHINE_FEATURES', 'has-iwxxx', ' zigbe
 
 MATTER_APPLICATIONS += " \
     'nxp-media-app/linux|nxp-media-app|aarch64||nxp-media-app' \
+    'thread-br-app/linux|imx-thread-br-app|aarch64||imx-thread-br-app' \
 "
 
 # Append advanced applications to the central list. These use the standard 'aarch64' output directory
