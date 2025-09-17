@@ -54,7 +54,7 @@ run_ota_requestor(){
         result=false
         while IFS= read -r line; do
             echo "$line"
-            if [[ "$line" == *"CHIP:ATM: BlockAckEOF"* ]]; then
+            if [[ "$line" == *"OTA image downloaded to"* ]]; then
                 sleep 2
                 pid=$(ps -aux | grep 'chip-ota-requestor-app' | grep -v 'grep'| awk '{print $2}')
                 if [[ -n "$pid" ]]; then
