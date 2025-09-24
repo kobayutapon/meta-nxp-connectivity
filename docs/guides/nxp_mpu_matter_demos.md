@@ -18,7 +18,7 @@ This document describes how to use the Matter demos on the i.MX MPU platforms. I
 
 ## Hardware requirements
 
-- i.MX93 FRDM / i.MX93 EVK + IW612(WiFi-BT-Thread tri-radio chipset)  → Role: Matter controller or Matter end device
+- i.MX93 FRDM / i.MX93 EVK / i.MX95 15x15 EVK + IW612(WiFi-BT-Thread tri-radio chipset)  → Role: Matter controller or Matter end device
 
 - i.MX8M Mini EVK + 88W8987(WiFi-BT combo module)  → Role: Matter controller or Matter end device
 
@@ -57,7 +57,7 @@ For devices that support the Thread protocol, this guide uses the NXP K32W DK6 m
 
  <img src="../images/matter_demos/imx9-otbr.png" width = "500"/>
 
-Figure Matter with OTBR network topology diagram for i.MX93 FRDM, i.MX93 EVK, i.MX91 EVK, i.MX91 QSB and i.MX91 FRDM
+Figure Matter with OTBR network topology diagram for i.MX93 FRDM, i.MX93 EVK, i.MX91 EVK, i.MX91 QSB, i.MX91 FRDM and i.MX95 15x15 EVK
 
  <img src="../images/matter_demos/imx8mm_imx6ull_imx8ulp-otbr.png" width = "500"/>
 
@@ -81,7 +81,7 @@ step1. Save the Wi-Fi SSID and password to a file.
 
 Step2. Connecting to the Wi-Fi AP, Enabling BT, and Setting Up OTBR on the i.MX MPU Platform.
 
-#### For i.MX93 FRDM / i.MX93 EVK + IW612 and i.MX91 EVK / i.MX91 QSB / i.MX91 FRDM + IW610 platform:
+#### For i.MX93 FRDM / i.MX93 EVK / i.MX95 15x15 EVK + IW612 and i.MX91 EVK / i.MX91 QSB / i.MX91 FRDM + IW610 platform:
 
 For i.MX93 FRDM, it is essential to modify the fdtfile for it to work properly. You should enter uboot mode and run follow commands to set the fdtfile, save fdtfile setting, and boot the board.
 
@@ -101,6 +101,8 @@ For i.MX93 FRDM, it is essential to modify the fdtfile for it to work properly. 
         u-boot=> print fdtfile
         fdtfile=imx93-11x11-frdm.dtb
         u-boot=> boot
+
+<a name="setup-otbr-agent-iwxxx"></a>
 
 Then setup by running the following commands:
 
@@ -135,7 +137,9 @@ Then setup by running the following commands:
 
 **Note: The GPIO device may change, you can use the "gpioinfo" command or "gpiodetect" command to determine gpio-reset-device and gpio-int-device.**
 
-**For example, in the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip0" (whose line 1 is "IWxxx_NB_IND_RST_15_4" as shown by the output of gpioinfo) for the reset functionality. Similarly, use "gpio-int-device=/dev/gpiochip5" (whose line 10 is "IWxxx_NB_SPI_INT" as shown by the output of gpioinfo) for interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip0&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
+##### Check gpiochip for i.MX93 FRDM, i.MX93 EVK, i.MX91 EVK, i.MX91 QSB and i.MX91 FRDM:
+
+For example, in the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip0" (whose line 1 is "IWxxx_NB_IND_RST_15_4" as shown by the output of gpioinfo) for the reset functionality. Similarly, use "gpio-int-device=/dev/gpiochip5" (whose line 10 is "IWxxx_NB_SPI_INT" as shown by the output of gpioinfo) for interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip0&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "
 
         $ gpioinfo
         gpiochip0 - 8 lines:
@@ -148,13 +152,27 @@ Then setup by running the following commands:
             line  10:       "IWxxx_NB_SPI_INT"      input consumer="THREAD_SOC_INT"
             ...
 
-**In the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip5" (whose I2C device address is 0-0020 as shown by the output of gpiodetect) for the reset functionality. Similarly, use gpio-int-device=/dev/gpiochip4 (whose I2C device address is 1-0022 as shown by the output of gpiodetect) for the interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip5&gpio-int-device=/dev/gpiochip4&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "**
+In the fowllowing case, you need use "gpio-reset-device=/dev/gpiochip5" (whose I2C device address is 0-0020 as shown by the output of gpiodetect) for the reset functionality. Similarly, use gpio-int-device=/dev/gpiochip4 (whose I2C device address is 1-0022 as shown by the output of gpiodetect) for the interrupt functionality. This means you have to start the otbr-agent with the command "otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip5&gpio-int-device=/dev/gpiochip4&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "
 
         & gpiodetect
         ...
         gpiochip4 [1-0022] (24 lines)
         gpiochip5 [0-0020] (8 lines)
+        ...
 
+##### Check gpiochip for i.MX95 15x15 EVK:
+
+**A hardware config need on i.MX95 15x15 EVK: turn on the SW10 Pin1 to “ON” which enable the SPI CS for IW612.**
+
+For the i.MX95 15x15 EVK board, you only need to use "$ gpiodetect" to check the GPIO chips for reset and interrupt. The gpio-int-line=5 and gpio-reset-line=1 are fixed values. For example, in the following case, you need to start the otbr-agent with the command "otbr-agent-iwxxx -I wpan0 -B mlan0 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip0&gpio-int-device=/dev/gpiochip3&gpio-int-line=5&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' & "
+
+        & gpiodetect
+        ...
+        gpiochip0 [1-0020] (8 lines)             # gpio-reset-device
+        gpiochip3 [43840000.gpio] (32 lines)     # gpio-int-device
+        ...
+
+<a name="setup-otbr-agent"></a>
 
 #### For i.MX8M Mini EVK + 88W8987 + K32W platform or i.MX8ULP EVK + IW416 + K32W platform:
 
@@ -284,7 +302,7 @@ Please use below commands to setup ot-daemon on an device:
     #For i.MX8M Mini EVK + 88W8987, i.MX8ULP EVK and i.MX6ULL EVK + 88W8987 with K32W RCP:
     $ ot-daemon 'spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=1000000' &
 
-    #For i.MX93 FRDM / i.MX93 EVK + IW612, i.MX91 EVK / i.MX91 QSB / i.MX91 FRDM + IW610:
+    #For i.MX93 FRDM / i.MX93 EVK / i.MX95 15x15 EVK + IW612, i.MX91 EVK / i.MX91 QSB / i.MX91 FRDM + IW610:
     $ ot-daemon-iwxxx 'spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip4&gpio-int-device=/dev/gpiochip5&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0' &
 
 **Note: Please [check GPIO device](#check-gpio-device) to determine gpio-reset-device and gpio-int-device.**
@@ -338,6 +356,8 @@ step2. Setup BT and connectd to a WiFi AP.
         hciconfig hci0 up
         、、、
 
+<a name="ble-wifi-end"></a>
+
 #### Load the Wi-Fi/BT firmware and set up BT on the end device
 
 Load the Wi-Fi/BT firmware and set up BT:
@@ -356,22 +376,26 @@ After setting up the network on both side platforms, run the example application
 ___[ELE](https://www.nxp.com/products/nxp-product-information/nxp-product-programs/edgelock-secure-enclave:EDGELOCK-SECURE-ENCLAVE) has been integrated into i.MX9 series platform since the i.MX Matter 2023 Q3 release, so when you run example applications such as chip-lighting-app, nxp-thermostat-app, etc. on i.MX9 series platform, you need to run "$ systemctl start nvm_daemon" to enable ELE (only need to run once after each power-up), and then run example applications.___
 
     # to run chip-lighting-app
-    $ chip-lighting-app --wifi --ble-device 0
+    $ chip-lighting-app --wifi --ble-controller 0
 
     # to run chip-all-clusters-app
-    $ chip-all-clusters-app --wifi --ble-device 0
+    $ chip-all-clusters-app --wifi --ble-controller 0
 
     # to run nxp-thermostat-app
-    $ nxp-thermostat-app --wifi --ble-device 0
+    $ nxp-thermostat-app --wifi --ble-controller 0
 
     # to run chip-bridge-app
-    $ chip-bridge-app --wifi --ble-device 0
+    $ chip-bridge-app --wifi --ble-controller 0
 
     # to run nxp-meida-app
-    $ nxp-media-app --wifi --ble-device 0
+    $ nxp-media-app --wifi --ble-controller 0
 
     # to run chip-energy-management-app
-    $ chip-energy-management-app --wifi --ble-device 0
+    $ chip-energy-management-app --wifi --ble-controller 0
+
+    # To run imx-thread-br-app, you need to execute the commands to [load the Wi-Fi/BT firmware and set up BT on the end device](#ble-wifi-end). You also need to execute the commands to setup [otbr-agent](#setup-otbr-agent) or [otbr-agent-iwxxx](#setup-otbr-agent-iwxxx) while comment out the command line that connects to Wi-Fi SSID (i.e., $ wpa_supplicant -d -B -i mlan0 -c ./wifiap.conf) on the end device. Then, execute:
+
+    $ imx-thread-br-app --wifi --ble-controller 0
 
 #### Finally, commission and control the end devices on the controller device.
 
@@ -388,30 +412,14 @@ ___[ELE](https://www.nxp.com/products/nxp-product-information/nxp-product-progra
 
 ##### control the nxp-thermostat-app
 
-    # read the local temperature from nxp-thermostat-app.
-    $ chip-tool thermostat read local-temperature 8888 1
-    # read the abs-max-heat-setpoint-limit form nxp-thermostat-app.
-    $ chip-tool thermostat read abs-max-heat-setpoint-limit 8888 1
-    # read the abs-min-heat-setpoint-limit form nxp-thermostat-app.
-    $ chip-tool thermostat read abs-min-heat-setpoint-limit 8888 1
-    # read the max-heat-setpoint-limit form nxp-thermostat-app.
-    $ chip-tool thermostat read max-heat-setpoint-limit 8888 1
-    # read the min-heat-setpoint-limit form nxp-thermostat-app.
-    $ chip-tool thermostat read min-heat-setpoint-limit 8888 1
-    # set max-heat-setpoint-limit=2800(28℃)，which should satisfy the equation "min-heat-setpoint-limit <= max-heat-setpoint-limit <= abs-max-heat-setpoint-limit".
-    $ chip-tool thermostat write max-heat-setpoint-limit 2800 8888 1
-    # set occupied-heating-setpoint=1800(18℃)，which should satisfy the equation "min-heat-setpoint-limit <= occupied-heating-setpoint <= max-heat-setpoint-limit".
-    $ chip-tool thermostat write occupied-heating-setpoint 1800 8888 1
-    # check if occupied-heating-setpoint is set to 1800.
-    $ chip-tool thermostat read occupied-heating-setpoint 8888 1
-    # set occupied-heating-setpoint += 20, which cannot be set bigger than the value of max-heat-setpoint-limit.
-    $ chip-tool thermostat setpoint-raise-lower 0 20 8888 1
-    # check if occupied-heating-setpoint equal to 2000.
-    $ chip-tool thermostat read occupied-heating-setpoint 8888 1
-    # set occupied-heating-setpoint -= 10, which cannot be set lower than the value of min-heat-setpoint-limit.
-    $ chip-tool thermostat setpoint-raise-lower 0 -10 8888 1
-    # check if occupied-heating-setpoint equal to 1900.
-    $ chip-tool thermostat read occupied-heating-setpoint 8888 1
+    # read the local-temperature attribute from nxp-thermostat-app.
+    $ chip-tool thermostat read local-temperature 8888 1                 # read the local-temperature, it's 0 if no sensor.
+    # read the control-sequence-of-operation attribute form nxp-thermostat-app.
+    $ chip-tool thermostat read control-sequence-of-operation 8888 1     # ControlSequenceOfOperation: 4
+    # read the system-mode attribute form nxp-thermostat-app.
+    $ chip-tool thermostat read system-mode 8888 1                       # SystemMode: 1
+    # check whether the setpoint-raise-lower command work.
+    $ chip-tool thermostat setpoint-raise-lower 2 20 8888 1              # status = 0x00 (SUCCESS)
 
 ##### control the chip-bridge-app
 
@@ -496,6 +504,25 @@ Control and read status for nxp-meida-app:
     $ chip-tool energyevse write approximate-evefficiency 3500 8888 1
     $ chip-tool energyevse read approximate-evefficiency 8888 1
 
+###### control the imx-thread-br-app
+
+**Note that the imx-thread-br-app only support enable the Thread Network when the interface is disabled.**
+
+    $ chip-tool threadborderroutermanagement read border-router-name 8888 1                      # BorderRouterName: NXP_iMX_OTBR-Agent
+    $ chip-tool threadborderroutermanagement read border-agent-id 8888 1                         # BorderAgentID: 00112233445566778899AABBCCDDEEFF
+    $ chip-tool threadborderroutermanagement read thread-version  8888 1                         # ThreadVersion: 5
+    $ chip-tool threadborderroutermanagement read interface-enabled 8888 1                       # InterfaceEnabled: FALSE
+    $ chip-tool threadborderroutermanagement read active-dataset-timestamp 8888 1                # ActiveDatasetTimestamp: null
+    $ chip-tool threadborderroutermanagement read pending-dataset-timestamp 8888 1               # PendingDatasetTimestamp: null
+    $ chip-tool threadborderroutermanagement get-active-dataset-request 8888 1                   # DatasetResponse: { dataset:  }
+    $ chip-tool threadborderroutermanagement get-pending-dataset-request 8888 1                  # DatasetResponse: { dataset:  }
+    $ chip-tool generalcommissioning arm-fail-safe 180 1 8888 0
+    $ chip-tool threadborderroutermanagement set-active-dataset-request  hex:0e080000000000010000000300001235060004001fffe002082ad51c02fe8f64f20708fddb8af85255f93a051083e2b9b2cc609b00125adbf823ea2ab20102c4d904100a133626c411d7de02a570ca3c3d80470c0402a0f7f8031054687265616441637469766554657374 8888 1 --timedInteractionTimeoutMs 2000                         # status = 0x00 (SUCCESS) , you can replease other dataset in this command.
+    $ chip-tool generalcommissioning commissioning-complete 8888 0
+    $ chip-tool threadborderroutermanagement read interface-enabled 8888 1                       # InterfaceEnabled: TRUE
+    $ chip-tool threadborderroutermanagement read active-dataset-timestamp 8888 1                # ActiveDatasetTimestamp: 65536
+    $ chip-tool threadborderroutermanagement get-active-dataset-request 8888 1                   # DatasetResponse: { dataset: 0E080000000000010000000300001235060004001FFFE002082AD51C02FE8F64F20708FDDB8AF85255F93A051083E2B9B2CC609B00125ADBF823EA2AB20102C4D904100A133626C411D7DE02A570CA3C3D80470C0402A0F7F8031054687265616441637469766554657374 }
+
 Currently, applications with trusty are supported on the i.MX8M Mini EVK, such as chip-tool-trusty, chip-lighting-app-trusty, nxp-thermostat-app-trusty and nxp-media-app-trusty. Before running these trusty example applications, you must execute the following commands to enable the secure storage service (only need to execute once after initial boot), and the the following commissioning steps are consistent with the above.
 
 <a name="enable-the-secure-storage-service"></a>
@@ -535,6 +562,9 @@ Then, run example applications on another i.MX device that acts as the end devic
 
     # to run chip-energy-management-app
     $ chip-energy-management-app
+
+    # To run imx-thread-br-app, you need to execute the commands to [load the Wi-Fi/BT firmware and set up BT on the end device](#ble-wifi-end). You also need to execute the commands to setup [otbr-agent](#setup-otbr-agent) or [otbr-agent-iwxxx](#setup-otbr-agent-iwxxx) on the end device. Then, execute:
+    $ imx-thread-br-app
 
 Final, commission and control the end device on the controller device.
 

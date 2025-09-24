@@ -10,6 +10,8 @@ The [Home Assistant](https://www.home-assistant.io/) (HA) application runs on bo
 
  [**Commissioning the i.MX Matter device on Home Assistant application**](#commissioning-with-phone)
 
+ [**Known issue**](#known-issue)
+
  [**FAQ**](#faq)
 
 <a name="overview"></a>
@@ -30,15 +32,15 @@ You should first download and deploy the Docker containers on an i.MX MPU platfo
 
 Download and deploy the homeassistant and matter-server Docker images.
 
-    $ docker run -d --name homeassistant --privileged --restart=unless-stopped -e TZ=MY_TIME_ZONE -v $(pwd)/config:/config -v /run/dbus:/run/dbus:ro --network=host ghcr.io/home-assistant/home-assistant:2025.5
-    $ docker run -d --name matter-server --restart=unless-stopped --security-opt apparmor=unconfined -v $(pwd)/data:/data --network=host ghcr.io/home-assistant-libs/python-matter-server:8.0 --storage-path /data --paa-root-cert-dir /data/credentials
+    $ docker run -d --name homeassistant --privileged --restart=unless-stopped -e TZ=MY_TIME_ZONE -v $(pwd)/config:/config -v /run/dbus:/run/dbus:ro --network=host ghcr.io/home-assistant/home-assistant:2025.9
+    $ docker run -d --name matter-server --restart=unless-stopped --security-opt apparmor=unconfined -v $(pwd)/data:/data --network=host ghcr.io/home-assistant-libs/python-matter-server:8.1.0 --storage-path /data --paa-root-cert-dir /data/credentials
 
 It will take a few minutes to download and deploy the images. You can check the images by running "$ docker image" after the deployment is complete.
 
     root@cn-szh02-ns-pr002:~# docker images
     REPOSITORY                                         TAG       IMAGE ID       CREATED       SIZE
-    ghcr.io/home-assistant/home-assistant              2025.5    8c4dce8bf037   5 weeks ago   1.94GB
-    ghcr.io/home-assistant-libs/python-matter-server   8.0       b56624d5567a   6 weeks ago   458MB
+    ghcr.io/home-assistant/home-assistant              2025.9    1e648ef611ad   4 days ago    2.02GB
+    ghcr.io/home-assistant-libs/python-matter-server   8.1.0     974a0e20775e   5 weeks ago   462MB
 
 <a name="running-app"></a>
 
@@ -78,15 +80,15 @@ Once you have connected the Home Assistant server, you should integrate the Pyth
 
 Integrate the Python Matter server into the Phone application:
 
-Click on "Setting" – "Devices & services" – "Matter(BETA)" – "Integration entries" – enter URL "ws://localhost:5580/ws" – "SUBMIT" to integrate Python Matter Server.
+Click on "Setting" – "Devices & services" – "+ Add integration" at the bottom right corner – search for "Matter" – slelect the "Matter" – enter URL "ws://localhost:5580/ws" – "Submit" to integrate Python Matter Server.
 
-<img src="../images/home_assistant_demo/config-matter_server.png" width = "200"/>
+<img src="../images/home_assistant_demo/config-matter_server.png" width = "200"/><img src="../images/home_assistant_demo/config-matter_server-1.png" width = "200"/>
 
 Figure. Integrate the Python Matter server
 
 Integrate the Thread service into the HA instance:
 
-Click on "Setting" – "Devices & services" – "+ ADD INTEGRATION" at the bottom right corner – "Thread". The Thread service will be added to HA instance as shown below.
+Click on "Setting" – "Devices & services" – "+ Add integration" at the bottom right corner – search for "Thread" - select the "Thread" . The Thread service will be added to HA instance as shown below.
 
 <img src="../images/home_assistant_demo/thread_1.png" width = "200"/><img src="../images/home_assistant_demo/thread_2.png" width = "200"/>
 
@@ -94,7 +96,7 @@ Figure. Integrate the Thread service
 
 Integrate the Open Thread Border Router REST API into HA instance:
 
-Click on "Setting" – "Devices & services" – "+ ADD INTEGRATION" at the bottom right corner - "Open Thread Border Router" – Enter URL "http://ip:8081" (IP is the otbr-agent device's IP, it uses 8081 port for REST API by default) – Submit, the Open Thread Border Router REST API will add into HA instance.
+Click on "Setting" – "Devices & services" – "+ Add integration" at the bottom right corner - search for "Open Thread Border Router" - select the "Open Thread Border Router" – Enter URL "http://ip:8081" (IP is the otbr-agent device's IP, it uses 8081 port for REST API by default) – Submit, the Open Thread Border Router REST API will add into HA instance.
 
 <img src="../images/home_assistant_demo/config-otbr_1.png" width = "200"/><img src="../images/home_assistant_demo/config-otbr_2.png" width = "200"/>
 
@@ -102,7 +104,7 @@ Figure. Integrate the Thread Border Router
 
 Set the preferred network and sync Thread credentials
 
-Go to "Setting" - "Devices & services" - "Thread" - "CONFIGURE" - set the right border router as preferred network.
+Go to "Setting" - "Devices & services" - "Thread" - click the configurtion logo - set or check the right border router as preferred network.
 Then, go to "Setting" – "Companion app" – "Troubleshooting" – "Sync Thread credentials" to Sync the credentials.
 
 <img src="../images/home_assistant_demo/config-otbr_3.png" width = "200"/><img src="../images/home_assistant_demo/config-otbr_4.png" width = "200"/>
@@ -148,7 +150,7 @@ After running chip-lighting-app, you will find a log line similar to the one bel
 
     CHIP:SVR: https://project-chip.github.io/connectedhomeip/qrcode.html?data=MT%3A-24J042C00KA0648G00
 
-Then, you can commission i.MX Matter application as shown in the following pictures. Click the "Settings", "Devices & services", "+ ADD INTEGRATION", "Add Matter device", "No, it's new.", "Open camera here" buttons in sequence on the following pages to start scanning the QR code of the i.MX Matter application.
+Then, you can commission i.MX Matter application as shown in the following pictures. Click the "Settings", "Devices & services", "+ Add integration", "Add Matter device", "No, it's new.", "Open camera here" buttons in sequence on the following pages to start scanning the QR code of the i.MX Matter application.
 
 <img src="../images/home_assistant_demo/app_1.png" width = "200"/> <img src="../images/home_assistant_demo/app_2.png" width = "200"/> <img src="../images/home_assistant_demo/app_3.png" width = "200"/> <img src="../images/home_assistant_demo/app_4.png" width = "200"/> <img src="../images/home_assistant_demo/app_5.png" width = "200"/> <img src="../images/home_assistant_demo/app_6.png" width = "200"/>
 
@@ -163,6 +165,12 @@ Once the QR code is scanned, it goes through the following processes to connect 
 Figure. Device connection procedure
 
 Once the device has been successfully connected, you will be able to control it.
+
+<a name="known-issue"></a>
+
+## Known issue
+
+- When commissioning with the chip-all-cluster-app, you may encounter a "Something went wrong" error in the final steps of the commissioning process on the Home Assistant app. This is a known issue related to the Home Assistant Docker environment.
 
 <a name="faq"></a>
 
@@ -237,3 +245,9 @@ When commissioning over ble-wifi or onnetwork failures occur, especially when OT
 	$ sudo rm -rf /var/run/avahi-daemon/*
 	$ sudo systemd-resolve --flush-caches
 	$ sudo systemctl start avahi-daemon
+
+### What should be done when an attempt to add the OpenThread Border Router's REST API fails with a 'Failed to connect' error?
+
+Please add the option "--rest-listen-address 0.0.0.0" when starting otbr-agent or otbr-agent-iwxxx, for example:"
+
+	$ otbr-agent-iwxxx -I wpan0 -B mlan0 --rest-listen-address 0.0.0.0 spinel+spi:///dev/spidev0.0?gpio-reset-device=/dev/gpiochip5&gpio-int-device=/dev/gpiochip4&gpio-int-line=10&gpio-reset-line=1&spi-mode=0&spi-speed=1000000&spi-reset-delay=0

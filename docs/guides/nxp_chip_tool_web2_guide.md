@@ -16,6 +16,7 @@ With the chip-tool-web2, you can easily configure, manage and monitor Matter dev
 -   [Binding for light and switch Matter device](#binding)
 -   [Controlling a Matter device Energy EVSE Cluster](#eevse)
 -   [OTA updates on chip-tool-web2](#ota)
+-   [Network graph on chip-tool-web2](#network)
 -   [Additional Notes](#note)
 <hr>
 
@@ -190,7 +191,13 @@ In this command:
 
 ## List commissioned devices in chip-tool-web2
 
-Once the pairing process is complete, the Matter device is successfully commissioned to the network. Click `Devices` button in the sidebar to see all the commissioned devices. The device card will show the node alias("Lighting", shown below), the device ID ("8888", shown below) and the endpoint information ("Matter Dimmable Light" cluster of endpoint ID 1).
+Once the pairing process is complete, the Matter device is successfully commissioned to the network. To view all commissioned devices, click the `Devices` button in the sidebar. Each device card displays the following information:
+
+- Node Alias (e.g., "Lighting1" and "Lighting2")
+- Device ID (e.g., "8888" and "9999")
+- Endpoint Details, such as the "Color Temperature Light" cluster on endpoint ID 1
+
+If a device goes offline, it will be labeled as "Offline device", as shown below.
 
 <img src="../images/chip-tool-web2/chip-tool-web2_device.png" alt="Alt text" width="500"/>
 
@@ -222,6 +229,18 @@ Click the `Interact with endpoint`, and enter `Endpoint ID`, and then select `ON
 ### Open Commissioning Window
 
 For the open commissioningg window, please refer to the [multi-admin](#multiadmin) section.
+
+### Forget Device
+
+To remove an offline device, click the "Forget Device" button on its card. A confirmation dialog will appear—click "Forget Device" again in the dialog to proceed.
+
+If the operation is successful, a confirmation message will be displayed. To reflect the changes, click the "Refresh" button to update the device list.
+
+### Unpair Device
+
+To unpair an online device, click the "Unpair Device" button on its card. A confirmation dialog will appear—click "Unpair Device" again in the dialog to initiate the unpairing process.
+
+Upon success, a confirmation message will be shown. Click the "Refresh" button to update the device list accordingly.
 
 <hr>
 
@@ -590,6 +609,22 @@ Enter the `OTA Provider Node ID` and `OTA Requestor Node ID`, then click the `Se
 Please notice the pop-up information "OTA Report: chip-ota-provider-app ota transfer successfully" to confirm that the OTA process has finished.
 
 After completing the OTA process, [check the OTA processing on the end device](./nxp_mpu_matter_demos.md#ota_check).
+
+<hr>
+
+<a name="network"></a>
+
+## Network graph on chip-tool-web2
+
+The chip-tool-web2 supports displaying the network topology of commissioned devices. Click the `Network graph` in sidebar, the following page will display:
+
+<img src="../images/chip-tool-web2/chip-tool-web2_networkgraph.png" alt="Alt text" width="500"/>
+
+Clicking on a device node in the topology view will display detailed information in the bottom-left corner of the page:
+
+- Device Type: Displayed as either "Root device" or "Node device".
+- Device Name: For root devices, this shows the name of the i.MX device.
+- Device Alias, Node ID and Network Type: For node devices, these fields display the device alias, node ID, and the type of network the device is connected to.
 
 <hr>
 
