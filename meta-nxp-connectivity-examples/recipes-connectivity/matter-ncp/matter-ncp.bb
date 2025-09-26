@@ -11,7 +11,7 @@ MATTER_PY_PATH ?= "${STAGING_BINDIR_NATIVE}/python3-native/python3"
 
 PATCHTOOL = "git"
 
-SRCREV = "926f6c2a599cfe197180f77cb38a40094e2f09a1"
+SRCREV = "473eaf9e0e0819e9125a158a7084f1e04a949837"
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 DEPENDS += " gn-native ninja-native avahi dbus-glib-native pkgconfig-native boost python3-pip-native python3-packaging python3-click libusb "
@@ -50,20 +50,6 @@ TARGET_ARM_CPU = "${@get_arm_cpu(d)}"
 
 S = "${WORKDIR}/git"
 
-common_configure() {
-    PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
-    PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
-    gn gen out/aarch64 --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
-        import("//build_overrides/build.gni")
-        target_cflags=[
-                        "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
-                       ]
-        custom_toolchain="${build_root}/toolchain/custom"
-        target_cc="${CC}"
-        target_cxx="${CXX}"
-        target_ar="${AR}"'
-}
-
 do_configure() {
     cd ${S}/
     if ${DEPLOY_TRUSTY}; then
@@ -77,7 +63,7 @@ do_configure() {
     # Configuration for IF_TYPE=1 (usb)
     PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
     PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
-    gn gen out/aarch64_usb --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=1 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+    gn gen out/aarch64_usb --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=1 chip_enable_wifi=true chip_code_pre_generated_directory="${S}/zzz_pregencodes"
         import("//build_overrides/build.gni")
         target_cflags=[
                         "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
@@ -90,7 +76,7 @@ do_configure() {
     # Configuration for IF_TYPE=2 (uart)
     PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
     PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
-    gn gen out/aarch64_uart --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=2 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+    gn gen out/aarch64_uart --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=2 chip_enable_wifi=true chip_code_pre_generated_directory="${S}/zzz_pregencodes"
         import("//build_overrides/build.gni")
         target_cflags=[
                         "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
@@ -103,7 +89,7 @@ do_configure() {
     # Configuration for IF_TYPE=3 (spi)
     PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
     PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
-    gn gen out/aarch64_spi --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=3 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+    gn gen out/aarch64_spi --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=3 chip_enable_wifi=true chip_code_pre_generated_directory="${S}/zzz_pregencodes"
         import("//build_overrides/build.gni")
         target_cflags=[
                         "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
@@ -116,7 +102,7 @@ do_configure() {
     # Configuration for IF_TYPE=4 (sdio)
     PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR} \
     PKG_CONFIG_LIBDIR=${PKG_CONFIG_PATH} \
-    gn gen out/aarch64_sdio --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=4 chip_code_pre_generated_directory="${S}/zzz_pregencodes"
+    gn gen out/aarch64_sdio --script-executable="${MATTER_PY_PATH}" --args='treat_warnings_as_errors=false target_os="linux" target_cpu="${TARGET_CPU}" arm_arch="${TARGET_ARM_ARCH}" arm_cpu="${TARGET_ARM_CPU}" build_without_pw=true chip_with_imx_ele=0 enable_exceptions=true chip_with_linux_ncp_host=1 ncp_host_interface=4 chip_enable_wifi=true chip_code_pre_generated_directory="${S}/zzz_pregencodes"
         import("//build_overrides/build.gni")
         target_cflags=[
                         "-DCHIP_DEVICE_CONFIG_WIFI_STATION_IF_NAME=\"mlan0\"",
