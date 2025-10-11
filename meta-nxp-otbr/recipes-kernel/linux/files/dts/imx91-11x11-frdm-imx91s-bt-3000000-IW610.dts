@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2025 NXP
+ */
+
+#include "imx91-11x11-frdm-imx91s.dts"
+
+/ {
+	// Patch for IW61x:
+	// 1: make gpio IW61x_IND_RST_15_4 and IW61x_SPI_INT drivable from userspace
+	// 2: enable lpspi1 for IWxxx_SPI and SPI 50µs interleaved
+	// 3: set bt fw-init-baudrate to 3000000
+	model = "NXP FRDM i.MX91S board for IW610";
+};
+
+&lpi2c2 {
+	pcal6524: gpio@22 {
+		gpio-line-names = "", "", "IWxxx_NB_IND_RST_15_4";
+	};
+};
+
+&gpio4 {
+	gpio-line-names = "", "", "", "", "", "", "", "", "", "", "", "", "", "", "IWxxx_NB_SPI_INT";
+};
+
+&lpuart5 {
+	bluetooth {
+		fw-init-baudrate = <3000000>;
+	};
+};
+
+&lpspi1 {
+	fsl,spi-num-chipselects = <1>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&pinctrl_lpspi1>;
+	pinctrl-1 = <&pinctrl_lpspi1>;
+	cs-gpios = <&gpio1 11 GPIO_ACTIVE_LOW>;
+	status = "okay";
+	pinctrl-assert-gpios = <&pcal6524 20 GPIO_ACTIVE_LOW>;
+
+	spidev0: spi@0 {
+		reg = <0>;
+		compatible = "lwn,bk4";
+		spi-max-frequency = <1000000>;
+		spi-cs-inactive-delay-ns = <50000>;
+		label="IWxxx_SPIDEV";
+	};
+};
+
+&iomuxc {
+	pinctrl_lpspi1: lpspi1grp {
+		fsl,pins = <
+			MX91_PAD_SAI1_TXFS__GPIO1_IO11      0x3fe
+			MX91_PAD_SAI1_TXC__LPSPI1_SIN       0x3fe
+			MX91_PAD_SAI1_RXD0__LPSPI1_SOUT     0x3fe
+			MX91_PAD_SAI1_TXD0__LPSPI1_SCK      0x3fe
+		>;
+	};
+};
