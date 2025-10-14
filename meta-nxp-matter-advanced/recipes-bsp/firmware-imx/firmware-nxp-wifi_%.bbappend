@@ -79,7 +79,7 @@ FILES:${PN}-nxpiw610-usb += " \
     ${nonarch_base_libdir}/firmware/nxp/usb*_iw610.bin.se \
 "
 
-PACKAGES += "${PN}-all-usb ${PN}-nxpiw610-usb ${PN}-nxpaw693-pcie"
+PACKAGES += "${PN}-all-usb " 
 
 RDEPENDS:${PN}-all-usb = " \
     ${PN}-nxpiw610-usb \
