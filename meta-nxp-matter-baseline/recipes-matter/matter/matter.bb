@@ -4,8 +4,9 @@ DESCRIPTION = "This layer loads the main Matter applications"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRCBRANCH = "v1.5-branch-imx_matter_2025_q3"
-IMX_MATTER_SRC ?= "gitsm://github.com/NXP/matter.git;protocol=https"
+SRCBRANCH = "v1.5-branch-imx_matter_2025_q4"
+#IMX_MATTER_SRC ?= "gitsm://github.com/NXP/matter.git;protocol=https"
+IMX_MATTER_SRC ?= "gitsm://androidsource.nxp.com/project/github/connectedhomeip;protocol=https"
 SRC_URI = "${IMX_MATTER_SRC};branch=${SRCBRANCH}"
 SRC_URI += "file://0001-MATTER-1352-2-Add-se_version.h.patch;patchdir=third_party/imx-secure-enclave/repo/"
 SRC_URI += "file://0001-Enable-system_site_packages-option-in-pw_build.patch;patchdir=third_party/pigweed/repo/"
@@ -57,6 +58,9 @@ S = "${WORKDIR}/git"
 # Defines Matter applications to build. Format is a pipe-separated string:
 # app-path|binary-name|output-dir|extra-gn-args|install-binary-name
 
+#TODO:restore below applicatio
+#   'nxp-thermostat/linux|nxp-thermostat-app|aarch64||nxp-thermostat-app'
+
 MATTER_APPLICATIONS = " \
     'lighting-app/linux|chip-lighting-app|aarch64||chip-lighting-app' \
     'all-clusters-app/linux|chip-all-clusters-app|aarch64||chip-all-clusters-app' \
@@ -67,7 +71,6 @@ MATTER_APPLICATIONS = " \
     'bridge-app/linux|chip-bridge-app|aarch64||chip-bridge-app' \
     'energy-management-app/linux|chip-energy-management-app|aarch64||chip-energy-management-app' \
     'chip-tool|chip-tool-web2|aarch64-web|chip_with_web2=1 enable_rtti=true chip_with_imx_ele=false|chip-tool-web2' \
-    'nxp-thermostat/linux|nxp-thermostat-app|aarch64||nxp-thermostat-app' \
     'bridge-app/nxp/linux-imx|imx-chip-bridge-app|aarch64||imx-chip-bridge-app' \
 "
 
