@@ -4,10 +4,8 @@ SRC_URI += "file://ota.sh"
 DEPENDS += "${@bb.utils.contains('MACHINE_FEATURES', 'has-iwxxx', ' zigbee-rcp-sdk ', '', d)}"
 RDEPENDS:${PN} += "${@bb.utils.contains('MACHINE_FEATURES', 'has-iwxxx', ' zigbee-rcp-sdk ', '', d)}"
 
-#TODO: restore below applications
-#   'nxp-media-app/linux|nxp-media-app|aarch64||nxp-media-app'
-
 MATTER_APPLICATIONS += " \
+    'nxp-media-app/linux|nxp-media-app|aarch64||nxp-media-app' \
     'thread-br-app/linux|imx-thread-br-app|aarch64||imx-thread-br-app' \
 "
 
@@ -32,14 +30,11 @@ MATTER_APPLICATIONS += " \
 #MATTER_APPLICATIONS:append = " ${@bb.utils.contains_any('MACHINE_FEATURES', 'has-iwxxx', \
 #    "'bridge-app/nxp/linux-M2ZigbeeRcp-bridge|M2ZigbeeRcp-bridge|aarch64||M2ZigbeeRcp-bridge'", '', d)}"
 
-#TODO: restore below applications
-#
-#    'nxp-thermostat/linux|nxp-thermostat-app|aarch64-trusty|chip_with_trusty_os=true|nxp-thermostat-app-trusty'
-#    'nxp-media-app/linux|nxp-media-app|aarch64-trusty|chip_with_trusty_os=true|nxp-media-app-trusty'
-
 MATTER_APPLICATIONS:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'trusty', " \
     'lighting-app/linux|chip-lighting-app|aarch64-trusty|chip_with_trusty_os=true|chip-lighting-app-trusty' \
     'chip-tool|chip-tool|aarch64-trusty|chip_with_trusty_os=true|chip-tool-trusty' \
+    'nxp-thermostat/linux|nxp-thermostat-app|aarch64-trusty|chip_with_trusty_os=true|nxp-thermostat-app-trusty' \
+    'nxp-media-app/linux|nxp-media-app|aarch64-trusty|chip_with_trusty_os=true|nxp-media-app-trusty' \
 ", '', d)}"
 
 do_install:append() {
