@@ -27,8 +27,8 @@ MATTER_APPLICATIONS += " \
 "
 
 # For platform which support M2Zigbee RCP bridge
-#MATTER_APPLICATIONS:append = " ${@bb.utils.contains_any('MACHINE_FEATURES', 'has-iwxxx', \
-#    "'bridge-app/nxp/linux-M2ZigbeeRcp-bridge|M2ZigbeeRcp-bridge|aarch64||M2ZigbeeRcp-bridge'", '', d)}"
+MATTER_APPLICATIONS:append = " ${@bb.utils.contains_any('MACHINE_FEATURES', 'has-iwxxx', \
+    "'bridge-app/nxp/linux-M2ZigbeeRcp-bridge|M2ZigbeeRcp-bridge|aarch64||M2ZigbeeRcp-bridge'", '', d)}"
 
 MATTER_APPLICATIONS:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'trusty', " \
     'lighting-app/linux|chip-lighting-app|aarch64-trusty|chip_with_trusty_os=true|chip-lighting-app-trusty' \
