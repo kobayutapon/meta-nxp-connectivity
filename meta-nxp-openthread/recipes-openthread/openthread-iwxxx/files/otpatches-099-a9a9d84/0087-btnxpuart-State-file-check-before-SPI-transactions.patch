@@ -1,0 +1,148 @@
+/*
+*  Copyright (c) 2020, The OpenThread Authors.
+*  Copyright 2023-2025 NXP
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions are met:
+*  1. Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*  2. Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in the
+*     documentation and/or other materials provided with the distribution.
+*  3. Neither the name of the copyright holder nor the
+*     names of its contributors may be used to endorse or promote products
+*     derived from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+*  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+*  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+*  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+*  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+*  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+*  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+*  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*/
+ 
+/*
+* Header for patch information.
+* Description           : Implement IsFirmwareReady and WaitForFirmwareReady
+*                         WaitForFirmwareReady call in PushPullSpi before to proceed to DoSpiTransfer call
+* Version               : v001
+* Mandatory/Optional    : Mandatory
+* Impact if not applied : Cannot take avantage of btnxpuart State file feature
+*/
+ 
+Upstream-Status: Inappropriate [platform specific changes]
+ 
+diff --git a/src/posix/platform/spi_interface.cpp b/src/posix/platform/spi_interface.cpp
+index eb403ed51..a27a6caf9 100644
+--- a/src/posix/platform/spi_interface.cpp
++++ b/src/posix/platform/spi_interface.cpp
+@@ -61,6 +61,16 @@
+ #include <linux/ioctl.h>
+ #include <linux/spi/spidev.h>
+ 
++#include <fstream>
++#include <string>
++#include <thread>
++#include <chrono>
++#include <iostream>
++#define STATE_FILE_PATH "/run/udev/data/btnxpuart:serial0-0.state"
++#define FW_READY_STRING "FW_READY"
++#define WAIT_INTERVAL_MS 500
++#define MAX_RETRIES 20
++
+ namespace ot {
+ namespace Posix {
+ 
+@@ -149,6 +159,24 @@ otError SpiInterface::Init(ReceiveFrameCallback aCallback, void *aCallbackContex
+     uint8_t     spiAlignAllowance  = OT_PLATFORM_CONFIG_SPI_DEFAULT_ALIGN_ALLOWANCE;
+     uint8_t     spiSmallPacketSize = OT_PLATFORM_CONFIG_SPI_DEFAULT_SMALL_PACKET_SIZE;
+ 
++    std::ifstream stateFile(STATE_FILE_PATH);
++    if (!stateFile.is_open())
++    {
++        // if /run/udev/data/btnxpuart:serial0-0.state can't be opened, continue execution
++        // but warn that btnxpuart autorecovery process may not work properly
++        otLogCritPlat(" ");
++        otLogCritPlat("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
++        otLogCritPlat("!!! ERROR IN BTNXPUART AUTO RECOVERY PROCESS:                                       !!!");
++        otLogCritPlat("!!! Impossible to open : /run/udev/data/btnxpuart:serial0-0.state                   !!!");
++        otLogCritPlat("!!! -> Root Cause #1: btnxpuart version is not from BSP 6.12.34 or higher           !!!");
++        otLogCritPlat("!!! -> Root Cause #2: UDEV rule for btnxpuart state file is not in the filesystem   !!!");
++        otLogCritPlat("!!!         btnxpuart state file should be /run/udev/data/btnxpuart:serial0-0.state !!!");
++        otLogCritPlat("!!!                                                                                 !!!");
++        otLogCritPlat("!!! BTNXPUART AUTO RECOVERY PROCESS COULD BE DEGRADED                               !!!");
++        otLogCritPlat("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
++        otLogCritPlat(" ");
++    }
++    
+     spiGpioIntDevice   = mRadioUrl.GetValue("gpio-int-device");
+     spiGpioResetDevice = mRadioUrl.GetValue("gpio-reset-device");
+ 
+@@ -419,6 +447,38 @@ otError SpiInterface::DoSpiTransfer(uint8_t *aSpiRxFrameBuffer, uint32_t aTransf
+     return (ret < 0) ? OT_ERROR_FAILED : OT_ERROR_NONE;
+ }
+ 
++bool SpiInterface::IsFirmwareReady(void)
++{
++    std::ifstream stateFile(STATE_FILE_PATH);
++    if (!stateFile.is_open())
++    {
++        // /run/udev/data/btnxpuart:serial0-0.state can't be opened
++        // btnxpuart Auto Recovery feature could be degraded
++        // but return true to insure the Openthread functionnality
++        return true;
++    }
++    std::string state;
++    std::getline(stateFile, state);
++    stateFile.close();
++
++    return (state == FW_READY_STRING);
++}
++
++void SpiInterface::WaitForFirmwareReady(void)
++{
++    int retries = 0;
++    while (!IsFirmwareReady() && retries < MAX_RETRIES)
++    {
++        otLogNotePlat("FW is not ready, wait here...");
++        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_INTERVAL_MS));
++        retries++;
++    }
++    if (retries == MAX_RETRIES)
++    {
++        otLogCritPlat("FW still not ready after %d seconds", ((MAX_RETRIES*WAIT_INTERVAL_MS)/1000));
++    }
++}
++
+ otError SpiInterface::PushPullSpi(void)
+ {
+     otError          error               = OT_ERROR_FAILED;
+@@ -489,6 +549,9 @@ otError SpiInterface::PushPullSpi(void)
+     // Set the total number of bytes to be transmitted.
+     spiTransferBytes += kSpiFrameHeaderSize + mSpiAlignAllowance;
+ 
++    // wait that FW is ready
++    WaitForFirmwareReady();
++
+     // Perform the SPI transaction.
+     error = DoSpiTransfer(spiRxFrameBuffer, spiTransferBytes);
+ 
+diff --git a/src/posix/platform/spi_interface.hpp b/src/posix/platform/spi_interface.hpp
+index d397270bb..b448fd5e8 100644
+--- a/src/posix/platform/spi_interface.hpp
++++ b/src/posix/platform/spi_interface.hpp
+@@ -190,6 +190,8 @@ private:
+     uint8_t *GetRealRxFrameStart(uint8_t *aSpiRxFrameBuffer, uint8_t aAlignAllowance, uint16_t &aSkipLength);
+     otError  DoSpiTransfer(uint8_t *aSpiRxFrameBuffer, uint32_t aTransferLength);
+     otError  PushPullSpi(void);
++    bool IsFirmwareReady(void);
++    void WaitForFirmwareReady(void);
+ 
+     bool CheckInterrupt(void);
+     void LogStats(void);
