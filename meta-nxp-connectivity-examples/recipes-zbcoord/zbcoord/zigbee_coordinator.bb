@@ -8,6 +8,8 @@ SRC_URI = "git://github.com/nxp-mcuxpresso/mcuxsdk-middleware-zigbee.git;branch=
 SRC_URI += "file://0001-fix-imx-build-error.patch"
 SRCREV = "24281227192e4b2e090c5e1a4bedae55a9a537c4"
 
+do_configure[network] = "1"
+
 python() {
     http_proxy = d.getVar("http_proxy") or ""
     https_proxy = d.getVar("https_proxy") or ""
