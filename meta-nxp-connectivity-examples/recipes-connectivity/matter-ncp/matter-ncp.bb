@@ -4,14 +4,14 @@ DESCRIPTION = "This layer loads the Matter applications with Redfinch NCP"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRCBRANCH = "v1.3-branch-release-matter-ncp"
+SRCBRANCH = "release-matter-ncp-2025q4"
 IMX_MATTER_SRC ?= "gitsm://github.com/NXP/matter.git;protocol=https"
 SRC_URI = "${IMX_MATTER_SRC};branch=${SRCBRANCH}"
 MATTER_PY_PATH ?= "${STAGING_BINDIR_NATIVE}/python3-native/python3"
 
 PATCHTOOL = "git"
 
-SRCREV = "473eaf9e0e0819e9125a158a7084f1e04a949837"
+SRCREV = "b772a02270a03ebadaa211ebfe6b34af4c901bba"
 
 TARGET_CC_ARCH += "${LDFLAGS}"
 DEPENDS += " gn-native ninja-native avahi dbus-glib-native pkgconfig-native boost python3-pip-native python3-packaging python3-click libusb "
