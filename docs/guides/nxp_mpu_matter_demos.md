@@ -412,14 +412,30 @@ ___[ELE](https://www.nxp.com/products/nxp-product-information/nxp-product-progra
 
 ##### control the nxp-thermostat-app
 
-    # read the local-temperature attribute from nxp-thermostat-app.
-    $ chip-tool thermostat read local-temperature 8888 1                 # read the local-temperature, it's 0 if no sensor.
-    # read the control-sequence-of-operation attribute form nxp-thermostat-app.
-    $ chip-tool thermostat read control-sequence-of-operation 8888 1     # ControlSequenceOfOperation: 4
-    # read the system-mode attribute form nxp-thermostat-app.
-    $ chip-tool thermostat read system-mode 8888 1                       # SystemMode: 1
-    # check whether the setpoint-raise-lower command work.
-    $ chip-tool thermostat setpoint-raise-lower 2 20 8888 1              # status = 0x00 (SUCCESS)
+    # read the local temperature from nxp-thermostat-app.
+    $ chip-tool thermostat read local-temperature 8888 1
+    # read the abs-max-heat-setpoint-limit form nxp-thermostat-app.
+    $ chip-tool thermostat read abs-max-heat-setpoint-limit 8888 1
+    # read the abs-min-heat-setpoint-limit form nxp-thermostat-app.
+    $ chip-tool thermostat read abs-min-heat-setpoint-limit 8888 1
+    # read the max-heat-setpoint-limit form nxp-thermostat-app.
+    $ chip-tool thermostat read max-heat-setpoint-limit 8888 1
+    # read the min-heat-setpoint-limit form nxp-thermostat-app.
+    $ chip-tool thermostat read min-heat-setpoint-limit 8888 1
+    # set max-heat-setpoint-limit=2800(28℃)，which should satisfy the equation "min-heat-setpoint-limit <= max-heat-setpoint-limit <= abs-max-heat-setpoint-limit".
+    $ chip-tool thermostat write max-heat-setpoint-limit 2800 8888 1
+    # set occupied-heating-setpoint=1800(18℃)，which should satisfy the equation "min-heat-setpoint-limit <= occupied-heating-setpoint <= max-heat-setpoint-limit".
+    $ chip-tool thermostat write occupied-heating-setpoint 1800 8888 1
+    # check if occupied-heating-setpoint is set to 1800.
+    $ chip-tool thermostat read occupied-heating-setpoint 8888 1
+    # set occupied-heating-setpoint += 20, which cannot be set bigger than the value of max-heat-setpoint-limit.
+    $ chip-tool thermostat setpoint-raise-lower 0 20 8888 1
+    # check if occupied-heating-setpoint equal to 2000.
+    $ chip-tool thermostat read occupied-heating-setpoint 8888 1
+    # set occupied-heating-setpoint -= 10, which cannot be set lower than the value of min-heat-setpoint-limit.
+    $ chip-tool thermostat setpoint-raise-lower 0 -10 8888 1
+    # check if occupied-heating-setpoint equal to 1900.
+    $ chip-tool thermostat read occupied-heating-setpoint 8888 1
 
 ##### control the chip-bridge-app
 

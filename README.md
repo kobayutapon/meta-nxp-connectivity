@@ -28,7 +28,7 @@ This repository contains the i.MX MPU project Matter related Yocto recipes. The 
  - **Zigbee** Stack and application examples: [meta-nxp-zigbee-rcp](./docs/guides/meta-nxp-connectivity-iwxxx-dualpan.md) and [zbcoord](./meta-nxp-connectivity-examples/recipes-zbcoord/zbcoord)
  - **Matter-NCP** [nxp-matter-ncp](./docs/guides/nxp_matter_ncp_guide.md)
 
-All the software components revisions are based on [Matter v1.5 Rev TE](https://github.com/project-chip/connectedhomeip/tree/master)
+All the software components revisions are based on [Matter v1.5-branch](https://github.com/project-chip/connectedhomeip/tree/v1.5-branch)
 
 The following Matter related binaries will be installed into the Yocto image root filesystem by this Yocto layer recipes:
  - chip-lighting-app: Matter lighting app demo
@@ -62,7 +62,7 @@ The following Matter related binaries will be installed into the Yocto image roo
 
 # i.MX MPU Matter platform
 
-We currently support 8 i.MX MPU platforms, which are the i.MX93 FRDM, the i.MX93 EVK, the i.MX8M Mini EVK, the i.MX6ULL EVK, the i.MX8ULP EVK, the i.MX91 EVK, the i.MX91 QSB, the i.MX91 FRDM and the i.MX95 15x15 EVK. For more details, please refer to the [NXP i.MX MPU Matter Platform](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/mpu-linux-hosted-matter-development-platform:MPU-LINUX-MATTER-DEV-PLATFORM).
+We currently support 9 i.MX MPU platforms, which are the i.MX93 FRDM, the i.MX93 EVK, the i.MX8M Mini EVK, the i.MX6ULL EVK, the i.MX8ULP EVK, the i.MX91 EVK, the i.MX91 QSB, the i.MX91 FRDM and the i.MX95 15x15 EVK. For more details, please refer to the [NXP i.MX MPU Matter Platform](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/mpu-linux-hosted-matter-development-platform:MPU-LINUX-MATTER-DEV-PLATFORM).
 
 <a name="How-to-build-the-Yocto-image"></a>
 
@@ -70,11 +70,8 @@ We currently support 8 i.MX MPU platforms, which are the i.MX93 FRDM, the i.MX93
 
 # What's new
 
-- Support Matter controller application and Matter demo applications on i.MX95 15x15 EVK platform, support OpenThread Border Router and OpenThread on i.MX95 15x15 EVK platform.
-- Integrated with Linux L6.12.34 and Yocto Walnascar.
-- Upgrade Matter application source code to v1.5 Rev TE.
-- Support Thread Board Router Management cluster in imx-thread-br-app application.
-- Support unpair nad forget device in chip-tool-web2, support network graph in chip-tool-web2.
+- Integrated with Linux L6.12.49 and Yocto Walnascar.
+- Upgrade Matter application source code to v1.5-branch.
 
 # How to build the Yocto image with integrated OpenThread Border Router
 
@@ -84,18 +81,18 @@ The following packages are required to build the Yocto Project:
     build-essential chrpath socat cpio python3 python3-pip python3-pexpect cmake\
     xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev \
     pylint3 xterm npm zstd build-essential libpython3-dev libdbus-1-dev python3.8-venv lz4 \
-    git gcc g++ pkg-config libssl-dev libglib2.0-dev libavahi-client-dev ninja-build \
+    git git-lfs gcc g++ pkg-config libssl-dev libglib2.0-dev libavahi-client-dev ninja-build \
     python3-venv python3-dev libgirepository1.0-dev libcairo2-dev libreadline-dev default-jre
 
-Make sure that your default Python3 version is 3.10:
+Make sure that your default Python3 version is 3.11:
 
     $ python3 --version
-      Python 3.10.x
+      Python 3.11.x
 
 Then, Yocto build environment must be setup.
 
 The Yocto source code and meta-nxp-connectivity recipes are maintained with a manifest file, used by repo tool to download the corresponding source code.
-This document is tested with the i.MX Yocto 6.12.34_2.1.0 release. The hardware tested are: i.MX93 FRDM, i.MX93 EVK, i.MX8M Mini EVK, i.MX6ULL EVK, i.MX8ULP EVK. i.MX91 EVK, i.MX91 QSB, i.MX91 FRDM and i.MX95 15x15 EVK.
+This document is tested with the i.MX Yocto 6.12.49_2.2.0 release. The hardware tested are: i.MX93 FRDM, i.MX93 EVK, i.MX8M Mini EVK, i.MX6ULL EVK, i.MX8ULP EVK. i.MX91 EVK, i.MX91 QSB, i.MX91 FRDM and i.MX95 15x15 EVK.
 Run the commands below to download this release:
 
     $ mkdir ~/bin
@@ -105,11 +102,11 @@ Run the commands below to download this release:
 
     $ mkdir ${MY_YOCTO} # this directory will be the top directory of the Yocto source code
     $ cd ${MY_YOCTO}
-    $ repo init -u https://github.com/nxp-imx/imx-manifest -b imx-linux-walnascar -m imx-6.12.34-2.1.0.xml
+    $ repo init -u https://github.com/nxp-imx/imx-manifest -b imx-linux-walnascar -m imx-6.12.49-2.2.0.xml
     $ repo sync
     $ cd ${MY_YOCTO}/sources/meta-nxp-connectivity
     $ git remote update
-    $ git checkout imx_matter_2025_q3
+    $ git checkout imx_matter_2025_q4
 
 More information about the downloaded Yocto release can be found in the corresponding i.MX Yocto Project User’s Guide, which can be found at [NXP official website](http://www.nxp.com/imxlinux).
 
@@ -125,7 +122,7 @@ Change the current directory to the top directory of the Yocto source code and e
     $ MACHINE=imx6ullevk DISTRO=fsl-imx-xwayland source sources/meta-nxp-connectivity/tools/imx-matter-setup.sh bld-xwayland-imx6ull
 
     # For i.MX8ULP EVK:
-    $ MACHINE=imx8ulpevk DISTRO=fsl-imx-xwayland source sources/meta-nxp-connectivity/tools/imx-matter-setup.sh bld-xwayland-imx8ulp
+    $ MACHINE=imx8ulpevk-matter DISTRO=fsl-imx-xwayland source sources/meta-nxp-connectivity/tools/imx-matter-setup.sh bld-xwayland-imx8ulp
 
     # For i.MX91 EVK:
     $ MACHINE=imx91evk-iwxxx-matter DISTRO=fsl-imx-xwayland source sources/meta-nxp-connectivity/tools/imx-matter-setup.sh bld-xwayland-imx91
@@ -149,7 +146,7 @@ After execution of previous commands, the Yocto images will be generated:
 - ${MY_YOCTO}/bld-xwayland-imx93/tmp/deploy/images/imx93evk-iwxxx-matter/imx-image-multimedia-imx93evk-iwxxx-matter.wic.zst for i.MX93 FRDM and i.MX93 EVK.
 - ${MY_YOCTO}/bld-xwayland-imx8mm/tmp/deploy/images/imx8mmevk-matter/imx-image-multimedia-imx8mmevk-matter.wic.zst for i.MX8M Mini EVK.
 - ${MY_YOCTO}/bld-xwayland-imx6ull/tmp/deploy/images/imx6ullevk/imx-image-multimedia-imx6ullevk.wic.zst for i.MX6ULL EVK.
-- ${MY_YOCTO}/bld-xwayland-imx8ulp/tmp/deploy/images/imx8ulpevk/imx-image-multimedia-imx8ulpevk.wic.zst for i.MX8ULP EVK.
+- ${MY_YOCTO}/bld-xwayland-imx8ulp/tmp/deploy/images/imx8ulpevk/imx-image-multimedia-imx8ulpevk-matter.wic.zst for i.MX8ULP EVK.
 - ${MY_YOCTO}/bld-xwayland-imx91/tmp/deploy/images/imx91evk-iwxxx-matter/imx-image-multimedia-imx91evk-iwxxx-matter.wic.zst for i.MX91 EVK.
 - ${MY_YOCTO}/bld-xwayland-imx91qsb/tmp/deploy/images/imx91qsb-iwxxx-matter/imx-image-multimedia-imx91qsb-iwxxx-matter.wic.zst for i.MX91 QSB.
 - ${MY_YOCTO}/bld-xwayland-imx91frdm/tmp/deploy/images/imx91frdm-iwxxx-matter/imx-image-multimedia-imx91frdm-iwxxx-matter.wic.zst for i.MX91 FRDM.
@@ -167,7 +164,7 @@ The zst images are symbolic link files, so you should copy them to a dedicated f
     $ cp ${MY_YOCTO}/bld-xwayland-imx6ull/tmp/deploy/images/imx6ullevk/imx-image-multimedia-imx6ullevk.wic.zst ${MY_images}
 
     # For i.MX8ULP EVK:
-    $ cp ${MY_YOCTO}/bld-xwayland-imx8ulp/tmp/deploy/images/imx8ulpevk/imx-image-multimedia-imx8ulpevk.wic.zst ${MY_images}
+    $ cp ${MY_YOCTO}/bld-xwayland-imx8ulp/tmp/deploy/images/imx8ulpevk/imx-image-multimedia-imx8ulpevk-matter.wic.zst ${MY_images}
 
     # For i.MX91 EVK:
     $ cp ${MY_YOCTO}/bld-xwayland-imx91/tmp/deploy/images/imx91evk-iwxxx-matter/imx-image-multimedia-imx91evk-iwxxx-matter.wic.zst ${MY_images}
@@ -236,7 +233,7 @@ ___Before flashing the image, follow the prompts on the board to put the board i
     $ sudo uuu -b sd_all imx-image-multimedia-imx6ullevk.wic.zst
 
     # For i.MX8ULP EVK:
-    $ sudo uuu -b emmc_all imx-image-multimedia-imx8ulpevk.wic.zst
+    $ sudo uuu -b emmc_all imx-image-multimedia-imx8ulpevk-matter.wic.zst
 
     # For i.MX91 EVK:
     $ sudo uuu -b sd_all imx-image-multimedia-imx91evk-iwxxx-matter.wic.zst
@@ -424,13 +421,13 @@ A document explaining how to use Matter with OTBR and OpenThread on the i.MX MPU
 
 # How to build Matter application
 
-The Matter application has been installed into the Yocto image by default. If you want build it separately, run the below commands to download the Matter application source code and switch to v1.4.1 branch:
+The Matter application has been installed into the Yocto image by default. If you want build it separately, run the below commands to download the Matter application source code and switch to v1.5 branch:
 
     $ mkdir ${MY_Matter_Apps}     # this is top level directory of this project
     $ cd ${MY_Matter_Apps}
     $ git clone https://github.com/NXP/matter.git
     $ cd matter
-    $ git checkout origin/v1.5-branch-imx_matter_2025_q3
+    $ git checkout origin/v1.5-branch-imx_matter_2025_q4
     $ git submodule update --init
 
  ___Make sure the shell isn't in Yocto SDK environment___. Then, export a shell environment variable named IMX_SDK_ROOT to specify the path of the SDK.
@@ -509,7 +506,7 @@ After executing the above command, the chip-tool executable files will be found 
 
 An official Matter document explaining how to use chip-tool as a Matter controller can be found [here](https://github.com/project-chip/connectedhomeip/blob/master/docs/guides/chip_tool_guide.md).
 
-A document explaining how to use Matter applications on the i.MX MPU platform can be found in the [NXP Matter demos guide](docs/guides/nxp_mpu_matter_demos.md). A document explaining how to use chip-tool-web2 application can be found in the [NXP chip-tool-web2 guide](docs/guides/nxp_chip_tool_web2_guide.md). A document explaining how to use NXP customized Zigbee bridge application imx-chip-bridge-app application can be found in the [NXP imx-chip-bridge-app guide](https://github.com/NXP/matter/blob/v1.5-branch-imx_matter_2025_q3/examples/bridge-app/nxp/linux-imx/README.md). A document explaining how to run Matter Commissioning in Home Assistant application based on i.MX MPU platforms in the [NXP Matter HA guide](docs/guides/nxp_mpu_matter_Home_Assistant.md)
+A document explaining how to use Matter applications on the i.MX MPU platform can be found in the [NXP Matter demos guide](docs/guides/nxp_mpu_matter_demos.md). A document explaining how to use chip-tool-web2 application can be found in the [NXP chip-tool-web2 guide](docs/guides/nxp_chip_tool_web2_guide.md). A document explaining how to use NXP customized Zigbee bridge application imx-chip-bridge-app application can be found in the [NXP imx-chip-bridge-app guide](https://github.com/NXP/matter/blob/v1.5-branch-imx_matter_2025_q4/examples/bridge-app/nxp/linux-imx/README.md). A document explaining how to run Matter Commissioning in Home Assistant application based on i.MX MPU platforms in the [NXP Matter HA guide](docs/guides/nxp_mpu_matter_Home_Assistant.md)
 
 <a name="Security-configuration-for-Matter"></a>
 
@@ -551,7 +548,7 @@ Test attestation binary can be found in: _meta-nxp-connectivity/tools/test_attes
 
 The Trusty OS, which contains the Trusted Application (TA) for i.MX Matter, is maintained by NXP and released as open source. Please follow below instructions to fetch the Trusty OS source code and build it:
 
-    $ repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-trusty-matter -m imx_trusty_matter_2023_q3.xml
+    $ repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-trusty-matter -m imx_trusty_matter_2023_q2.xml
     $ repo sync -c
 
     # Setup the build environment. This will only configure the current terminal.

@@ -32,15 +32,15 @@ You should first download and deploy the Docker containers on an i.MX MPU platfo
 
 Download and deploy the homeassistant and matter-server Docker images.
 
-    $ docker run -d --name homeassistant --privileged --restart=unless-stopped -e TZ=MY_TIME_ZONE -v $(pwd)/config:/config -v /run/dbus:/run/dbus:ro --network=host ghcr.io/home-assistant/home-assistant:2025.9
+    $ docker run -d --name homeassistant --privileged --restart=unless-stopped -e TZ=MY_TIME_ZONE -v $(pwd)/config:/config -v /run/dbus:/run/dbus:ro --network=host ghcr.io/home-assistant/home-assistant:2025.11
     $ docker run -d --name matter-server --restart=unless-stopped --security-opt apparmor=unconfined -v $(pwd)/data:/data --network=host ghcr.io/home-assistant-libs/python-matter-server:8.1.0 --storage-path /data --paa-root-cert-dir /data/credentials
 
 It will take a few minutes to download and deploy the images. You can check the images by running "$ docker image" after the deployment is complete.
 
     root@cn-szh02-ns-pr002:~# docker images
-    REPOSITORY                                         TAG       IMAGE ID       CREATED       SIZE
-    ghcr.io/home-assistant/home-assistant              2025.9    1e648ef611ad   4 days ago    2.02GB
-    ghcr.io/home-assistant-libs/python-matter-server   8.1.0     974a0e20775e   5 weeks ago   462MB
+    REPOSITORY                                         TAG       IMAGE ID       CREATED        SIZE
+    ghcr.io/home-assistant/home-assistant              2025.11   3e56abf51c1e   6 days ago     2.06GB
+    ghcr.io/home-assistant-libs/python-matter-server   8.1.0     974a0e20775e   3 months ago   462MB
 
 <a name="running-app"></a>
 
