@@ -20,7 +20,7 @@
 
 &lpi2c2 {
 	pcal6524: gpio@22 {
-        gpio-line-names = "", "", "", "", "", "", "", "", "", "", "", "IWxxx_PD_N";
+	gpio-line-names = "", "", "", "", "", "", "", "", "", "", "", "IWxxx_PD_N";
 	};
 
 	pcal6408: gpio@20 {
@@ -29,7 +29,8 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 		status = "okay";
-        gpio-line-names = "IWxxx_NB_SPI_ENA", "IWxxx_NB_IND_RST_15_4";
+		vcc-supply=<&reg_m2_pwr>;
+		gpio-line-names = "IWxxx_NB_SPI_ENA", "IWxxx_NB_IND_RST_15_4";
 	};
 };
 
