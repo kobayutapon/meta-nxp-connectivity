@@ -18,8 +18,6 @@ python() {
     d.setVar("MY_HTTPS_PROXY", https_proxy)
 }
 
-S = "${WORKDIR}/git"
-
 inherit cmake
 
 DEPENDS += " mbedtls "
@@ -36,8 +34,12 @@ do_configure() {
         export https_proxy
     fi
     cd ${S}/examples/zigbee_coordinator/build_linux
-    cmake ./ -DMACHINE_TYPE=imx8 -DCONFIG_MBEDTLS_SOURCE=GIT -DENABLE_TESTING=OFF -DENABLE_PROGRAMS=OFF
+    # GCC15 Compatibility with CMake < 3.5 has been removed from CMake.
+    cmake ./ -DMACHINE_TYPE=imx8 -DCONFIG_MBEDTLS_SOURCE=GIT -DENABLE_TESTING=OFF -DENABLE_PROGRAMS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_FLAGS="-Dbool=bool"
 }
+
+INSANE_SKIP:${PN}-dbg += "buildpaths"
+INSANE_SKIP:${PN} += "buildpaths"
 
 do_compile() {
     cd ${S}/examples/zigbee_coordinator/build_linux
