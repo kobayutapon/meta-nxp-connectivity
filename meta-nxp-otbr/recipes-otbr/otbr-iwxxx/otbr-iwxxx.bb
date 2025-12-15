@@ -6,7 +6,6 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=87109e44b2fda96a8991f27684a7349c"
 
 PATCHTOOL = "git"
 
-S = "${WORKDIR}/git"
 FILES:${PN} += "lib/systemd"
 FILES:${PN} += "usr/share"
 FILES:${PN} += "usr/lib"
@@ -22,7 +21,10 @@ inherit cmake
 include iw612_otbr_src_rev_opts_patches.inc
 SRC_URI += "file://0002-copy-prebuilt-frontend-files-instead-of-build.patch"
 
-EXTRA_OECMAKE += " -DCMAKE_CXX_FLAGS="${CXXFLAGS}"" -Wno-error=attributes""" -DOTBR_WEB=ON "
+EXTRA_OECMAKE += " -DCMAKE_CXX_FLAGS="${CXXFLAGS}"" -Wno-error=attributes -Wno-overloaded-virtual""" -DOTBR_WEB=ON "
 BIN_NAME_PATTERN="-iwxxx"
 
 INSANE_SKIP:${PN} += "buildpaths"
+
+# GCC15 Compatibility with CMake < 3.5 has been removed from CMake.
+EXTRA_OECMAKE += "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"

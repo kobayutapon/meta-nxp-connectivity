@@ -1,0 +1,28 @@
+From cc38bdf1a4d75b430c37de9974fb788fc7ee0885 Mon Sep 17 00:00:00 2001
+From: Haoran Wang <elven.wang@nxp.com>
+Date: Tue, 9 Dec 2025 22:25:39 +0900
+Subject: [PATCH] Remove boost_system dependency for boost 1.89.0
+
+Signed-off-by: Haoran Wang <elven.wang@nxp.com>
+
+Upstream-Status: Inappropriate  [platform specific changes]
+---
+ src/web/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/web/CMakeLists.txt b/src/web/CMakeLists.txt
+index 37ba68ff..0ede5480 100644
+--- a/src/web/CMakeLists.txt
++++ b/src/web/CMakeLists.txt
+@@ -30,7 +30,7 @@ pkg_check_modules(JSONCPP jsoncpp REQUIRED)
+ set(Boost_USE_STATIC_LIBS ON)
+ set(Boost_USE_MULTITHREADED ON)
+ set(Boost_USE_STATIC_RUNTIME OFF)
+-find_package(Boost REQUIRED COMPONENTS filesystem system)
++find_package(Boost REQUIRED COMPONENTS filesystem)
+ set(OTBR_WEB_DATADIR ${CMAKE_INSTALL_FULL_DATADIR}/otbr-web)
+ 
+ add_executable(otbr-web
+-- 
+2.43.0
+
