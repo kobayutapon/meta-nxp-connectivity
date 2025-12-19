@@ -12,6 +12,6 @@ TARGET_CFLAGS += " -Wno-error "
 inherit cmake
 
 include iw612_ot_src_rev_opts_patches.inc
-BIN_NAME_PATTERN = "-iwxxx-spi"
+BIN_NAME_PATTERN = "-iwxxx"
 # GCC15 Compatibility with CMake < 3.5 has been removed from CMake.
 EXTRA_OECMAKE += "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
