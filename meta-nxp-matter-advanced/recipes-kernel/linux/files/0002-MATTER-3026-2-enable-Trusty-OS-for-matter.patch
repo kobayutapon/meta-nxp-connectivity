@@ -1,24 +1,51 @@
-From 33fda1fa2d996b01e740400e17be9dd3abd99e1c Mon Sep 17 00:00:00 2001
+From 1d3039a09c544f2af6a079fbb6985c9994b68a83 Mon Sep 17 00:00:00 2001
 From: Ji Luo <ji.luo@nxp.com>
-Date: Thu, 19 Dec 2024 14:09:48 +0800
-Subject: [PATCH 2/2] MATTER-3026-2 enable Trusty OS for matter
+Date: Tue, 23 Dec 2025 14:18:06 +0800
+Subject: [PATCH] MATTER-3820-2 Enable matter trusty support for k6.18
 
-Enable Trusty related configs and dts nodes.
+Enable trusty support for imx8mm and imx8mp.
 
-Change-Id: I502234f7be9e2b8113b5ef30ea2e3066ef6a9868
+Change-Id: I32e9c9e72eb61cb87548f6f9ec0208ac56640eb3
 Signed-off-by: Ji Luo <ji.luo@nxp.com>
----
- arch/arm64/boot/dts/freescale/imx8mm-evk.dts | 18 ++++++++++++++++++
- 1 files changed, 18 insertions(+)
 
 Upstream-Status: Inappropriate  [platform specific changes]
+---
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
-index 8bf784ff8ad85..8d53a4851a2ad 100644
+index 8bf784f..73eeda4 100644
 --- a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
 +++ b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
-@@ -16,6 +16,24 @@ aliases {
- 		spi0 = &flexspi;
+@@ -26,6 +26,24 @@
+ 		gpio = <&gpio2 10 GPIO_ACTIVE_HIGH>;
+ 		enable-active-high;
+ 	};
++
++	trusty {
++		compatible = "android,trusty-smc-v1";
++		ranges;
++		#address-cells = <2>;
++		#size-cells = <2>;
++		trusty-irq {
++			compatible = "android,trusty-irq-v1";
++			interrupt-ranges = < 0 15 0>;
++			ipi-range = <8 15 8>;
++		};
++		trusty-virtio {
++			compatible = "android,trusty-virtio-v1";
++		};
++		trusty-log {
++			compatible = "android,trusty-log-v1";
++		};
++	};
+ };
+ 
+ &flexspi {
+diff --git a/arch/arm64/boot/dts/freescale/imx8mp-evk.dts b/arch/arm64/boot/dts/freescale/imx8mp-evk.dts
+index bf7603b..d113c03 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mp-evk.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mp-evk.dts
+@@ -19,6 +19,24 @@
+ 		stdout-path = &uart2;
  	};
  
 +	trusty {
@@ -39,9 +66,6 @@ index 8bf784ff8ad85..8d53a4851a2ad 100644
 +		};
 +	};
 +
- 	reg_usdhc1_vmmc: regulator-usdhc1 {
- 		compatible = "regulator-fixed";
- 		regulator-name = "WLAN_EN";
--- 
-2.34.1
-
+ 	gpio-leds {
+ 		compatible = "gpio-leds";
+ 		pinctrl-names = "default";

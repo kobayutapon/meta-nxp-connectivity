@@ -1,599 +1,117 @@
-From 1ab2268af9f2009a8be4bd414330d45a7b4cd859 Mon Sep 17 00:00:00 2001
+From f111da309c22b563704ed3460c241f2181136270 Mon Sep 17 00:00:00 2001
 From: Ji Luo <ji.luo@nxp.com>
-Date: Thu, 19 Dec 2024 14:55:02 +0800
-Subject: [PATCH 1/2] MATTER-3026-1 enable Trusty OS for matter
+Date: Tue, 23 Dec 2025 14:43:43 +0800
+Subject: [PATCH] MATTER-3820-1 Enable trusty drivers for k6.18
 
-Porting trusty kernel drivers into kernel 6.12. This commit squashes
-below commits:
+Add trusty drivers support for matter k6.18. This commit
+is a collection of below commits:
+	MA-13966 Route Trusty OS log to Linux end
+	MA-20082-1 ANDROID: trusty-log: enlarge buffer size for old trusty api version
+	MA-17372-1 trusty: remove trusty-log buffer when shutdown
+	MA-24298 allow memory lend for old api level
+	GKI: Adapt to upstream dma-buf locking changes
+	trusty: Defer the clearing of signaled until FFA_RUN
+	ANDROID: trusty: fix warnings from missing-prototypes
+	trusty-virtio: Use hrtimer_setup on newer kernels
+	ANDROID: trusty: Get rid of 'remove_new' relic from platform driver struct
+	ANDROID: trusty-ipc: Convert DMA_BUF symbol namespace to string literal
+	trusty-ffa: Enqueue NOP on SRI
+	trusty-ipc: fix return value on error path
+	trusty-ffa-transport: reference the FF-A bus statically
+	trusty-virtio: Add module parameter for default polling period
+	include: smcall: Add TRUSTY_FFA_MSG_IS_IDLE
+	trusty-virtio: Add periodic timer for check_vqs
+	trusty-ffa: Remove children on shutdown
+	trusty-populate: Add new module that populates devices
+	ANDROID: trusty-ffa: Enable FFA transport
+	trusty-test: Add secure timer to FP test
+	ANDROID: trusty: Add trusty-ffa driver
+	ANDROID: trusty: Separate out SMC based transport
+	ANDROID: trusty-sched-share: Add IDLE shadow priority
+	trusty: Cast SMC numbers and errors to 32-bit
+	trusty-virtio: Add release function to virtio devices
+	trusty-ipc: Fix some shutdown bugs
+	trusty: Ignore NOT_SUPPORTED error for FFA_MEM_SHARE init
+	trusty: Add trusty_get_state getter with extra checks
+	trusty-test: Add fpsimd tests
+	trusty: Remove some debug statements
+	trusty: Added NOP DMA functions to trusty-virtio
+	ANDROID: trusty-test: Fix parsing of arguments
+	Fix headers include variable
+	Add include paths to Makefile
+	ANDROID: trusty_log: comply with platform_driver::remove() returning void (v6.11 compat)
+	ANDROID: trusty: comply with platform_driver::remove() returning void (v6.11 compat) round 2
+	ANDROID: trusty: Support pseudo-nmi mode.
+	ANDROID: trusty: comply with platform_driver::remove() returning void (v6.11 compatibility)
+	ANDROID: trusty: Add SECURE_OR_SHARE transfer
+	ANDROID: trusty: Fix changes to find_vqs
+	ANDROID: trusty: Fix build errors from v6.10 merge
+	ANDROID: trusty: Rename transfer memory to lend
+	Fix class_create wrapper macro on pre-6.4 kernels
+	Trusty driver compat 6.7 shrinker interface
+	Trusty driver compat 6.4 class_create()
+	Trusty driver compat 6.0 register_shrinker()
+	Trusty driver compat 5.16 MODULE_IMPORT_NS
+	Trusty driver compat 5.14 panic_notifier
+	trusty: add the TRUSTY virtio id to trusty-ipc.c
+	Trusty driver toolchain compatibility
+	ANDROID: Eliminate vqueue map/unmap for each msg
+	ANDROID: trusty: Make Trusty driver page size agnostic
+	ANDROID: trusty-ipc: correct data_source flag of struct iov_iter in filp_send_ioctl()
+	ANDROID: trusty: fix use-after-free
+	ANDROID: trusty: Make trusty-irq part of trusty-core module.
+	ANDROID: Delay sharing sched memory with Trusty
+	ANDROID: trusty: Call kthread_set_per_cpu
+	ANDROID: trusty-log: fix potential use-after-free
+	ANDROID: trusty: park threads when cpu is offline
+	ANDROID: trusty: Print error message if trusty_nop_thread runs on wrong cpu
+	ANDROID: improve trusty kthread priority
+	ANDROID: escalate kthread nice for Trusty
+	ANDROID: Use kthread for trusty work instead of wq
+	ANDROID: trusty: Create API for sharing trusty info
+	ANDROID: trusty: Add trace points
+	ANDROID: trusty: Use high priority check WQ and regular nop WQ
+	ANDROID: trusty-log: fix poll check for data availability.
+	ANDROID: trusty: add a toggle for running trusty work in higher priority
+	ANDROID: trusty-log: Optionally copy Trusty log to kernel log
+	ANDROID: trusty-log: make rate limit configurable
+	ANDROID: trusty: Enforce only TRUSTY_SEND_SECURE can send secure memory
+	ANDROID: trusty-ipc: Allow registering multiple handles
+	ANDROID: trusty: Support setting trusty_shared_mem_id_t
+	ANDROID: trusty-log: rework buffer allocation
+	ANDROID: trusty-ipc: Fix lock protection of shared_handles
+	ANDROID: trusty-log: support poll()
+	ANDROID: trusty-irq: enqueue work in trusty_irq_cpu_up
+	ANDROID: trusty: Add config TRUSTY_CRASH_IS_PANIC
+	ANDROID: trusty-ipc: Fix crash when running out of txbuffers
+	ANDROID: trusty: Allow TRUSTY_LEND of buffers
+	ANDROID: trusty-virtio: remove unnecessary include of dma-mapping.h
+	ANDROID: trusty-log: Complement logging sink with unthrottled virtual file
+	ANDROID: trusty-log: Refactor logging state to support concurrent sinks
+	ANDROID: trusty-log: Sanitize u32 overflow of the log ring buffer write index
+	ANDROID: trusty-log: On trusty panic, unthrottle sink to the kernel log
+	ANDROID: trusty-log: Update trusty log buffer size to hold a complete Trusty crash logs
+	ANDROID: trusty: Support setting FF-A Tag
+	ANDROID: trusty-ipc: Switch from memfd to dma_buf
+	ANDROID: trusty-irq: specify IPIs in new way
+	ANDROID: trusty: Add trusty-test driver
+	ANDROID: trusty: Add trusty-ipc driver
+	ANDROID: trusty: Add trusty-virtio driver
+	ANDROID: trusty: Add trusty-log driver
+	ANDROID: trusty: Add trusty-irq driver
+	ANDROID: trusty: Add trusty-core driver
 
- MA-20082-1 ANDROID: trusty-log: enlarge buffer size for old trusty api version
- MA-17372-1 trusty: remove trusty-log buffer when shutdown
- treewide: add missing vmalloc.h include (v6.10 preparation)
- trusty: kbuild: this depends on ARCH_HAS_DMA_OPS (v6.12 compat)
- trusty: virtio: implement (empty) dma_map_ops::unmap_page (v6.12 prep)
- treewide: comply with platform_driver::remove() returning void (v6.11 compatibility)
- trusty: virtio: comply with find_vqs() new parameters (v6.11 compatibility)
- treewide: remove second parameter of__assign_str() (v6.10 compatibility)
- Trusty driver compat 6.7 shrinker interface
- Trusty driver compat 6.0 register_shrinker()
- trusty: set kthread affinity again when cpu hotplugs
- MA-23225 trusty: fix build break
- ANDROID: Eliminate vqueue map/unmap for each msg
- ANDROID: trusty: Make Trusty driver page size agnostic
- ANDROID: trusty-ipc: correct data_source flag of struct iov_iter in filp_send_ioctl()
- ANDROID: trusty: fix use-after-free
- ANDROID: trusty: Make trusty-irq part of trusty-core module.
- ANDROID: Delay sharing sched memory with Trusty
- ANDROID: trusty: Call kthread_set_per_cpu
- ANDROID: trusty-log: fix potential use-after-free
- ANDROID: trusty: park threads when cpu is offline
- ANDROID: trusty: Print error message if trusty_nop_thread runs on wrong cpu
- ANDROID: improve trusty kthread priority
- ANDROID: escalate kthread nice for Trusty
- ANDROID: Use kthread for trusty work instead of wq
- ANDROID: trusty: Create API for sharing trusty info
- ANDROID: trusty: Add trace points
- ANDROID: Enable repo hooks
- ANDROID: trusty: Use high priority check WQ and regular nop WQ
- ANDROID: trusty-log: fix poll check for data availability.
- ANDROID: trusty: Add trusty OWNERS files uapi and docs
- ANDROID: trusty: Add OWNERS files referring to the top level trusty OWNERS
- ANDROID: trusty: add a toggle for running trusty work in higher priority
- ANDROID: trusty-log: Optionally copy Trusty log to kernel log
- Revert "ANDROID: trusty-log: Don't copy Trusty logs to linux kernel log"
- ANDROID: trusty-log: make rate limit configurable
- ANDROID: trusty: Enforce only TRUSTY_SEND_SECURE can send secure memory
- ANDROID: trusty-ipc: Allow registering multiple handles
- ANDROID: trusty: Support setting trusty_shared_mem_id_t
- ANDROID: trusty-log: Don't copy Trusty logs to linux kernel log
- ANDROID: trusty-log: rework buffer allocation
- ANDROID: trusty-ipc: Fix lock protection of shared_handles
- ANDROID: trusty-log: support poll()
- ANDROID: trusty-irq: enqueue work in trusty_irq_cpu_up
- ANDROID: trusty: Add config TRUSTY_CRASH_IS_PANIC
- ANDROID: trusty-ipc: Fix crash when running out of txbuffers
- ANDROID: trusty: Allow TRUSTY_LEND of buffers
- ANDROID: trusty-virtio: remove unnecessary include of dma-mapping.h
- ANDROID: trusty-log: Complement logging sink with unthrottled virtual file
- ANDROID: trusty-log: Refactor logging state to support concurrent sinks
- ANDROID: trusty-log: Sanitize u32 overflow of the log ring buffer write index
- ANDROID: trusty-log: On trusty panic, unthrottle sink to the kernel log
- ANDROID: trusty-log: Update trusty log buffer size to hold a complete Trusty crash logs
- ANDROID: trusty_qemu_defconfig: Enable dma-buf and ion system heaps
- ANDROID: trusty: Support setting FF-A Tag
- ANDROID: Add trusty_qemu_defconfig
- ANDROID: trusty-ipc: Switch from memfd to dma_buf
- ANDROID: trusty-irq: document new way of specifying IPIs
- ANDROID: trusty-irq: specify IPIs in new way
- ANDROID: trusty: Add trusty-test driver
- ANDROID: trusty: Add trusty-ipc driver
- ANDROID: trusty: Add trusty-virtio driver
- ANDROID: trusty: Add trusty-log driver
- ANDROID: trusty: Add trusty-irq driver
- ANDROID: trusty: Add trusty-core driver
-
-Change-Id: I9c23e7d5b3759f9d08ca7f929631cef54071b8a6
+Change-Id: I0b97d7cfec01f6d81046e3c3729677df25939303
 Signed-off-by: Ji Luo <ji.luo@nxp.com>
----
- .../devicetree/bindings/trusty/OWNERS         |    2 +
- .../devicetree/bindings/trusty/trusty-irq.txt |   67 +
- .../devicetree/bindings/trusty/trusty-smc.txt |    6 +
- PREUPLOAD.cfg                                 |    7 +
- arch/arm/configs/trusty_qemu_defconfig        |  291 ++
- .../configs/trusty_qemu_defconfig.fragment    |   26 +
- drivers/Kconfig                               |    2 +
- drivers/Makefile                              |    1 +
- drivers/trusty/Kconfig                        |  118 +
- drivers/trusty/Makefile                       |   14 +
- drivers/trusty/OWNERS                         |    2 +
- drivers/trusty/trusty-ipc-trace.h             |  245 ++
- drivers/trusty/trusty-ipc.c                   | 2782 +++++++++++++++++
- drivers/trusty/trusty-irq-trace.h             |   32 +
- drivers/trusty/trusty-irq.c                   |  642 ++++
- drivers/trusty/trusty-irq.h                   |   17 +
- drivers/trusty/trusty-log.c                   | 1020 ++++++
- drivers/trusty/trusty-log.h                   |   28 +
- drivers/trusty/trusty-mem.c                   |  139 +
- drivers/trusty/trusty-sched-share-api.h       |   27 +
- drivers/trusty/trusty-sched-share.c           |  288 ++
- drivers/trusty/trusty-sched-share.h           |   58 +
- drivers/trusty/trusty-smc-arm.S               |   41 +
- drivers/trusty/trusty-smc-arm64.S             |   35 +
- drivers/trusty/trusty-smc.h                   |   26 +
- drivers/trusty/trusty-test.c                  |  440 +++
- drivers/trusty/trusty-test.h                  |   13 +
- drivers/trusty/trusty-trace.h                 |  268 ++
- drivers/trusty/trusty-virtio.c                |  852 +++++
- drivers/trusty/trusty.c                       | 1266 ++++++++
- include/linux/trusty/OWNERS                   |    2 +
- include/linux/trusty/arm_ffa.h                |  597 ++++
- include/linux/trusty/sm_err.h                 |   28 +
- include/linux/trusty/smcall.h                 |  154 +
- include/linux/trusty/trusty.h                 |  138 +
- include/linux/trusty/trusty_ipc.h             |   90 +
- include/uapi/linux/trusty/OWNERS              |    2 +
- include/uapi/linux/trusty/ipc.h               |   65 +
- include/uapi/linux/virtio_ids.h               |    2 +-
- 39 files changed, 9832 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/trusty/OWNERS
- create mode 100644 Documentation/devicetree/bindings/trusty/trusty-irq.txt
- create mode 100644 Documentation/devicetree/bindings/trusty/trusty-smc.txt
- create mode 100644 PREUPLOAD.cfg
- create mode 100644 arch/arm/configs/trusty_qemu_defconfig
- create mode 100644 arch/arm64/configs/trusty_qemu_defconfig.fragment
- create mode 100644 drivers/trusty/Kconfig
- create mode 100644 drivers/trusty/Makefile
- create mode 100644 drivers/trusty/OWNERS
- create mode 100644 drivers/trusty/trusty-ipc-trace.h
- create mode 100644 drivers/trusty/trusty-ipc.c
- create mode 100644 drivers/trusty/trusty-irq-trace.h
- create mode 100644 drivers/trusty/trusty-irq.c
- create mode 100644 drivers/trusty/trusty-irq.h
- create mode 100644 drivers/trusty/trusty-log.c
- create mode 100644 drivers/trusty/trusty-log.h
- create mode 100644 drivers/trusty/trusty-mem.c
- create mode 100644 drivers/trusty/trusty-sched-share-api.h
- create mode 100644 drivers/trusty/trusty-sched-share.c
- create mode 100644 drivers/trusty/trusty-sched-share.h
- create mode 100644 drivers/trusty/trusty-smc-arm.S
- create mode 100644 drivers/trusty/trusty-smc-arm64.S
- create mode 100644 drivers/trusty/trusty-smc.h
- create mode 100644 drivers/trusty/trusty-test.c
- create mode 100644 drivers/trusty/trusty-test.h
- create mode 100644 drivers/trusty/trusty-trace.h
- create mode 100644 drivers/trusty/trusty-virtio.c
- create mode 100644 drivers/trusty/trusty.c
- create mode 100644 include/linux/trusty/OWNERS
- create mode 100644 include/linux/trusty/arm_ffa.h
- create mode 100644 include/linux/trusty/sm_err.h
- create mode 100644 include/linux/trusty/smcall.h
- create mode 100644 include/linux/trusty/trusty.h
- create mode 100644 include/linux/trusty/trusty_ipc.h
- create mode 100644 include/uapi/linux/trusty/OWNERS
- create mode 100644 include/uapi/linux/trusty/ipc.h
 
 Upstream-Status: Inappropriate  [platform specific changes]
+---
 
-diff --git a/Documentation/devicetree/bindings/trusty/OWNERS b/Documentation/devicetree/bindings/trusty/OWNERS
-new file mode 100644
-index 0000000000000..0f6b8454aafcf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/trusty/OWNERS
-@@ -0,0 +1,2 @@
-+# include OWNERS from the top level trusty repo
-+include trusty:refs/meta/config:/OWNERS
-diff --git a/Documentation/devicetree/bindings/trusty/trusty-irq.txt b/Documentation/devicetree/bindings/trusty/trusty-irq.txt
-new file mode 100644
-index 0000000000000..cbb545ad452bf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/trusty/trusty-irq.txt
-@@ -0,0 +1,67 @@
-+Trusty irq interface
-+
-+Trusty requires non-secure irqs to be forwarded to the secure OS.
-+
-+Required properties:
-+- compatible: "android,trusty-irq-v1"
-+
-+Optional properties:
-+
-+- interrupt-templates: is an optional property that works together
-+  with "interrupt-ranges" to specify secure side to kernel IRQs mapping.
-+
-+  It is a list of entries, each one of which defines a group of interrupts
-+  having common properties, and has the following format:
-+    < phandle irq_id_pos [templ_data]>
-+      phandle - phandle of interrupt controller this template is for
-+      irq_id_pos - the position of irq id in interrupt specifier array
-+                   for interrupt controller referenced by phandle.
-+      templ_data - is an array of u32 values (could be empty) in the same
-+                   format as interrupt specifier for interrupt controller
-+                   referenced by phandle but with omitted irq id field.
-+
-+- interrupt-ranges: list of entries that specifies secure side to kernel
-+  IRQs mapping.
-+
-+  Each entry in the "interrupt-ranges" list has the following format:
-+    <beg end templ_idx>
-+      beg - first entry in this range
-+      end - last entry in this range
-+      templ_idx  - index of entry in "interrupt-templates" property
-+                   that must be used as a template for all interrupts
-+                   in this range
-+
-+- ipi-range: optional mapping of a linear range of trusty IRQs to a linear range
-+  of IPIs (inter-processor interrupts).  This has the following format:
-+    <beg end ipi_base>
-+      beg - first trusty IRQ number that is an IPI
-+      end - last trusty IRQ number that is an IPI
-+      ipi_base - IPI number of 'beg'
-+
-+Example:
-+{
-+	gic: interrupt-controller@50041000 {
-+		compatible = "arm,gic-400";
-+		#interrupt-cells = <3>;
-+		interrupt-controller;
-+		...
-+	};
-+	...
-+	trusty {
-+		compatible = "android,trusty-smc-v1";
-+		ranges;
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+
-+		irq {
-+			compatible = "android,trusty-irq-v1";
-+			interrupt-templates = <&gic 1 GIC_PPI 0>,
-+					      <&gic 1 GIC_SPI 0>;
-+			interrupt-ranges = <16  31 0>,
-+					   <32 223 1>;
-+			ipi-range = <8 15 8>;
-+		};
-+	}
-+}
-+
-+Must be a child of the node that provides the trusty std/fast call interface.
-diff --git a/Documentation/devicetree/bindings/trusty/trusty-smc.txt b/Documentation/devicetree/bindings/trusty/trusty-smc.txt
-new file mode 100644
-index 0000000000000..1b39ad317c678
---- /dev/null
-+++ b/Documentation/devicetree/bindings/trusty/trusty-smc.txt
-@@ -0,0 +1,6 @@
-+Trusty smc interface
-+
-+Trusty is running in secure mode on the same (arm) cpu(s) as the current os.
-+
-+Required properties:
-+- compatible: "android,trusty-smc-v1"
-diff --git a/PREUPLOAD.cfg b/PREUPLOAD.cfg
-new file mode 100644
-index 0000000000000..ad93a062ad5ac
---- /dev/null
-+++ b/PREUPLOAD.cfg
-@@ -0,0 +1,7 @@
-+[Builtin Hooks]
-+checkpatch = true
-+commit_msg_bug_field = true
-+commit_msg_changeid_field = true
-+
-+[Builtin Hooks Options]
-+checkpatch = --ignore=FILE_PATH_CHANGES,GERRIT_CHANGE_ID
-diff --git a/arch/arm/configs/trusty_qemu_defconfig b/arch/arm/configs/trusty_qemu_defconfig
-new file mode 100644
-index 0000000000000..46ad9504c23d1
---- /dev/null
-+++ b/arch/arm/configs/trusty_qemu_defconfig
-@@ -0,0 +1,291 @@
-+# CONFIG_LOCALVERSION_AUTO is not set
-+# CONFIG_SWAP is not set
-+CONFIG_POSIX_MQUEUE=y
-+CONFIG_AUDIT=y
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_PREEMPT=y
-+CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_BSD_PROCESS_ACCT_V3=y
-+CONFIG_TASKSTATS=y
-+CONFIG_TASK_DELAY_ACCT=y
-+CONFIG_TASK_XACCT=y
-+CONFIG_TASK_IO_ACCOUNTING=y
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_RT_GROUP_SCHED=y
-+CONFIG_CGROUP_FREEZER=y
-+CONFIG_CGROUP_CPUACCT=y
-+CONFIG_CGROUP_DEBUG=y
-+CONFIG_SCHED_AUTOGROUP=y
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_KALLSYMS_ALL=y
-+CONFIG_EMBEDDED=y
-+# CONFIG_COMPAT_BRK is not set
-+CONFIG_PROFILING=y
-+CONFIG_ARCH_VIRT=y
-+CONFIG_PCI=y
-+CONFIG_PCI_HOST_GENERIC=y
-+CONFIG_SMP=y
-+CONFIG_HIGHMEM=y
-+CONFIG_SECCOMP=y
-+CONFIG_CMDLINE="console=ttyAMA0"
-+CONFIG_PM_AUTOSLEEP=y
-+CONFIG_PM_WAKELOCKS=y
-+CONFIG_PM_WAKELOCKS_LIMIT=0
-+# CONFIG_PM_WAKELOCKS_GC is not set
-+CONFIG_PM_DEBUG=y
-+# CONFIG_BLK_DEV_BSG is not set
-+# CONFIG_IOSCHED_DEADLINE is not set
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
-+CONFIG_KSM=y
-+CONFIG_NET=y
-+CONFIG_PACKET=y
-+CONFIG_UNIX=y
-+CONFIG_XFRM_USER=y
-+CONFIG_NET_KEY=y
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+CONFIG_IP_ADVANCED_ROUTER=y
-+CONFIG_IP_MULTIPLE_TABLES=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
-+CONFIG_INET_ESP=y
-+CONFIG_INET_DIAG_DESTROY=y
-+CONFIG_IPV6_ROUTER_PREF=y
-+CONFIG_IPV6_ROUTE_INFO=y
-+CONFIG_IPV6_OPTIMISTIC_DAD=y
-+CONFIG_INET6_AH=y
-+CONFIG_INET6_ESP=y
-+CONFIG_INET6_IPCOMP=y
-+CONFIG_IPV6_MIP6=y
-+CONFIG_IPV6_MULTIPLE_TABLES=y
-+CONFIG_NETFILTER=y
-+CONFIG_NF_CONNTRACK=y
-+CONFIG_NF_CONNTRACK_SECMARK=y
-+CONFIG_NF_CONNTRACK_EVENTS=y
-+CONFIG_NF_CONNTRACK_AMANDA=y
-+CONFIG_NF_CONNTRACK_FTP=y
-+CONFIG_NF_CONNTRACK_H323=y
-+CONFIG_NF_CONNTRACK_IRC=y
-+CONFIG_NF_CONNTRACK_NETBIOS_NS=y
-+CONFIG_NF_CONNTRACK_PPTP=y
-+CONFIG_NF_CONNTRACK_SANE=y
-+CONFIG_NF_CONNTRACK_TFTP=y
-+CONFIG_NF_CT_NETLINK=y
-+CONFIG_NETFILTER_XT_TARGET_CLASSIFY=y
-+CONFIG_NETFILTER_XT_TARGET_CONNMARK=y
-+CONFIG_NETFILTER_XT_TARGET_CONNSECMARK=y
-+CONFIG_NETFILTER_XT_TARGET_IDLETIMER=y
-+CONFIG_NETFILTER_XT_TARGET_MARK=y
-+CONFIG_NETFILTER_XT_TARGET_NFLOG=y
-+CONFIG_NETFILTER_XT_TARGET_NFQUEUE=y
-+CONFIG_NETFILTER_XT_TARGET_TPROXY=y
-+CONFIG_NETFILTER_XT_TARGET_TRACE=y
-+CONFIG_NETFILTER_XT_TARGET_SECMARK=y
-+CONFIG_NETFILTER_XT_TARGET_TCPMSS=y
-+CONFIG_NETFILTER_XT_MATCH_COMMENT=y
-+CONFIG_NETFILTER_XT_MATCH_CONNLIMIT=y
-+CONFIG_NETFILTER_XT_MATCH_CONNMARK=y
-+CONFIG_NETFILTER_XT_MATCH_CONNTRACK=y
-+CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=y
-+CONFIG_NETFILTER_XT_MATCH_HELPER=y
-+CONFIG_NETFILTER_XT_MATCH_IPRANGE=y
-+CONFIG_NETFILTER_XT_MATCH_LENGTH=y
-+CONFIG_NETFILTER_XT_MATCH_LIMIT=y
-+CONFIG_NETFILTER_XT_MATCH_MAC=y
-+CONFIG_NETFILTER_XT_MATCH_MARK=y
-+CONFIG_NETFILTER_XT_MATCH_POLICY=y
-+CONFIG_NETFILTER_XT_MATCH_PKTTYPE=y
-+CONFIG_NETFILTER_XT_MATCH_QUOTA=y
-+CONFIG_NETFILTER_XT_MATCH_QUOTA2=y
-+CONFIG_NETFILTER_XT_MATCH_SOCKET=y
-+CONFIG_NETFILTER_XT_MATCH_STATE=y
-+CONFIG_NETFILTER_XT_MATCH_STATISTIC=y
-+CONFIG_NETFILTER_XT_MATCH_STRING=y
-+CONFIG_NETFILTER_XT_MATCH_TIME=y
-+CONFIG_NETFILTER_XT_MATCH_U32=y
-+CONFIG_IP_NF_IPTABLES=y
-+CONFIG_IP_NF_MATCH_AH=y
-+CONFIG_IP_NF_MATCH_ECN=y
-+CONFIG_IP_NF_MATCH_RPFILTER=y
-+CONFIG_IP_NF_MATCH_TTL=y
-+CONFIG_IP_NF_FILTER=y
-+CONFIG_IP_NF_TARGET_REJECT=y
-+CONFIG_IP_NF_MANGLE=y
-+CONFIG_IP_NF_TARGET_ECN=y
-+CONFIG_IP_NF_TARGET_TTL=y
-+CONFIG_IP_NF_RAW=y
-+CONFIG_IP_NF_SECURITY=y
-+CONFIG_IP_NF_ARPTABLES=y
-+CONFIG_IP_NF_ARPFILTER=y
-+CONFIG_IP_NF_ARP_MANGLE=y
-+CONFIG_IP6_NF_IPTABLES=y
-+CONFIG_IP6_NF_MATCH_AH=y
-+CONFIG_IP6_NF_MATCH_EUI64=y
-+CONFIG_IP6_NF_MATCH_FRAG=y
-+CONFIG_IP6_NF_MATCH_OPTS=y
-+CONFIG_IP6_NF_MATCH_HL=y
-+CONFIG_IP6_NF_MATCH_IPV6HEADER=y
-+CONFIG_IP6_NF_MATCH_MH=y
-+CONFIG_IP6_NF_MATCH_RT=y
-+CONFIG_IP6_NF_TARGET_HL=y
-+CONFIG_IP6_NF_FILTER=y
-+CONFIG_IP6_NF_TARGET_REJECT=y
-+CONFIG_IP6_NF_MANGLE=y
-+CONFIG_IP6_NF_RAW=y
-+CONFIG_BRIDGE=y
-+CONFIG_NET_SCHED=y
-+CONFIG_NET_SCH_HTB=y
-+CONFIG_NET_CLS_U32=y
-+CONFIG_NET_EMATCH=y
-+CONFIG_NET_EMATCH_U32=y
-+CONFIG_NET_CLS_ACT=y
-+# CONFIG_WIRELESS is not set
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_SIZE=8192
-+CONFIG_VIRTIO_BLK=y
-+CONFIG_SCSI=y
-+# CONFIG_SCSI_PROC_FS is not set
-+CONFIG_BLK_DEV_SD=y
-+# CONFIG_SCSI_LOWLEVEL is not set
-+CONFIG_MD=y
-+CONFIG_BLK_DEV_DM=y
-+CONFIG_DM_CRYPT=y
-+CONFIG_DM_UEVENT=y
-+CONFIG_DM_VERITY=y
-+CONFIG_DM_VERITY_FEC=y
-+CONFIG_NETDEVICES=y
-+CONFIG_TUN=y
-+CONFIG_VIRTIO_NET=y
-+CONFIG_E1000=y
-+CONFIG_E1000E=y
-+CONFIG_PPP=y
-+CONFIG_PPP_BSDCOMP=y
-+CONFIG_PPP_DEFLATE=y
-+CONFIG_PPP_MPPE=y
-+# CONFIG_WLAN is not set
-+CONFIG_INPUT_EVDEV=y
-+CONFIG_KEYBOARD_GOLDFISH_EVENTS=y
-+# CONFIG_INPUT_MOUSE is not set
-+CONFIG_INPUT_JOYSTICK=y
-+CONFIG_INPUT_TABLET=y
-+CONFIG_INPUT_MISC=y
-+CONFIG_INPUT_UINPUT=y
-+# CONFIG_SERIO_SERPORT is not set
-+# CONFIG_VT is not set
-+# CONFIG_LEGACY_PTYS is not set
-+# CONFIG_DEVMEM is not set
-+CONFIG_SERIAL_AMBA_PL011=y
-+CONFIG_SERIAL_AMBA_PL011_CONSOLE=y
-+CONFIG_VIRTIO_CONSOLE=y
-+# CONFIG_HW_RANDOM is not set
-+CONFIG_BATTERY_GOLDFISH=y
-+# CONFIG_HWMON is not set
-+CONFIG_TRUSTY=y
-+CONFIG_MEDIA_SUPPORT=y
-+CONFIG_FB=y
-+CONFIG_FB_GOLDFISH=y
-+CONFIG_FB_SIMPLE=y
-+CONFIG_BACKLIGHT_LCD_SUPPORT=y
-+CONFIG_LOGO=y
-+# CONFIG_LOGO_LINUX_MONO is not set
-+# CONFIG_LOGO_LINUX_VGA16 is not set
-+CONFIG_SOUND=y
-+CONFIG_SND=y
-+CONFIG_HIDRAW=y
-+CONFIG_UHID=y
-+CONFIG_HID_A4TECH=y
-+CONFIG_HID_ACRUX=y
-+CONFIG_HID_ACRUX_FF=y
-+CONFIG_HID_APPLE=y
-+CONFIG_HID_BELKIN=y
-+CONFIG_HID_CHERRY=y
-+CONFIG_HID_CHICONY=y
-+CONFIG_HID_PRODIKEYS=y
-+CONFIG_HID_CYPRESS=y
-+CONFIG_HID_DRAGONRISE=y
-+CONFIG_DRAGONRISE_FF=y
-+CONFIG_HID_EMS_FF=y
-+CONFIG_HID_ELECOM=y
-+CONFIG_HID_EZKEY=y
-+CONFIG_HID_KEYTOUCH=y
-+CONFIG_HID_KYE=y
-+CONFIG_HID_WALTOP=y
-+CONFIG_HID_GYRATION=y
-+CONFIG_HID_TWINHAN=y
-+CONFIG_HID_KENSINGTON=y
-+CONFIG_HID_LCPOWER=y
-+CONFIG_HID_LOGITECH=y
-+CONFIG_HID_LOGITECH_DJ=y
-+CONFIG_LOGITECH_FF=y
-+CONFIG_LOGIRUMBLEPAD2_FF=y
-+CONFIG_LOGIG940_FF=y
-+CONFIG_HID_MAGICMOUSE=y
-+CONFIG_HID_MICROSOFT=y
-+CONFIG_HID_MONTEREY=y
-+CONFIG_HID_MULTITOUCH=y
-+CONFIG_HID_ORTEK=y
-+CONFIG_HID_PANTHERLORD=y
-+CONFIG_PANTHERLORD_FF=y
-+CONFIG_HID_PETALYNX=y
-+CONFIG_HID_PICOLCD=y
-+CONFIG_HID_PRIMAX=y
-+CONFIG_HID_SAITEK=y
-+CONFIG_HID_SAMSUNG=y
-+CONFIG_HID_SPEEDLINK=y
-+CONFIG_HID_SUNPLUS=y
-+CONFIG_HID_GREENASIA=y
-+CONFIG_GREENASIA_FF=y
-+CONFIG_HID_SMARTJOYPLUS=y
-+CONFIG_SMARTJOYPLUS_FF=y
-+CONFIG_HID_TIVO=y
-+CONFIG_HID_TOPSEED=y
-+CONFIG_HID_THRUSTMASTER=y
-+CONFIG_HID_ZEROPLUS=y
-+CONFIG_HID_ZYDACRON=y
-+# CONFIG_USB_SUPPORT is not set
-+CONFIG_RTC_CLASS=y
-+CONFIG_VIRTIO_PCI=y
-+CONFIG_VIRTIO_MMIO=y
-+CONFIG_STAGING=y
-+CONFIG_ASHMEM=y
-+CONFIG_ION=y
-+CONFIG_GOLDFISH_AUDIO=y
-+CONFIG_GOLDFISH=y
-+CONFIG_GOLDFISH_PIPE=y
-+# CONFIG_IOMMU_SUPPORT is not set
-+CONFIG_ANDROID=y
-+CONFIG_ANDROID_BINDER_IPC=y
-+CONFIG_EXT2_FS=y
-+CONFIG_EXT4_FS=y
-+CONFIG_EXT4_FS_SECURITY=y
-+CONFIG_QUOTA=y
-+CONFIG_FUSE_FS=y
-+CONFIG_CUSE=y
-+CONFIG_MSDOS_FS=y
-+CONFIG_VFAT_FS=y
-+CONFIG_TMPFS=y
-+CONFIG_TMPFS_POSIX_ACL=y
-+# CONFIG_MISC_FILESYSTEMS is not set
-+CONFIG_NFS_FS=y
-+CONFIG_ROOT_NFS=y
-+CONFIG_NLS_CODEPAGE_437=y
-+CONFIG_NLS_ISO8859_1=y
-+CONFIG_SECURITY=y
-+CONFIG_SECURITY_NETWORK=y
-+CONFIG_SECURITY_SELINUX=y
-+CONFIG_DYNAMIC_DEBUG=y
-+CONFIG_DEBUG_INFO=y
-+CONFIG_DEBUG_FS=y
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_PANIC_TIMEOUT=5
-+# CONFIG_SCHED_DEBUG is not set
-+CONFIG_SCHEDSTATS=y
-+# CONFIG_FTRACE is not set
-+CONFIG_DMA_API_DEBUG=y
-+CONFIG_ATOMIC64_SELFTEST=y
-diff --git a/arch/arm64/configs/trusty_qemu_defconfig.fragment b/arch/arm64/configs/trusty_qemu_defconfig.fragment
-new file mode 100644
-index 0000000000000..166eef1797fd3
---- /dev/null
-+++ b/arch/arm64/configs/trusty_qemu_defconfig.fragment
-@@ -0,0 +1,26 @@
-+# From goldfish
-+CONFIG_VIRTIO_BLK=y
-+CONFIG_VIRTIO_CONSOLE=y
-+CONFIG_VIRTIO_INPUT=y
-+CONFIG_VIRTIO_MMIO=y
-+CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES=y
-+CONFIG_VIRTIO_NET=y
-+CONFIG_VIRTIO_PCI=y
-+CONFIG_VIRTIO_PMEM=y
-+# From Trusty
-+CONFIG_TRUSTY=y
-+CONFIG_DMA_API_DEBUG=y
-+CONFIG_DYNAMIC_DEBUG=y
-+CONFIG_PROVE_LOCKING=y
-+CONFIG_DEBUG_ATOMIC_SLEEP=y
-+CONFIG_SEMIHOSTING_EXIT=y
-+CONFIG_E1000=y
-+CONFIG_E1000E=y
-+CONFIG_REBOOT_EMULATOR_EXIT=y
-+CONFIG_DMABUF_HEAPS_SYSTEM=y
-+# securefb test uses ION
-+CONFIG_ION=y
-+CONFIG_ION_SYSTEM_HEAP=y
-+# LTO slows down build times considerably. Disable it.
-+# CONFIG_LTO_CLANG is not set
-+# CONFIG_LTO_CLANG_FULL is not set
 diff --git a/drivers/Kconfig b/drivers/Kconfig
-index f73639c56e5b7..b91b2ea505d8c 100644
+index 1aa6c96..c919f29 100644
 --- a/drivers/Kconfig
 +++ b/drivers/Kconfig
-@@ -87,6 +87,8 @@ source "drivers/hwmon/Kconfig"
+@@ -97,6 +97,8 @@
  
  source "drivers/thermal/Kconfig"
  
@@ -603,10 +121,10 @@ index f73639c56e5b7..b91b2ea505d8c 100644
  
  source "drivers/ssb/Kconfig"
 diff --git a/drivers/Makefile b/drivers/Makefile
-index c68fda8dd0e22..a56d8b753acf9 100644
+index 47212f0..3e5c4b3 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -120,6 +120,7 @@ obj-$(CONFIG_W1)		+= w1/
+@@ -120,6 +120,7 @@
  obj-y				+= power/
  obj-$(CONFIG_HWMON)		+= hwmon/
  obj-$(CONFIG_THERMAL)		+= thermal/
@@ -616,10 +134,10 @@ index c68fda8dd0e22..a56d8b753acf9 100644
  obj-$(CONFIG_BT)		+= bluetooth/
 diff --git a/drivers/trusty/Kconfig b/drivers/trusty/Kconfig
 new file mode 100644
-index 0000000000000..4890cf6045477
+index 0000000..625a471
 --- /dev/null
 +++ b/drivers/trusty/Kconfig
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,176 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +#
 +# Trusty driver
@@ -642,6 +160,40 @@ index 0000000000000..4890cf6045477
 +	  If you build this as a module, it will be called trusty-core.
 +
 +if TRUSTY
++
++config TRUSTY_FFA_TRANSPORT
++	tristate "Trusty transport based on FFA"
++	depends on ARM_FFA_TRANSPORT
++	default y
++	help
++	  Enable ARM FF-A based transport for Trusty.
++
++	  If you want to use ARM FF-A based transport for sending Trusty messages
++	  to secure world and/or performing memory sharing operations, answer Y.
++
++	  This transport can also be used in tandem with TRUSTY_SMC_TRANSPORT
++	  where the FF-A driver is used for the memory operations, while the
++	  legacy SMC transport is used to call into Trusty.
++
++config TRUSTY_SMC_TRANSPORT
++	tristate
++	prompt "Trusty transport based on SMC" if TRUSTY_FFA_TRANSPORT
++	default y
++	help
++	  Enable SMC based transport for Trusty.
++
++	  If TRUSTY_SMC_TRANSPORT_USE_FFA_TRANSPORT is also Y,
++	  the SMC transport will use the firmware driver
++	  and call into the memory operation implementation from
++	  the FF-A transport enabled by TRUSTY_FFA_TRANSPORT.
++
++	  If you want to use legacy SMC based transport for sending Trusty
++	  messages to secure world, answer Y.
++
++config TRUSTY_SMC_TRANSPORT_USE_FFA_TRANSPORT
++	bool
++	depends on TRUSTY_SMC_TRANSPORT && TRUSTY_FFA_TRANSPORT
++	default y
 +
 +config TRUSTY_IRQ
 +	bool "Trusty IRQ support"
@@ -681,7 +233,6 @@ index 0000000000000..4890cf6045477
 +config TRUSTY_VIRTIO
 +	tristate "Trusty virtio support"
 +	select VIRTIO
-+	depends on ARCH_HAS_DMA_OPS
 +	default y
 +	help
 +	  Enable the Trusty virtio driver, which is responsible for management
@@ -699,6 +250,19 @@ index 0000000000000..4890cf6045477
 +	  Enable support for communicating with Trusty services.
 +
 +	  If you build this as a module, it will be called trusty-ipc.
++
++config TRUSTY_VIRTIO_POLL_VQUEUES
++	bool "Poll the virtio queues periodically"
++	depends on TRUSTY_VIRTIO
++	help
++	  Add an optional timer that polls the virtio queues periodically.
++	  When enabled, this will add a device attribute that configures
++	  the timer period for the polling. The attribute can be set to 0
++	  to disable the timer dynamically.
++
++	  This is needed when there is no signaling mechanism between
++	  Linux and Trusty for virtio, e.g., when using FF-A to talk
++	  between guest VMs and TrustZone without notification support.
 +
 +config TRUSTY_DMA_BUF_FFA_TAG
 +	bool "Availability of trusty_dma_buf_get_ffa_tag"
@@ -735,15 +299,27 @@ index 0000000000000..4890cf6045477
 +	 If N, it will contine to run the kernel, but trusty operations will
 +	 return errors.
 +
++config TRUSTY_POPULATE
++	tristate "Build a module that populates the Trusty devices"
++	default m
++	help
++	  Build a module that will register some platform devices for
++	  some of the other Trusty modules that guests need to use.
++	  This is useful when the device tree does or can not contain
++	  the nodes we need. The devices are populated on module insertion
++	  and persist until trusty-populate.ko is removed.
++
++	  If N, the modules require device tree nodes for probing.
++
 +endif # TRUSTY
 +
 +endmenu
 diff --git a/drivers/trusty/Makefile b/drivers/trusty/Makefile
 new file mode 100644
-index 0000000000000..eb0765ed46b0e
+index 0000000..b9e3d50
 --- /dev/null
 +++ b/drivers/trusty/Makefile
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,26 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +#
 +# Makefile for trusty components
@@ -751,27 +327,631 @@ index 0000000000000..eb0765ed46b0e
 +
 +obj-$(CONFIG_TRUSTY)		+= trusty-core.o
 +trusty-core-objs		+= trusty.o trusty-mem.o trusty-sched-share.o
-+trusty-core-$(CONFIG_ARM)	+= trusty-smc-arm.o
-+trusty-core-$(CONFIG_ARM64)	+= trusty-smc-arm64.o
 +trusty-core-$(CONFIG_TRUSTY_IRQ)+= trusty-irq.o
 +obj-$(CONFIG_TRUSTY_LOG)	+= trusty-log.o
 +obj-$(CONFIG_TRUSTY_TEST)	+= trusty-test.o
++trusty-test-objs		+= trusty-test-main.o
++trusty-test-$(CONFIG_ARM64)	+= trusty-test-arm64.o
 +obj-$(CONFIG_TRUSTY_VIRTIO)	+= trusty-virtio.o
 +obj-$(CONFIG_TRUSTY_VIRTIO_IPC)	+= trusty-ipc.o
-diff --git a/drivers/trusty/OWNERS b/drivers/trusty/OWNERS
++
++obj-$(CONFIG_TRUSTY_SMC_TRANSPORT)	+= trusty-smc.o
++trusty-smc-objs 			+= trusty-smc-transport.o
++trusty-smc-$(CONFIG_ARM)		+= trusty-smc-arm.o
++trusty-smc-$(CONFIG_ARM64)		+= trusty-smc-arm64.o
++
++obj-$(CONFIG_TRUSTY_FFA_TRANSPORT)	+= trusty-ffa.o
++trusty-ffa-objs 			+= trusty-ffa-transport.o
++
++obj-$(CONFIG_TRUSTY_POPULATE)		+= trusty-populate.o
++
++ccflags-y			+= -I$(src) -I$(src)/../../include
+diff --git a/drivers/trusty/trusty-ffa-transport.c b/drivers/trusty/trusty-ffa-transport.c
 new file mode 100644
-index 0000000000000..0f6b8454aafcf
+index 0000000..eac904da
 --- /dev/null
-+++ b/drivers/trusty/OWNERS
-@@ -0,0 +1,2 @@
-+# include OWNERS from the top level trusty repo
-+include trusty:refs/meta/config:/OWNERS
++++ b/drivers/trusty/trusty-ffa-transport.c
+@@ -0,0 +1,535 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2022 ARM Ltd.
++ * Copyright (C) 2024 Google, Inc.
++ */
++
++#include <linux/kconfig.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/trusty/smcall.h>
++#include <linux/arm_ffa.h>
++#include <linux/trusty/trusty.h>
++#include <linux/version.h>
++
++#include <linux/scatterlist.h>
++#include <linux/dma-mapping.h>
++
++#include "trusty-ffa.h"
++#include "trusty-sched-share-api.h"
++#include "trusty-transport.h"
++
++static struct ffa_driver trusty_ffa_driver;
++
++struct trusty_ffa_state {
++	struct device *dev; /* ffa device */
++	struct device *core_dev; /* the trusty-core device */
++	struct trusty_transport transport;
++	struct trusty_sched_share_state *sched_share_state;
++};
++
++/* partition property: Supports receipt of direct requests */
++#define FFA_PARTITION_DIRECT_REQ_RECV	BIT(0)
++
++static struct trusty_ffa_state *trusty_ffa_get_state(struct trusty_transport *tr)
++{
++	if (WARN_ON(!tr))
++		return NULL;
++
++	return container_of(tr, struct trusty_ffa_state, transport);
++}
++
++static unsigned long trusty_ffa_send_msg(struct trusty_ffa_state *s,
++					 unsigned long msg, const char *msg_str,
++					 unsigned long a0, unsigned long a1,
++					 unsigned long a2, unsigned long a3)
++{
++	struct ffa_device *ffa_dev = to_ffa_dev(s->dev);
++	int ret;
++	struct ffa_send_direct_data ffa_msg = {
++		.data0 = msg,
++		.data1 = a0,
++		.data2 = a1,
++		.data3 = a2,
++		.data4 = a3,
++	};
++
++	ret = ffa_dev->ops->msg_ops->sync_send_receive(ffa_dev, &ffa_msg);
++	if (ret) {
++		dev_err(&ffa_dev->dev, "%s: FF-A send %s error (%d)\n",
++			__func__, msg_str, ret);
++		/* TODO: convert from Linux to sm errors */
++		return SM_ERR_INTERNAL_FAILURE;
++	}
++
++	return (s32)ffa_msg.data0;
++}
++
++static unsigned long trusty_ffa_run(struct trusty_ffa_state *s)
++{
++	struct ffa_device *ffa_dev = to_ffa_dev(s->dev);
++	int this_cpu;
++	int ret;
++
++	preempt_disable();
++	this_cpu = smp_processor_id();
++	ret = ffa_dev->ops->cpu_ops->run(ffa_dev, this_cpu);
++	preempt_enable();
++
++	if (ret) {
++		dev_err(s->dev, "%s: FF-A run error (%d)\n", __func__, ret);
++		/* TODO: convert from Linux to sm errors */
++		return SM_ERR_INTERNAL_FAILURE;
++	}
++
++	if (!s->sched_share_state) {
++		dev_err(s->dev, "%s: no sched state available\n", __func__);
++		return SM_ERR_INTERNAL_FAILURE;
++	}
++
++	if (trusty_is_idle(this_cpu, s->sched_share_state))
++		return SM_ERR_NOP_DONE;
++	else
++		return SM_ERR_NOP_INTERRUPTED;
++}
++
++static unsigned long trusty_ffa_call(struct trusty_transport *tr,
++				     unsigned long smcnr, unsigned long a0,
++				     unsigned long a1, unsigned long a2)
++{
++	struct trusty_ffa_state *s = trusty_ffa_get_state(tr);
++	int ret;
++
++	if (WARN_ON(!s))
++		return SM_ERR_INVALID_PARAMETERS;
++
++	if (SMC_IS_FASTCALL(smcnr))
++		return trusty_ffa_send_msg(s, TRUSTY_FFA_MSG_RUN_FASTCALL,
++					   "FASTCALL", smcnr, a0, a1, a2);
++
++	if (smcnr == SMC_SC_NOP) {
++		if (!a0)
++			return trusty_ffa_run(s);
++
++		ret = trusty_ffa_send_msg(s, TRUSTY_FFA_MSG_RUN_NOPCALL,
++					  "NOPCALL", a0, a1, a2, 0);
++		/*
++		 * Trusty should enqueue a NOP here by sending
++		 * an IPI to the primary scheduler. The error code
++		 * returned here is irrelevant, since the interrupt
++		 * should be handled by the time dequeue_nop returns
++		 * in nop_work_func, so do_nop there should always be true.
++		 */
++		return ret ?: SM_ERR_NOP_DONE;
++	}
++
++	if (smcnr != SMC_SC_RESTART_LAST) {
++		ret = trusty_ffa_send_msg(s, TRUSTY_FFA_MSG_QUEUE_STDCALL,
++					  "QUEUE_STDCALL", smcnr, a0, a1, a2);
++		/*
++		 * Trusty should enqueue a NOP here by sending
++		 * an IPI to the primary scheduler. We are running with
++		 * interrupts disabled so the handler has not run yet.
++		 * Return all the way to trusty_std_call32 so the
++		 * NOP thread gets to run. The next time we enter this
++		 * function, smcnr will be SMC_SC_RESTART_LAST and
++		 * we retrieve the stdcall return code then.
++		 */
++		return ret ?: SM_ERR_CPU_IDLE;
++	}
++
++	/* We got SMC_SC_RESTART_LAST, try to get the result of the last call */
++	return trusty_ffa_send_msg(s, TRUSTY_FFA_MSG_GET_STDCALL_RET,
++				   "GET_STDCALL_RET", 0, 0, 0, 0);
++}
++
++int trusty_ffa_dev_share_or_lend_memory(struct device *dev, u64 *id,
++					struct scatterlist *sglist,
++					unsigned int nents, pgprot_t pgprot,
++					u64 tag, bool lend, struct ns_mem_page_info *pg_inf)
++{
++	struct ffa_device *ffa_dev = to_ffa_dev(dev);
++	int ret;
++	struct ffa_mem_region_attributes ffa_mem_attr;
++	struct ffa_mem_ops_args ffa_mem_args;
++
++	ffa_mem_attr.receiver = ffa_dev->vm_id;
++	ffa_mem_attr.attrs = pg_inf->ffa_mem_perm;
++
++	ffa_mem_args.use_txbuf = 1;
++	ffa_mem_args.tag = tag;
++	ffa_mem_args.attrs = &ffa_mem_attr;
++	ffa_mem_args.nattrs = 1;
++	ffa_mem_args.sg = sglist;
++	ffa_mem_args.flags = 0;
++
++	if (lend)
++		ret = ffa_dev->ops->mem_ops->memory_lend(&ffa_mem_args);
++	else
++		ret = ffa_dev->ops->mem_ops->memory_share(&ffa_mem_args);
++
++	if (ret) {
++		dev_err(dev, "memory %s failed %d", lend ? "lend" : "share", ret);
++		return ret;
++	}
++
++	*id = ffa_mem_args.g_handle;
++	return 0;
++}
++EXPORT_SYMBOL(trusty_ffa_dev_share_or_lend_memory);
++
++int trusty_ffa_dev_reclaim_memory(struct device *dev, u64 id,
++				  struct scatterlist *sglist,
++				  unsigned int nents)
++{
++	struct ffa_device *ffa_dev = to_ffa_dev(dev);
++
++	return ffa_dev->ops->mem_ops->memory_reclaim(id, 0);
++}
++EXPORT_SYMBOL(trusty_ffa_dev_reclaim_memory);
++
++static int trusty_ffa_share_or_lend_memory(struct trusty_transport *tr, u64 *id,
++					   struct scatterlist *sglist,
++					   unsigned int nents, pgprot_t pgprot,
++					   u64 tag, bool lend, struct ns_mem_page_info *pg_inf)
++{
++	struct trusty_ffa_state *s = trusty_ffa_get_state(tr);
++
++	if (WARN_ON(!s))
++		return -EINVAL;
++
++	return trusty_ffa_dev_share_or_lend_memory(s->dev, id, sglist, nents,
++						   pgprot, tag, lend, pg_inf);
++}
++
++static int trusty_ffa_reclaim_memory(struct trusty_transport *tr, u64 id,
++				     struct scatterlist *sglist,
++				     unsigned int nents)
++{
++	struct trusty_ffa_state *s = trusty_ffa_get_state(tr);
++
++	if (WARN_ON(!s))
++		return -EINVAL;
++
++	return trusty_ffa_dev_reclaim_memory(s->dev, id, sglist, nents);
++}
++
++static void trusty_ffa_set_sched_share_state(struct trusty_transport *tr,
++					     struct trusty_sched_share_state *tsss)
++{
++	struct trusty_ffa_state *s = trusty_ffa_get_state(tr);
++
++	if (WARN_ON(!s))
++		return;
++
++	s->sched_share_state = tsss;
++}
++
++static const struct trusty_transport_ops trusty_ffa_transport_ops = {
++	.call = &trusty_ffa_call,
++	.share_or_lend_memory = &trusty_ffa_share_or_lend_memory,
++	.reclaim_memory = &trusty_ffa_reclaim_memory,
++	.set_sched_share_state = &trusty_ffa_set_sched_share_state,
++};
++
++static void trusty_ffa_sched_recv_cb(u16 vcpu, bool is_per_vcpu, void *cb_data)
++{
++	struct trusty_ffa_state *s = cb_data;
++
++	if (!s->core_dev)
++		return;
++
++	if (is_per_vcpu)
++		trusty_enqueue_nop_on_cpu(s->core_dev, NULL, vcpu);
++	else
++		trusty_enqueue_nop(s->core_dev, NULL);
++}
++
++static int trusty_ffa_probe(struct ffa_device *ffa_dev)
++{
++	struct trusty_ffa_state *s;
++	int ret;
++	u32 ffa_drv_version;
++
++	/* check ffa driver version compatibility */
++	ffa_drv_version = ffa_dev->ops->info_ops->api_version_get();
++	if (TO_TRUSTY_FFA_MAJOR(ffa_drv_version) != TRUSTY_FFA_VERSION_MAJOR ||
++	    TO_TRUSTY_FFA_MINOR(ffa_drv_version) < TRUSTY_FFA_VERSION_MINOR) {
++		ret = -EINVAL;
++		goto err_ffa_version;
++	}
++
++	s = kzalloc(sizeof(*s), GFP_KERNEL);
++	if (!s) {
++		ret = -ENOMEM;
++		goto err_alloc;
++	}
++
++	s->dev = &ffa_dev->dev;
++	s->transport.magic = TRUSTY_TRANSPORT_MAGIC;
++	s->transport.ops = &trusty_ffa_transport_ops;
++	s->transport.split_nopcalls = 1;
++
++	ffa_dev_set_drvdata(ffa_dev, s);
++
++	ffa_dev->ops->msg_ops->mode_32bit_set(ffa_dev);
++
++	ret = ffa_dev->ops->notifier_ops->sched_recv_cb_register(
++		ffa_dev, trusty_ffa_sched_recv_cb, s);
++	if (ret < 0) {
++		dev_err(s->dev, "failed to register SRI callback (%d)\n",
++			ret);
++
++		/*
++		 * For now, we log and continue if notifications are not
++		 * supported because not all current SPMCs have them,
++		 * e.g., EL3-SPMC.
++		 */
++		if (ret != -EOPNOTSUPP)
++			goto err_ffa_sched_recv_cb;
++	}
++
++	return 0;
++
++err_ffa_sched_recv_cb:
++	ffa_dev_set_drvdata(ffa_dev, NULL);
++	kfree(s);
++err_alloc:
++err_ffa_version:
++	return ret;
++}
++
++static
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++int
++#else
++void
++#endif
++trusty_ffa_remove(struct ffa_device *ffa_dev)
++{
++	struct trusty_ffa_state *s = ffa_dev_get_drvdata(ffa_dev);
++
++	/*
++	 * The device links we add should guarantee that all
++	 * consumers of this device will get removed first.
++	 */
++	memzero_explicit(s, sizeof(struct trusty_ffa_state));
++	kfree(s);
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++	return 0;
++#endif
++}
++
++static const struct ffa_device_id trusty_ffa_device_id[] = {
++	/*
++	 * Trusty UUID: RFC-4122 compliant UUID version 4
++	 * 40ee25f0-a2bc-304c-8c4ca173c57d8af1
++	 */
++	{ UUID_INIT(0x40ee25f0, 0xa2bc, 0x304c,
++		    0x8c, 0x4c, 0xa1, 0x73, 0xc5, 0x7d, 0x8a, 0xf1) },
++	{}
++};
++
++static int trusty_ffa_dev_match(struct device *dev, const void *uuid)
++{
++	struct ffa_device *ffa_dev;
++
++	ffa_dev = to_ffa_dev(dev);
++	if (uuid_equal(&ffa_dev->uuid, uuid))
++		return 1;
++
++	return 0;
++}
++
++struct device *trusty_ffa_find_device(void)
++{
++	struct device *ffa_dev;
++
++	/* currently only one trusty instance is probed */
++	ffa_dev = bus_find_device(&ffa_bus_type, NULL, &trusty_ffa_device_id[0].uuid,
++				  trusty_ffa_dev_match);
++
++	if (ffa_dev) {
++		if (bus_find_device(&ffa_bus_type, ffa_dev, &trusty_ffa_device_id[0].uuid,
++				    trusty_ffa_dev_match))
++			dev_warn(ffa_dev, "multiple Trusty instances found, not supported yet");
++	}
++
++	return ffa_dev ?: ERR_PTR(-ENODEV);
++}
++EXPORT_SYMBOL(trusty_ffa_find_device);
++
++static int trusty_ffa_remove_child(struct device *dev, void *data)
++{
++	platform_device_unregister(to_platform_device(dev));
++	return 0;
++}
++
++static struct ffa_driver trusty_ffa_driver = {
++	.name = "trusty-ffa",
++	.probe = trusty_ffa_probe,
++	.remove = trusty_ffa_remove,
++	.id_table = trusty_ffa_device_id,
++};
++
++static int trusty_ffa_platform_probe(struct platform_device *pdev)
++{
++	int rc;
++	struct device *dev_ffa;
++	struct ffa_device *ffa_dev;
++	struct device_link *link;
++	char trusty_uuid[UUID_STRING_LEN + 1];
++	struct ffa_partition_info pinfo = { 0 };
++	struct trusty_ffa_state *s;
++
++	dev_ffa = trusty_ffa_find_device();
++	if (IS_ERR(dev_ffa)) {
++		dev_err(&pdev->dev, "FF-A device error (%ld)\n",
++			PTR_ERR(dev_ffa));
++		rc = PTR_ERR(dev_ffa);
++		goto err_find_ffa_device;
++	} else if (WARN_ON(!dev_ffa)) {
++		rc = -EINVAL;
++		goto err_find_ffa_device;
++	}
++
++	/*
++	 * Add a link from our device to the FF-A one so
++	 * the latter does not get removed while we're using it
++	 */
++	link = device_link_add(&pdev->dev, dev_ffa,
++			       DL_FLAG_AUTOPROBE_CONSUMER);
++	if (!link) {
++		dev_err(&pdev->dev, "failed to add device link\n");
++		rc = -EINVAL;
++		goto err_link_device;
++	}
++
++	/* Supplier has not been probed yet */
++	if (link->status == DL_STATE_DORMANT) {
++		rc = -EPROBE_DEFER;
++		goto err_defer_probe;
++	}
++
++	/* check if Trusty partition can support receipt of direct requests. */
++	ffa_dev = to_ffa_dev(dev_ffa);
++	snprintf(trusty_uuid, sizeof(trusty_uuid), "%pU",
++		 &trusty_ffa_device_id[0].uuid);
++	rc = ffa_dev->ops->info_ops->partition_info_get(trusty_uuid, &pinfo);
++	if (rc < 0)
++		goto err_get_partition_info;
++	if (!(pinfo.properties & FFA_PARTITION_DIRECT_REQ_RECV)) {
++		rc = -ENODEV;
++		goto err_check_partition_info;
++	}
++
++	s = ffa_dev_get_drvdata(ffa_dev);
++	if (WARN_ON(dev_ffa != s->dev)) {
++		rc = -EINVAL;
++		goto err_invalid_state;
++	}
++	if (WARN_ON(s->core_dev)) {
++		rc = -EINVAL;
++		goto err_invalid_state;
++	}
++
++	platform_set_drvdata(pdev, &s->transport);
++
++	if (pdev->dev.of_node) {
++		rc = of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
++		if (rc < 0) {
++			dev_err(&pdev->dev, "Failed to add children: %d\n", rc);
++			goto err_add_children;
++		}
++	} else {
++		dev_warn(&pdev->dev, "of_node not found\n");
++	}
++
++	/*
++	 * Depending on how it was created, the core device is either
++	 * named trusty-ffa:trusty-core (from of_platform_populate)
++	 * or just trusty-core if we create it ourselves
++	 */
++	s->core_dev = device_find_child_by_name(&pdev->dev, "trusty-ffa:trusty-core");
++	if (!s->core_dev)
++		s->core_dev = device_find_child_by_name(&pdev->dev, "trusty-core");
++
++	return 0;
++
++err_add_children:
++err_invalid_state:
++err_check_partition_info:
++err_get_partition_info:
++err_defer_probe:
++err_link_device:
++	put_device(dev_ffa);
++err_find_ffa_device:
++	return rc;
++}
++
++static void trusty_ffa_platform_remove(struct platform_device *pdev)
++{
++	struct trusty_ffa_state *s = trusty_ffa_get_state(platform_get_drvdata(pdev));
++
++	device_for_each_child(&pdev->dev, NULL, trusty_ffa_remove_child);
++
++	put_device(s->dev);
++	put_device(s->core_dev);
++	s->core_dev = NULL;
++}
++
++static const struct of_device_id trusty_ffa_of_match[] = {
++	{ .compatible = "android,trusty-ffa-v1", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(trusty_ffa, trusty_ffa_of_match);
++
++static struct platform_driver trusty_ffa_platform_driver = {
++	.probe = trusty_ffa_platform_probe,
++	.remove = trusty_ffa_platform_remove,
++	.driver	= {
++		.name = "trusty-ffa",
++		.of_match_table = trusty_ffa_of_match,
++	},
++};
++
++static int __init trusty_ffa_init(void)
++{
++	int rc;
++
++	if (!IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT))
++		return -ENODEV;
++
++	rc = ffa_register(&trusty_ffa_driver);
++	if (rc < 0)
++		goto err_register_ffa;
++
++	rc = platform_driver_register(&trusty_ffa_platform_driver);
++	if (rc < 0)
++		goto err_register_driver;
++
++	return 0;
++
++err_register_driver:
++	platform_driver_unregister(&trusty_ffa_platform_driver);
++err_register_ffa:
++	return rc;
++}
++
++static void trusty_ffa_exit(void)
++{
++	if (!IS_REACHABLE(CONFIG_ARM_FFA_TRANSPORT))
++		return;
++
++	platform_driver_unregister(&trusty_ffa_platform_driver);
++	ffa_unregister(&trusty_ffa_driver);
++}
++
++subsys_initcall(trusty_ffa_init);
++module_exit(trusty_ffa_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Trusty FF-A transport driver");
+diff --git a/drivers/trusty/trusty-ffa.h b/drivers/trusty/trusty-ffa.h
+new file mode 100644
+index 0000000..1b7212a
+--- /dev/null
++++ b/drivers/trusty/trusty-ffa.h
+@@ -0,0 +1,53 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2022 ARM Ltd.
++ * Copyright (C) 2024 Google, Inc.
++ */
++
++#ifndef __LINUX_TRUSTY_FFA_H
++#define __LINUX_TRUSTY_FFA_H
++
++#include <linux/kconfig.h>
++#include <linux/types.h>
++#include <linux/uuid.h>
++
++/**
++ * DOC: FF-A driver version requirements
++ *
++ * This Trusty driver is dependent on a separate 'FF-A' driver.
++ * To ensure comaptibility, the version of the FF-A driver
++ * must be the same major version and a lower minor version as that
++ * supported by this Trusty driver (defined below). Newer
++ * versions of the FF-A driver may require changes to this driver
++ * before adjusting the defines below.
++ */
++#define TRUSTY_FFA_VERSION_MAJOR	(1U)
++#define TRUSTY_FFA_VERSION_MINOR	(0U)
++#define TRUSTY_FFA_VERSION_MAJOR_SHIFT	(16U)
++#define TRUSTY_FFA_VERSION_MAJOR_MASK	(0x7fffU)
++#define TRUSTY_FFA_VERSION_MINOR_SHIFT	(0U)
++#define TRUSTY_FFA_VERSION_MINOR_MASK	(0xffffU)
++
++#define TO_TRUSTY_FFA_MAJOR(v)					\
++	  ((u16)(((v) >> TRUSTY_FFA_VERSION_MAJOR_SHIFT) &	\
++		 TRUSTY_FFA_VERSION_MAJOR_MASK))
++
++#define TO_TRUSTY_FFA_MINOR(v)					\
++	  ((u16)(((v) >> TRUSTY_FFA_VERSION_MINOR_SHIFT) &	\
++		 TRUSTY_FFA_VERSION_MINOR_MASK))
++
++#if IS_ENABLED(CONFIG_TRUSTY_FFA_TRANSPORT)
++struct ns_mem_page_info;
++
++struct device *trusty_ffa_find_device(void);
++
++int trusty_ffa_dev_share_or_lend_memory(struct device *dev, u64 *id,
++					struct scatterlist *sglist,
++					unsigned int nents, pgprot_t pgprot,
++					u64 tag, bool lend, struct ns_mem_page_info *pg_inf);
++int trusty_ffa_dev_reclaim_memory(struct device *dev, u64 id,
++				  struct scatterlist *sglist,
++				  unsigned int nents);
++#endif
++
++#endif /* __LINUX_TRUSTY_FFA_H */
 diff --git a/drivers/trusty/trusty-ipc-trace.h b/drivers/trusty/trusty-ipc-trace.h
 new file mode 100644
-index 0000000000000..36df0924af8e3
+index 0000000..3f738d6
 --- /dev/null
 +++ b/drivers/trusty/trusty-ipc-trace.h
-@@ -0,0 +1,245 @@
+@@ -0,0 +1,249 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Copyright (C) 2022 Google, Inc.
@@ -835,7 +1015,11 @@ index 0000000000000..36df0924af8e3
 +	),
 +	TP_fast_assign(
 +		__entry->chan = chan ? chan->local : ~0U;
++#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
 +		__assign_str(port);
++#else
++		__assign_str(port, port);
++#endif
 +		__entry->state = chan ? chan->state : 0;
 +	),
 +	TP_printk("chan=%u port=%s state=%s", __entry->chan, __get_str(port),
@@ -1014,15 +1198,15 @@ index 0000000000000..36df0924af8e3
 +
 +#undef TRACE_INCLUDE_PATH
 +#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_PATH ../../drivers/trusty
++#define TRACE_INCLUDE_PATH .
 +#define TRACE_INCLUDE_FILE trusty-ipc-trace
 +#include <trace/define_trace.h>
 diff --git a/drivers/trusty/trusty-ipc.c b/drivers/trusty/trusty-ipc.c
 new file mode 100644
-index 0000000000000..9995e2d894a14
+index 0000000..5ae31fd
 --- /dev/null
 +++ b/drivers/trusty/trusty-ipc.c
-@@ -0,0 +1,2782 @@
+@@ -0,0 +1,2832 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2020 Google, Inc.
@@ -1081,6 +1265,18 @@ index 0000000000000..9995e2d894a14
 +#define TRUSTY_IPC_REGISTER_SHRINKER_ARG , "trusty-ipc-shrinker"
 +#else
 +#define TRUSTY_IPC_REGISTER_SHRINKER_ARG
++#endif
++
++#if (KERNEL_VERSION(6, 4, 0) <= LINUX_VERSION_CODE)
++static struct class * __must_check trusty_ipc_class_create(const char *name)
++{
++	return class_create(name);
++}
++#else
++static struct class * __must_check trusty_ipc_class_create(const char *name)
++{
++	return class_create(THIS_MODULE, name);
++}
 +#endif
 +
 +struct tipc_virtio_dev;
@@ -1341,9 +1537,9 @@ index 0000000000000..9995e2d894a14
 +
 +		if (vds->reuse_msgbuf) {
 +			dev_dbg(&vds->vdev->dev,
-+					"%s: reclaim in progress id= %llu sg= %p dev_addr= %p\n",
++					"%s: reclaim in progress id= %llu sg= %p dev_addr= %pad\n",
 +					__func__, mb->buf_id, &mb->sg,
-+					(void *)sg_dma_address(&mb->sg));
++					&sg_dma_address(&mb->sg));
 +
 +			/* move from local list to reclaim in progress list */
 +			mutex_lock(&vds->reclaim_list_lock);
@@ -1931,8 +2127,13 @@ index 0000000000000..9995e2d894a14
 +	}
 +
 +	if (shared_handle->sgt)
-+		dma_buf_unmap_attachment(shared_handle->attach,
-+					 shared_handle->sgt, DMA_BIDIRECTIONAL);
++#if (KERNEL_VERSION(6, 1, 0) <= LINUX_VERSION_CODE)
++		dma_buf_unmap_attachment_unlocked(
++#else
++		dma_buf_unmap_attachment(
++#endif
++			shared_handle->attach, shared_handle->sgt,
++			DMA_BIDIRECTIONAL);
 +	if (shared_handle->attach)
 +		dma_buf_detach(shared_handle->dma_buf, shared_handle->attach);
 +	if (shared_handle->dma_buf)
@@ -2522,8 +2723,9 @@ index 0000000000000..9995e2d894a14
 +	 */
 +	if (!ret) {
 +		/* Use shared memory ID owned by dma_buf */
-+		if (transfer_kind != TRUSTY_SEND_SECURE) {
-+			dev_err(dev, "transfer_kind: %d, must be TRUSTY_SEND_SECURE\n",
++		if (transfer_kind != TRUSTY_SEND_SECURE &&
++		    transfer_kind != TRUSTY_SEND_SECURE_OR_SHARE) {
++			dev_err(dev, "transfer_kind: %d, must be TRUSTY_SEND_SECURE{_OR_SHARE}\n",
 +				transfer_kind);
 +			ret = -EINVAL;
 +			goto cleanup_handle;
@@ -2550,8 +2752,12 @@ index 0000000000000..9995e2d894a14
 +		goto cleanup_handle;
 +	}
 +
-+	shared_handle->sgt = dma_buf_map_attachment(shared_handle->attach,
-+						    DMA_BIDIRECTIONAL);
++#if (KERNEL_VERSION(6, 1, 0) <= LINUX_VERSION_CODE)
++	shared_handle->sgt = dma_buf_map_attachment_unlocked(
++#else
++	shared_handle->sgt = dma_buf_map_attachment(
++#endif
++				shared_handle->attach, DMA_BIDIRECTIONAL);
 +	if (IS_ERR(shared_handle->sgt)) {
 +		ret = PTR_ERR(shared_handle->sgt);
 +		shared_handle->sgt = NULL;
@@ -2559,10 +2765,16 @@ index 0000000000000..9995e2d894a14
 +		goto cleanup_handle;
 +	}
 +
-+	ret = trusty_transfer_memory(tipc_shared_handle_dev(shared_handle),
-+				     &mem_id, shared_handle->sgt->sgl,
-+				     shared_handle->sgt->orig_nents, prot, tag,
-+				     lend);
++	if (lend)
++		ret = trusty_lend_memory(tipc_shared_handle_dev(shared_handle),
++					 &mem_id, shared_handle->sgt->sgl,
++					 shared_handle->sgt->orig_nents, prot,
++					 tag);
++	else
++		ret = trusty_share_memory(tipc_shared_handle_dev(shared_handle),
++					  &mem_id, shared_handle->sgt->sgl,
++					  shared_handle->sgt->orig_nents, prot,
++					  tag);
 +
 +	if (ret < 0) {
 +		dev_dbg(dev, "Transferring memory failed: %d\n", ret);
@@ -2684,10 +2896,12 @@ index 0000000000000..9995e2d894a14
 +		case TRUSTY_SHARE:
 +		case TRUSTY_LEND:
 +		case TRUSTY_SEND_SECURE:
++		case TRUSTY_SEND_SECURE_OR_SHARE:
 +			break;
 +		default:
 +			dev_err(dev, "Unknown transfer type: 0x%x\n",
 +				shm[shm_idx].transfer);
++			ret = -EINVAL;
 +			goto shm_share_failed;
 +		}
 +		ret = dn_share_fd(dn, shm[shm_idx].fd, shm[shm_idx].transfer,
@@ -3129,6 +3343,7 @@ index 0000000000000..9995e2d894a14
 +		chan->remote = 0;
 +		chan_trigger_event(chan, TIPC_CHANNEL_SHUTDOWN);
 +		mutex_unlock(&chan->lock);
++		vds_del_channel(vds, chan);
 +		kref_put(&chan->refcount, _free_chan);
 +	}
 +
@@ -3239,8 +3454,8 @@ index 0000000000000..9995e2d894a14
 +		return;
 +	}
 +
-+	dev_dbg(&vds->vdev->dev, "%s: calling reclaim on id= %llu sg= %p dev_addr= %p\n",
-+			__func__, rsp->id, &mb->sg, (void *)sg_dma_address(&mb->sg));
++	dev_dbg(&vds->vdev->dev, "%s: calling reclaim on id= %llu sg= %p dev_addr= %pad\n",
++			__func__, rsp->id, &mb->sg, &sg_dma_address(&mb->sg));
 +
 +	vds_free_msg_buf(vds, mb);
 +
@@ -3574,18 +3789,20 @@ index 0000000000000..9995e2d894a14
 +	struct tipc_virtio_dev *vds;
 +	struct tipc_dev_config config;
 +	struct virtqueue *vqs[2];
-+	struct virtqueue_info vqs_info[] = {
-+		{
-+			.name = "rx",
-+			.callback = _rxvq_cb,
-+			.ctx = false,
-+		},
-+		{
-+			.name = "tx",
-+			.callback = _txvq_cb,
-+			.ctx = false,
-+		},
++/*
++ * TODO: change to 6.11. The version here should be 6.11, but android-mainline
++ * is still on 6.10 with 6.11 some changes merged. Since there is no other
++ * 6.10 gki kernel temporarily treat 6.10 as 6.11.
++ */
++#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
++	static struct virtqueue_info vq_infos[] = {
++		{ .name = "rx", .callback = _rxvq_cb, .ctx = false },
++		{ .name = "tx", .callback = _txvq_cb, .ctx = false },
 +	};
++#else
++	vq_callback_t *vq_cbs[] = {_rxvq_cb, _txvq_cb};
++	static const char * const vq_names[] = { "rx", "tx" };
++#endif
 +
 +	vds = kzalloc(sizeof(*vds), GFP_KERNEL);
 +	if (!vds)
@@ -3621,7 +3838,18 @@ index 0000000000000..9995e2d894a14
 +	vds->cdev_name[sizeof(vds->cdev_name)-1] = '\0';
 +
 +	/* find tx virtqueues (rx and tx and in this order) */
-+	err = vdev->config->find_vqs(vdev, 2, vqs, vqs_info, NULL);
++	err = vdev->config->find_vqs(vdev, 2, vqs,
++/*
++ * TODO: change to 6.11. The version here should be 6.11, but android-mainline
++ * is still on 6.10 with 6.11 some changes merged. Since there is no other
++ * 6.10 gki kernel temporarily treat 6.10 as 6.11.
++ */
++#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
++				     vq_infos,
++#else
++				     vq_cbs, vq_names, NULL,
++#endif
++				     NULL);
 +	if (err)
 +		goto err_find_vqs;
 +
@@ -3719,7 +3947,6 @@ index 0000000000000..9995e2d894a14
 +
 +	mutex_lock(&vds->lock);
 +	vds->state = VDS_DEAD;
-+	vds->vdev = NULL;
 +	mutex_unlock(&vds->lock);
 +
 +	vdev->config->reset(vdev);
@@ -3734,6 +3961,8 @@ index 0000000000000..9995e2d894a14
 +	kref_put(&vds->refcount, _free_vds);
 +}
 +
++// TODO (b/207176288) This needs to be sent upstream
++#define VIRTIO_ID_TRUSTY_IPC 13 /* virtio trusty ipc */
 +static const struct virtio_device_id tipc_virtio_id_table[] = {
 +	{ VIRTIO_ID_TRUSTY_IPC, VIRTIO_DEV_ANY_ID },
 +	{ 0 },
@@ -3765,7 +3994,7 @@ index 0000000000000..9995e2d894a14
 +	}
 +
 +	tipc_major = MAJOR(dev);
-+	tipc_class = class_create(KBUILD_MODNAME);
++	tipc_class = trusty_ipc_class_create(KBUILD_MODNAME);
 +	if (IS_ERR(tipc_class)) {
 +		ret = PTR_ERR(tipc_class);
 +		pr_err("%s: class_create failed: %d\n", __func__, ret);
@@ -3804,10 +4033,15 @@ index 0000000000000..9995e2d894a14
 +
 +MODULE_DEVICE_TABLE(tipc, tipc_virtio_id_table);
 +MODULE_DESCRIPTION("Trusty IPC driver");
++#if (KERNEL_VERSION(6, 13, 0) > LINUX_VERSION_CODE)
++MODULE_IMPORT_NS(DMA_BUF);
++#else
++MODULE_IMPORT_NS("DMA_BUF");
++#endif
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/trusty/trusty-irq-trace.h b/drivers/trusty/trusty-irq-trace.h
 new file mode 100644
-index 0000000000000..c3aa3835b9309
+index 0000000..3df61b8
 --- /dev/null
 +++ b/drivers/trusty/trusty-irq-trace.h
 @@ -0,0 +1,32 @@
@@ -3840,15 +4074,15 @@ index 0000000000000..c3aa3835b9309
 +
 +#undef TRACE_INCLUDE_PATH
 +#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_PATH ../../drivers/trusty
++#define TRACE_INCLUDE_PATH .
 +#define TRACE_INCLUDE_FILE trusty-irq-trace
 +#include <trace/define_trace.h>
 diff --git a/drivers/trusty/trusty-irq.c b/drivers/trusty/trusty-irq.c
 new file mode 100644
-index 0000000000000..6df31227d44fd
+index 0000000..b568d44
 --- /dev/null
 +++ b/drivers/trusty/trusty-irq.c
-@@ -0,0 +1,642 @@
+@@ -0,0 +1,654 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2013 Google, Inc.
@@ -3867,6 +4101,7 @@ index 0000000000000..6df31227d44fd
 +#include <linux/trusty/smcall.h>
 +#include <linux/trusty/sm_err.h>
 +#include <linux/trusty/trusty.h>
++#include <linux/version.h>
 +
 +#include "trusty-irq.h"
 +#include "trusty-irq-trace.h"
@@ -4417,13 +4652,21 @@ index 0000000000000..6df31227d44fd
 +	return ret;
 +}
 +
-+static void trusty_irq_remove(struct platform_device *pdev)
++static
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++int
++#else
++void
++#endif
++trusty_irq_remove(struct platform_device *pdev)
 +{
++	int ret;
 +	unsigned long irq_flags;
 +	struct trusty_irq_state *is = platform_get_drvdata(pdev);
 +
-+	if (WARN_ON(cpuhp_state_remove_instance(trusty_irq_cpuhp_slot,
-+						&is->cpuhp_node)))
++	ret = cpuhp_state_remove_instance(trusty_irq_cpuhp_slot,
++					  &is->cpuhp_node);
++	if (WARN_ON(ret))
 +		return;
 +
 +	spin_lock_irqsave(&is->normal_irqs_lock, irq_flags);
@@ -4436,6 +4679,9 @@ index 0000000000000..6df31227d44fd
 +					&is->trusty_call_notifier);
 +	free_percpu(is->percpu_irqs);
 +	kfree(is);
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++	return 0;
++#endif
 +}
 +
 +static const struct of_device_id trusty_test_of_match[] = {
@@ -4493,7 +4739,7 @@ index 0000000000000..6df31227d44fd
 +#include "trusty-irq-trace.h"
 diff --git a/drivers/trusty/trusty-irq.h b/drivers/trusty/trusty-irq.h
 new file mode 100644
-index 0000000000000..d3444f971d822
+index 0000000..d3444f9
 --- /dev/null
 +++ b/drivers/trusty/trusty-irq.h
 @@ -0,0 +1,17 @@
@@ -4516,10 +4762,10 @@ index 0000000000000..d3444f971d822
 +#endif /* _TRUSTY_IRQ_H */
 diff --git a/drivers/trusty/trusty-log.c b/drivers/trusty/trusty-log.c
 new file mode 100644
-index 0000000000000..5a1cf988e962b
+index 0000000..57afc4c
 --- /dev/null
 +++ b/drivers/trusty/trusty-log.c
-@@ -0,0 +1,1020 @@
+@@ -0,0 +1,1040 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2015 Google, Inc.
@@ -4538,8 +4784,11 @@ index 0000000000000..5a1cf988e962b
 +#include <linux/miscdevice.h>
 +#include <linux/poll.h>
 +#include <linux/seq_file.h>
-+#include <linux/panic_notifier.h>
++#include <linux/version.h>
 +#include <linux/vmalloc.h>
++#if (KERNEL_VERSION(5, 14, 0) <= LINUX_VERSION_CODE)
++#include <linux/panic_notifier.h>
++#endif
 +#include <asm/page.h>
 +#include "trusty-log.h"
 +
@@ -5200,8 +5449,8 @@ index 0000000000000..5a1cf988e962b
 +	return 0;
 +}
 +
-+ssize_t trusty_log_sfile_dev_read(struct file *filp, char __user *buf,
-+				  size_t size, loff_t *ppos)
++static ssize_t trusty_log_sfile_dev_read(struct file *filp, char __user *buf,
++					 size_t size, loff_t *ppos)
 +{
 +	struct seq_file *sfile;
 +	struct trusty_log_sfile *lb;
@@ -5384,6 +5633,14 @@ index 0000000000000..5a1cf988e962b
 +		goto error_std_call;
 +	}
 +
++	/* Disable the Trusty OS UART console to prevent synchronous IO waiting */
++	result = trusty_std_call32(s->trusty_dev,
++		SMC_SC_SHARED_CONSOLE_CTL, TRUSTY_CONSOLE_DISABLE, 0, 0);
++
++	if (result != 0) {
++		pr_err("trusty std call SMC_SC_SHARED_CONSOLE_CTL shutdown console failed\n");
++	}
++
 +	init_waitqueue_head(&s->poll_waiters);
 +	spin_lock_init(&s->wake_up_lock);
 +
@@ -5466,12 +5723,21 @@ index 0000000000000..5a1cf988e962b
 +	return rc;
 +}
 +
-+static void trusty_log_remove(struct platform_device *pdev)
++static
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++int
++#else
++void
++#endif
++trusty_log_remove(struct platform_device *pdev)
 +{
 +	struct trusty_log_state *s = platform_get_drvdata(pdev);
 +
 +	trusty_log_sfile_unregister(s);
 +	kref_put(&s->refcount, trusty_log_cleanup);
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++	return 0;
++#endif
 +}
 +
 +static void trusty_log_cleanup(struct kref *ref)
@@ -5542,10 +5808,10 @@ index 0000000000000..5a1cf988e962b
 +MODULE_DESCRIPTION("Trusty logging driver");
 diff --git a/drivers/trusty/trusty-log.h b/drivers/trusty/trusty-log.h
 new file mode 100644
-index 0000000000000..7b5e6096b51e9
+index 0000000..25ad65f
 --- /dev/null
 +++ b/drivers/trusty/trusty-log.h
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,33 @@
 +/* SPDX-License-Identifier: MIT */
 +/*
 + * Copyright (c) 2015 Google, Inc.
@@ -5572,11 +5838,16 @@ index 0000000000000..7b5e6096b51e9
 +
 +#define TRUSTY_LOG_API_VERSION	1
 +
++#define SMC_ENTITY_CONSOLE 52
++#define SMC_SC_SHARED_CONSOLE_CTL SMC_STDCALL_NR(SMC_ENTITY_CONSOLE, 0)
++#define TRUSTY_CONSOLE_DISABLE 0
++#define TRUSTY_CONSOLE_ENABLE 1
++
 +#endif
 +
 diff --git a/drivers/trusty/trusty-mem.c b/drivers/trusty/trusty-mem.c
 new file mode 100644
-index 0000000000000..8a360298e5017
+index 0000000..8a36029
 --- /dev/null
 +++ b/drivers/trusty/trusty-mem.c
 @@ -0,0 +1,139 @@
@@ -5719,12 +5990,116 @@ index 0000000000000..8a360298e5017
 +			   ((u64)mem_attr << 48);
 +	return 0;
 +}
+diff --git a/drivers/trusty/trusty-populate.c b/drivers/trusty/trusty-populate.c
+new file mode 100644
+index 0000000..7c3f678
+--- /dev/null
++++ b/drivers/trusty/trusty-populate.c
+@@ -0,0 +1,98 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2025 Google, Inc.
++ */
++
++#include <linux/kconfig.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
++
++static struct platform_device *ffa_pdev;
++static struct platform_device *core_pdev;
++static struct platform_device *virtio_pdev;
++static struct platform_device *test_pdev;
++
++static int __init trusty_populate_init(void)
++{
++	int ret;
++
++	ffa_pdev = platform_device_register_data(NULL, "trusty-ffa",
++						 PLATFORM_DEVID_NONE, NULL, 0);
++	if (IS_ERR(ffa_pdev)) {
++		ret = PTR_ERR(ffa_pdev);
++		goto err_register_ffa_device;
++	}
++
++	/*
++	 * Attach the device to the trusty-ffa driver, triggering a probe.
++	 * Will fail if trusty-ffa.ko has not been loaded, which is intentional
++	 * because we need the devices to be probed in the exact order here.
++	 */
++	ret = device_attach(&ffa_pdev->dev);
++	if (!ret) /* Driver not found */
++		ret = -ENODEV;
++	if (ret < 0)
++		goto err_attach_ffa_device;
++
++	core_pdev = platform_device_register_data(&ffa_pdev->dev, "trusty-core",
++						  PLATFORM_DEVID_NONE, NULL, 0);
++	if (IS_ERR(core_pdev)) {
++		ret = PTR_ERR(core_pdev);
++		goto err_register_core_device;
++	}
++
++	ret = device_attach(&core_pdev->dev);
++	if (!ret)
++		ret = -ENODEV;
++	if (ret < 0)
++		goto err_attach_core_device;
++
++
++	/*
++	 * The following devices do not need to be attached herer because
++	 * their order does not matter, and some are even optional
++	 * (trusty-test). We just need trusty-ffa and trusty-core to be
++	 * the first two devices registered and probed, in that order.
++	 */
++	virtio_pdev = platform_device_register_data(&core_pdev->dev, "trusty-virtio",
++						    PLATFORM_DEVID_NONE, NULL, 0);
++	if (IS_ERR(virtio_pdev)) {
++		ret = PTR_ERR(virtio_pdev);
++		goto err_register_virtio_device;
++	}
++
++	test_pdev = platform_device_register_data(&core_pdev->dev, "trusty-test",
++						  PLATFORM_DEVID_NONE, NULL, 0);
++	if (IS_ERR(test_pdev)) {
++		ret = PTR_ERR(test_pdev);
++		goto err_register_test_device;
++	}
++
++	return 0;
++
++err_register_test_device:
++	platform_device_unregister(virtio_pdev);
++err_register_virtio_device:
++err_attach_core_device:
++	platform_device_unregister(core_pdev);
++err_register_core_device:
++err_attach_ffa_device:
++	platform_device_unregister(ffa_pdev);
++err_register_ffa_device:
++	return ret;
++}
++
++static void trusty_populate_exit(void)
++{
++	platform_device_unregister(test_pdev);
++	platform_device_unregister(virtio_pdev);
++	platform_device_unregister(core_pdev);
++	platform_device_unregister(ffa_pdev);
++}
++
++module_init(trusty_populate_init);
++module_exit(trusty_populate_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Trusty device populate driver");
 diff --git a/drivers/trusty/trusty-sched-share-api.h b/drivers/trusty/trusty-sched-share-api.h
 new file mode 100644
-index 0000000000000..412704a6fbe89
+index 0000000..9349e8f
 --- /dev/null
 +++ b/drivers/trusty/trusty-sched-share-api.h
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,29 @@
 +/* SPDX-License-Identifier: MIT */
 +/*
 + * Copyright (c) 2022 Google, Inc.
@@ -5742,22 +6117,24 @@ index 0000000000000..412704a6fbe89
 +
 +int trusty_alloc_sched_share(struct device *device,
 +		struct trusty_sched_share_state **state);
-+void trusty_register_sched_share(struct device *device,
++int trusty_register_sched_share(struct device *device,
 +		struct trusty_sched_share_state *sched_share_state);
 +void trusty_unregister_sched_share(struct trusty_sched_share_state *sched_share_state);
 +void trusty_free_sched_share(struct trusty_sched_share_state *sched_share_state);
 +
 +int trusty_get_requested_nice(unsigned int cpu_num, struct trusty_sched_share_state *tcpu_state);
-+int trusty_set_actual_nice(unsigned int cpu_num, struct trusty_sched_share_state *tcpu_state,
++void trusty_set_actual_nice(unsigned int cpu_num, struct trusty_sched_share_state *tcpu_state,
 +		int nice);
++
++bool trusty_is_idle(unsigned int cpu_num, struct trusty_sched_share_state *tcpu_state);
 +
 +#endif /* _TRUSTY_SCHED_SHARE_API_H_ */
 diff --git a/drivers/trusty/trusty-sched-share.c b/drivers/trusty/trusty-sched-share.c
 new file mode 100644
-index 0000000000000..af3e5ac98bb36
+index 0000000..cfca532
 --- /dev/null
 +++ b/drivers/trusty/trusty-sched-share.c
-@@ -0,0 +1,288 @@
+@@ -0,0 +1,301 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (c) 2022 Google, Inc.
@@ -5770,9 +6147,9 @@ index 0000000000000..af3e5ac98bb36
 +#include <linux/device.h>
 +#include <linux/slab.h>
 +#include <linux/scatterlist.h>
-+#include <linux/vmalloc.h>
-+
 +#include <linux/trusty/trusty.h>
++#include <linux/vmalloc.h>
++#include "trusty-sched-share-api.h"
 +#include "trusty-sched-share.h"
 +
 +/**
@@ -5888,7 +6265,7 @@ index 0000000000000..af3e5ac98bb36
 +	return -ENOMEM;
 +}
 +
-+void trusty_register_sched_share(struct device *device,
++int trusty_register_sched_share(struct device *device,
 +		struct trusty_sched_share_state *sched_share_state)
 +{
 +	int result = 0;
@@ -5920,8 +6297,9 @@ index 0000000000000..af3e5ac98bb36
 +	}
 +
 +	/* share memory with Trusty */
-+	result = trusty_share_memory(sched_share_state->dev, &mem_id, sched_share_state->sg,
-+				     sched_share_state->num_pages, PAGE_KERNEL);
++	result = trusty_share_memory(sched_share_state->dev, &mem_id,
++				     sched_share_state->sg, sched_share_state->num_pages,
++				     PAGE_KERNEL, TRUSTY_DEFAULT_MEM_OBJ_TAG);
 +	if (result != 0) {
 +		dev_err(sched_share_state->dev, "trusty_share_memory failed: %d\n",
 +			result);
@@ -5958,7 +6336,7 @@ index 0000000000000..af3e5ac98bb36
 +
 +	sched_share_state->is_registered = true;
 +
-+	return;
++	return 0;
 +
 +err_smc_std_call32:
 +	trusty_sched_share_reclaim_memory(sched_share_state);
@@ -5967,7 +6345,7 @@ index 0000000000000..af3e5ac98bb36
 +	kfree(sched_share_state->sg);
 +	sched_share_state->sg = NULL;
 +err_rsrc_alloc_sg:
-+	return;
++	return result;
 +
 +}
 +
@@ -6008,6 +6386,9 @@ index 0000000000000..af3e5ac98bb36
 +	int new_nice;
 +
 +	switch (trusty_prio) {
++	case TRUSTY_SHADOW_PRIORITY_IDLE:
++		new_nice = trusty_nop_nice_value();
++		break;
 +	case TRUSTY_SHADOW_PRIORITY_HIGH:
 +		new_nice = LINUX_NICE_FOR_TRUSTY_PRIORITY_HIGH;
 +		break;
@@ -6046,12 +6427,21 @@ index 0000000000000..af3e5ac98bb36
 +
 +	trusty_get_trusty_percpu_data(tsh, cpu_num)->cur_shadow_priority = new_prio;
 +}
++
++bool trusty_is_idle(unsigned int cpu_num, struct trusty_sched_share_state *tcpu_state)
++{
++	struct trusty_sched_shared *tsh = (struct trusty_sched_shared *)tcpu_state->sched_shared_vm;
++
++	return trusty_get_trusty_percpu_data(tsh, cpu_num)->ask_shadow_priority ==
++		TRUSTY_SHADOW_PRIORITY_IDLE;
++}
++EXPORT_SYMBOL(trusty_is_idle);
 diff --git a/drivers/trusty/trusty-sched-share.h b/drivers/trusty/trusty-sched-share.h
 new file mode 100644
-index 0000000000000..7e59eecbca121
+index 0000000..1b2e286
 --- /dev/null
 +++ b/drivers/trusty/trusty-sched-share.h
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,59 @@
 +/* SPDX-License-Identifier: MIT */
 +/*
 + * Copyright (c) 2022 Google, Inc.
@@ -6072,6 +6462,7 @@ index 0000000000000..7e59eecbca121
 +/*
 + * trusty-shadow-priority valid values
 + */
++#define TRUSTY_SHADOW_PRIORITY_IDLE 0
 +#define TRUSTY_SHADOW_PRIORITY_LOW 1
 +#define TRUSTY_SHADOW_PRIORITY_NORMAL 2
 +#define TRUSTY_SHADOW_PRIORITY_HIGH 3
@@ -6112,7 +6503,7 @@ index 0000000000000..7e59eecbca121
 +#endif /* _TRUSTY_SCHED_SHARE_H_ */
 diff --git a/drivers/trusty/trusty-smc-arm.S b/drivers/trusty/trusty-smc-arm.S
 new file mode 100644
-index 0000000000000..8ff83547d33f7
+index 0000000..8ff8354
 --- /dev/null
 +++ b/drivers/trusty/trusty-smc-arm.S
 @@ -0,0 +1,41 @@
@@ -6159,7 +6550,7 @@ index 0000000000000..8ff83547d33f7
 +ENDPROC(trusty_smc8)
 diff --git a/drivers/trusty/trusty-smc-arm64.S b/drivers/trusty/trusty-smc-arm64.S
 new file mode 100644
-index 0000000000000..14c8fed28a5e1
+index 0000000..14c8fed
 --- /dev/null
 +++ b/drivers/trusty/trusty-smc-arm64.S
 @@ -0,0 +1,35 @@
@@ -6198,9 +6589,560 @@ index 0000000000000..14c8fed28a5e1
 +
 +    ret
 +SYM_FUNC_END(trusty_smc8)
+diff --git a/drivers/trusty/trusty-smc-transport.c b/drivers/trusty/trusty-smc-transport.c
+new file mode 100644
+index 0000000..d805ef9
+--- /dev/null
++++ b/drivers/trusty/trusty-smc-transport.c
+@@ -0,0 +1,545 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2013 Google, Inc.
++ */
++
++#include <linux/arm-smccc.h>
++#include <linux/kconfig.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
++#include <linux/trusty/arm_ffa.h>
++#include <linux/trusty/smcall.h>
++#include <linux/trusty/trusty.h>
++#include <linux/version.h>
++
++#include <linux/scatterlist.h>
++#include <linux/dma-mapping.h>
++
++#include "trusty-ffa.h"
++#include "trusty-smc.h"
++#include "trusty-transport.h"
++
++static struct platform_driver trusty_smc_driver;
++
++struct trusty_smc_state {
++	struct device *dev;
++	struct device_link *ffa_dev_link;
++	struct trusty_transport transport;
++	struct device *core_dev;
++	void *ffa_tx;
++	void *ffa_rx;
++	u16 ffa_local_id;
++	u16 ffa_remote_id;
++	struct mutex share_memory_msg_lock; /* protects share_memory_msg */
++};
++
++static struct trusty_smc_state *trusty_smc_get_state(struct trusty_transport *tr)
++{
++	if (WARN_ON(!tr))
++		return NULL;
++
++	return container_of(tr, struct trusty_smc_state, transport);
++}
++
++static unsigned long trusty_smc_call(struct trusty_transport *tr, unsigned long smcnr,
++				     unsigned long a0, unsigned long a1,
++				     unsigned long a2)
++{
++	return trusty_smc8(smcnr, a0, a1, a2, 0, 0, 0, 0).r0;
++}
++
++static int trusty_smc_share_or_lend_memory(struct trusty_transport *tr, u64 *id,
++					   struct scatterlist *sglist, unsigned int nents,
++					   pgprot_t pgprot, u64 tag, bool lend,
++					   struct ns_mem_page_info *pg_inf)
++{
++	struct trusty_smc_state *s = trusty_smc_get_state(tr);
++	int ret = 0;
++	struct scatterlist *sg;
++	size_t count;
++	size_t i;
++	size_t len = 0;
++	u64 ffa_handle = 0;
++	size_t total_len;
++	size_t endpoint_count = 1;
++	struct ffa_mtd *mtd = s->ffa_tx;
++	size_t comp_mrd_offset = offsetof(struct ffa_mtd, emad[endpoint_count]);
++	struct ffa_comp_mrd *comp_mrd = s->ffa_tx + comp_mrd_offset;
++	struct ffa_cons_mrd *cons_mrd = comp_mrd->address_range_array;
++	size_t cons_mrd_offset = (void *)cons_mrd - s->ffa_tx;
++	struct smc_ret8 smc_ret;
++	u32 cookie_low;
++	u32 cookie_high;
++
++	if (WARN_ON(!s))
++		return -EINVAL;
++
++#if IS_ENABLED(CONFIG_TRUSTY_SMC_TRANSPORT_USE_FFA_TRANSPORT)
++	if (s->ffa_dev_link)
++		return trusty_ffa_dev_share_or_lend_memory(s->ffa_dev_link->supplier, id, sglist,
++							   nents, pgprot, tag, lend, pg_inf);
++#endif
++
++	if (WARN_ON(!s->ffa_tx))
++		return -EOPNOTSUPP;
++
++	len = 0;
++	for_each_sg(sglist, sg, nents, i)
++		len += sg_dma_len(sg);
++
++	mutex_lock(&s->share_memory_msg_lock);
++
++	mtd->sender_id = s->ffa_local_id;
++	mtd->memory_region_attributes = pg_inf->ffa_mem_attr;
++	mtd->reserved_3 = 0;
++	mtd->flags = 0;
++	mtd->handle = 0;
++	mtd->tag = tag;
++	mtd->reserved_24_27 = 0;
++	mtd->emad_count = endpoint_count;
++	for (i = 0; i < endpoint_count; i++) {
++		struct ffa_emad *emad = &mtd->emad[i];
++		/* TODO: support stream ids */
++		emad->mapd.endpoint_id = s->ffa_remote_id;
++		emad->mapd.memory_access_permissions = pg_inf->ffa_mem_perm;
++		emad->mapd.flags = 0;
++		emad->comp_mrd_offset = comp_mrd_offset;
++		emad->reserved_8_15 = 0;
++	}
++	comp_mrd->total_page_count = len / FFA_PAGE_SIZE;
++	comp_mrd->address_range_count = nents;
++	comp_mrd->reserved_8_15 = 0;
++
++	total_len = cons_mrd_offset + nents * sizeof(*cons_mrd);
++	sg = sglist;
++	count = nents;
++	while (count) {
++		size_t lcount =
++			min_t(size_t, count, (PAGE_SIZE - cons_mrd_offset) /
++			      sizeof(*cons_mrd));
++		size_t fragment_len = lcount * sizeof(*cons_mrd) +
++				      cons_mrd_offset;
++
++		for (i = 0; i < lcount; i++) {
++			cons_mrd[i].address = sg_dma_address(sg);
++			cons_mrd[i].page_count = sg_dma_len(sg) / FFA_PAGE_SIZE;
++			cons_mrd[i].reserved_12_15 = 0;
++			sg = sg_next(sg);
++		}
++		count -= lcount;
++		if (cons_mrd_offset) {
++			u32 smc = lend ? SMC_FC_FFA_MEM_LEND :
++					 SMC_FC_FFA_MEM_SHARE;
++			/* First fragment */
++			smc_ret = trusty_smc8(smc, total_len,
++					      fragment_len, 0, 0, 0, 0, 0);
++		} else {
++			smc_ret = trusty_smc8(SMC_FC_FFA_MEM_FRAG_TX,
++					      cookie_low, cookie_high,
++					      fragment_len, 0, 0, 0, 0);
++		}
++		if ((u32)smc_ret.r0 == SMC_FC_FFA_MEM_FRAG_RX) {
++			cookie_low = smc_ret.r1;
++			cookie_high = smc_ret.r2;
++			dev_dbg(s->dev, "cookie %x %x", cookie_low,
++				cookie_high);
++			if (!count) {
++				/*
++				 * We have sent all our descriptors. Expected
++				 * SMC_FC_FFA_SUCCESS, not a request to send
++				 * another fragment.
++				 */
++				dev_err(s->dev, "%s: fragment_len %zd/%zd, unexpected SMC_FC_FFA_MEM_FRAG_RX\n",
++					__func__, fragment_len, total_len);
++				ret = -EIO;
++				break;
++			}
++		} else if ((u32)smc_ret.r0 == SMC_FC_FFA_SUCCESS) {
++			ffa_handle = (u64)(u32)smc_ret.r2 | (u64)(u32)smc_ret.r3 << 32;
++			dev_dbg(s->dev, "%s: fragment_len %zu/%zu, got handle 0x%llx\n",
++				__func__, fragment_len, total_len,
++				ffa_handle);
++			if (count) {
++				/*
++				 * We have not sent all our descriptors.
++				 * Expected SMC_FC_FFA_MEM_FRAG_RX not
++				 * SMC_FC_FFA_SUCCESS.
++				 */
++				dev_err(s->dev, "%s: fragment_len %zu/%zu, unexpected SMC_FC_FFA_SUCCESS, count %zu != 0\n",
++					__func__, fragment_len, total_len,
++					count);
++				ret = -EIO;
++				break;
++			}
++		} else {
++			dev_err(s->dev, "%s: fragment_len %zu/%zu, SMC_FC_FFA_MEM_SHARE failed 0x%lx 0x%lx 0x%lx",
++				__func__, fragment_len, total_len,
++				smc_ret.r0, smc_ret.r1, smc_ret.r2);
++			ret = -EIO;
++			break;
++		}
++
++		cons_mrd = s->ffa_tx;
++		cons_mrd_offset = 0;
++	}
++
++	mutex_unlock(&s->share_memory_msg_lock);
++
++	if (!ret) {
++		*id = ffa_handle;
++		goto done;
++	}
++
++	dev_err(s->dev, "%s: failed %d", __func__, ret);
++
++done:
++	return ret;
++}
++
++static int trusty_smc_reclaim_memory(struct trusty_transport *tr, u64 id,
++				     struct scatterlist *sglist, unsigned int nents)
++{
++	struct trusty_smc_state *s = trusty_smc_get_state(tr);
++	int ret = 0;
++	struct smc_ret8 smc_ret;
++
++	if (WARN_ON(!s))
++		return -EINVAL;
++
++#if IS_ENABLED(CONFIG_TRUSTY_SMC_TRANSPORT_USE_FFA_TRANSPORT)
++	if (s->ffa_dev_link)
++		return trusty_ffa_dev_reclaim_memory(s->ffa_dev_link->supplier, id, sglist, nents);
++#endif
++
++	mutex_lock(&s->share_memory_msg_lock);
++
++	smc_ret = trusty_smc8(SMC_FC_FFA_MEM_RECLAIM, (u32)id, id >> 32, 0, 0,
++			      0, 0, 0);
++	if ((u32)smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
++		dev_err(s->dev, "%s: SMC_FC_FFA_MEM_RECLAIM failed 0x%lx 0x%lx 0x%lx",
++			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
++		if ((u32)smc_ret.r0 == SMC_FC_FFA_ERROR &&
++		    (s32)smc_ret.r2 == FFA_ERROR_DENIED)
++			ret = -EBUSY;
++		else
++			ret = -EIO;
++	}
++
++	mutex_unlock(&s->share_memory_msg_lock);
++	return ret;
++}
++
++static bool trusty_ret_is_ffa_not_supported(struct smc_ret8 *ret)
++{
++	/*
++	 * The return code can be returned in X0 or W0. On ARM64, we always
++	 * read the value from X0; calling a 32-bit SMC will put the lower
++	 * 32 bits in that register, and leave the high 32 bits undefined.
++	 * We convert to a 32-bit value explicitly since we're checking for -1.
++	 * The same applies to X2/W2 for the FF-A error code.
++	 */
++	return (s32)ret->r0 == SMCCC_RET_NOT_SUPPORTED ||
++	    ((u32)ret->r0 == SMC_FC_FFA_ERROR &&
++	     (s32)ret->r2 == FFA_ERROR_NOT_SUPPORTED);
++}
++
++static int trusty_init_msg_buf(struct trusty_smc_state *s)
++{
++	phys_addr_t tx_paddr;
++	phys_addr_t rx_paddr;
++	int ret;
++	struct smc_ret8 smc_ret;
++
++	/* The FF-A driver owns the buffers */
++	if (s->ffa_dev_link)
++		return 0;
++
++	/* Get supported FF-A version and check if it is compatible */
++	smc_ret = trusty_smc8(SMC_FC_FFA_VERSION, FFA_CURRENT_VERSION, 0, 0,
++			      0, 0, 0, 0);
++	if (FFA_VERSION_TO_MAJOR(smc_ret.r0) != FFA_CURRENT_VERSION_MAJOR) {
++		dev_err(s->dev,
++			"%s: Unsupported FF-A version 0x%lx, expected 0x%x\n",
++			__func__, smc_ret.r0, FFA_CURRENT_VERSION);
++		ret = trusty_ret_is_ffa_not_supported(&smc_ret) ? 0 : -EIO;
++		goto err_version;
++	}
++
++	/* Check that SMC_FC_FFA_MEM_SHARE is implemented */
++	smc_ret = trusty_smc8(SMC_FC_FFA_FEATURES, SMC_FC_FFA_MEM_SHARE, 0, 0,
++			      0, 0, 0, 0);
++	if ((u32)smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
++		dev_err(s->dev,
++			"%s: SMC_FC_FFA_FEATURES(SMC_FC_FFA_MEM_SHARE) failed 0x%lx 0x%lx 0x%lx\n",
++			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
++		ret = trusty_ret_is_ffa_not_supported(&smc_ret) ? 0 : -EIO;
++		goto err_features;
++	}
++
++	/*
++	 * Set FF-A endpoint IDs.
++	 *
++	 * Hardcode 0x8000 for the secure os.
++	 * TODO: Use FF-A call or device tree to configure this dynamically
++	 */
++	smc_ret = trusty_smc8(SMC_FC_FFA_ID_GET, 0, 0, 0, 0, 0, 0, 0);
++	if ((u32)smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
++		dev_err(s->dev,
++			"%s: SMC_FC_FFA_ID_GET failed 0x%lx 0x%lx 0x%lx\n",
++			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
++		ret = -EIO;
++		goto err_id_get;
++	}
++
++	s->ffa_local_id = smc_ret.r2;
++	s->ffa_remote_id = 0x8000;
++
++	/*
++	 * The pKVM hypervisor uses the same page size as the host, including for
++	 * stage-2 mappings. So the rx/tx buffers need to be page-sized multiple,
++	 * and page-aligned.
++	 *
++	 * TODO: This can be made more generic by discovering the required size
++	 * through SMC_FC_FFA_FEATURES later.
++	 */
++	s->ffa_tx = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!s->ffa_tx) {
++		ret = -ENOMEM;
++		goto err_alloc_tx;
++	}
++	tx_paddr = virt_to_phys(s->ffa_tx);
++	if (WARN_ON(tx_paddr & (PAGE_SIZE - 1))) {
++		ret = -EINVAL;
++		goto err_unaligned_tx_buf;
++	}
++
++	s->ffa_rx = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!s->ffa_rx) {
++		ret = -ENOMEM;
++		goto err_alloc_rx;
++	}
++	rx_paddr = virt_to_phys(s->ffa_rx);
++	if (WARN_ON(rx_paddr & (PAGE_SIZE - 1))) {
++		ret = -EINVAL;
++		goto err_unaligned_rx_buf;
++	}
++
++	smc_ret = trusty_smc8(SMC_FCZ_FFA_RXTX_MAP, tx_paddr, rx_paddr,
++			      PAGE_SIZE / FFA_PAGE_SIZE, 0, 0, 0, 0);
++	if ((u32)smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
++		dev_err(s->dev, "%s: SMC_FCZ_FFA_RXTX_MAP failed 0x%lx 0x%lx 0x%lx\n",
++			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
++		ret = -EIO;
++		goto err_rxtx_map;
++	}
++
++	return 0;
++
++err_rxtx_map:
++err_unaligned_rx_buf:
++	kfree(s->ffa_rx);
++	s->ffa_rx = NULL;
++err_alloc_rx:
++err_unaligned_tx_buf:
++	kfree(s->ffa_tx);
++	s->ffa_tx = NULL;
++err_alloc_tx:
++err_id_get:
++err_features:
++err_version:
++	return ret;
++}
++
++static void trusty_free_msg_buf(struct trusty_smc_state *s)
++{
++	struct smc_ret8 smc_ret;
++
++	/*
++	 * If we got NOT_SUPPORTED earlier,
++	 * or the FF-A driver owns the buffers,
++	 * there is nothing to free here.
++	 */
++	if (!s->ffa_tx)
++		return;
++
++	smc_ret = trusty_smc8(SMC_FC_FFA_RXTX_UNMAP, 0, 0, 0, 0, 0, 0, 0);
++	if ((u32)smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
++		dev_err(s->dev, "%s: SMC_FC_FFA_RXTX_UNMAP failed 0x%lx 0x%lx 0x%lx\n",
++			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
++	} else {
++		kfree(s->ffa_rx);
++		kfree(s->ffa_tx);
++	}
++}
++
++static const struct trusty_transport_ops trusty_smc_transport_ops = {
++	.call = &trusty_smc_call,
++	.share_or_lend_memory = &trusty_smc_share_or_lend_memory,
++	.reclaim_memory = &trusty_smc_reclaim_memory,
++};
++
++#if IS_ENABLED(CONFIG_TRUSTY_SMC_TRANSPORT_USE_FFA_TRANSPORT)
++static struct device_link *trusty_smc_get_ffa_link(struct platform_device *pdev)
++{
++	struct device *ffa_dev;
++	struct device_link *link;
++
++	ffa_dev = trusty_ffa_find_device();
++	if (ffa_dev == ERR_PTR(-ENOENT)) {
++		/*
++		 * ffa-core.ko is not loaded, fall back to builtin code.
++		 * We would also check for ffa-module.ko but it does
++		 * not export any symbols that we can check with symbol_get()
++		 * so we assume that whoever loads ffa-core.ko will also
++		 * load ffa-module.ko after that but before we get here.
++		 */
++		return NULL;
++	} else if (IS_ERR(ffa_dev)) {
++		dev_err(&pdev->dev, "Trusty FF-A partition error (%ld)\n",
++			PTR_ERR(ffa_dev));
++		return ERR_CAST(ffa_dev);
++	} else if (WARN_ON(!ffa_dev)) {
++		return ERR_PTR(-EINVAL);
++	}
++
++	/*
++	 * The FF-A device was successfully created,
++	 * since ffa_setup_partitions creates the devices
++	 * from the ffa-module init function, but the new
++	 * devices might not have been probed yet.
++	 */
++	link = device_link_add(&pdev->dev, ffa_dev,
++			       DL_FLAG_AUTOPROBE_CONSUMER);
++	put_device(ffa_dev);
++
++	if (!link) {
++		dev_err(&pdev->dev, "failed to add device link\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	/* Supplier has not been probed yet */
++	if (link->status == DL_STATE_DORMANT)
++		return ERR_PTR(-EPROBE_DEFER);
++
++	return link;
++}
++#else
++static struct device_link *trusty_smc_get_ffa_link(struct platform_device *pdev)
++{
++	return NULL;
++}
++#endif
++
++static int trusty_smc_probe(struct platform_device *pdev)
++{
++	int ret;
++	struct device_link *link;
++	struct platform_device *core_pdev;
++	struct trusty_smc_state *s;
++	struct device_node *node = pdev->dev.of_node;
++
++	if (!node) {
++		dev_err(&pdev->dev, "of_node required\n");
++		return -EINVAL;
++	}
++
++	link = trusty_smc_get_ffa_link(pdev);
++	if (IS_ERR(link)) {
++		ret = PTR_ERR(link);
++		goto err_ffa_link;
++	}
++
++	s = kzalloc(sizeof(*s), GFP_KERNEL);
++	if (!s) {
++		ret = -ENOMEM;
++		goto err_allocate_state;
++	}
++
++	s->dev = &pdev->dev;
++	s->ffa_dev_link = link;
++	s->transport.magic = TRUSTY_TRANSPORT_MAGIC;
++	s->transport.ops = &trusty_smc_transport_ops;
++
++	mutex_init(&s->share_memory_msg_lock);
++
++	platform_set_drvdata(pdev, &s->transport);
++
++	ret = trusty_init_msg_buf(s);
++	if (ret < 0) {
++		dev_err(s->dev, "%s: trusty_init_msg_buf failed: %d\n",
++			__func__, ret);
++		goto err_init_msg_buf;
++	}
++
++	core_pdev = platform_device_register_data(&pdev->dev, "trusty-core",
++						  PLATFORM_DEVID_NONE, NULL, 0);
++	if (IS_ERR(core_pdev)) {
++		ret = PTR_ERR(core_pdev);
++		goto err_register_device;
++	}
++	s->core_dev = &core_pdev->dev;
++
++	return 0;
++
++err_register_device:
++	trusty_free_msg_buf(s);
++err_init_msg_buf:
++	mutex_destroy(&s->share_memory_msg_lock);
++	kfree(s);
++err_allocate_state:
++err_ffa_link:
++	return ret;
++}
++
++static
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++int
++#else
++void
++#endif
++trusty_smc_remove(struct platform_device *pdev)
++{
++	struct trusty_smc_state *s = trusty_smc_get_state(platform_get_drvdata(pdev));
++	struct platform_device *core_pdev = to_platform_device(s->core_dev);
++
++	platform_device_unregister(core_pdev);
++	trusty_free_msg_buf(s);
++	mutex_destroy(&s->share_memory_msg_lock);
++	kfree(s);
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++	return 0;
++#endif
++}
++
++static const struct of_device_id trusty_smc_of_match[] = {
++	{ .compatible = "android,trusty-smc-v1", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(trusty_smc, trusty_smc_of_match);
++
++static struct platform_driver trusty_smc_driver = {
++	.probe = trusty_smc_probe,
++	.remove = trusty_smc_remove,
++	.driver	= {
++		.name = "trusty-smc",
++		.of_match_table = trusty_smc_of_match,
++	},
++};
++
++static int __init trusty_smc_init(void)
++{
++	return platform_driver_register(&trusty_smc_driver);
++}
++
++static void trusty_smc_exit(void)
++{
++	platform_driver_unregister(&trusty_smc_driver);
++}
++
++subsys_initcall(trusty_smc_init);
++module_exit(trusty_smc_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Trusty SMC transport driver");
 diff --git a/drivers/trusty/trusty-smc.h b/drivers/trusty/trusty-smc.h
 new file mode 100644
-index 0000000000000..b53e5abb4d056
+index 0000000..b53e5ab
 --- /dev/null
 +++ b/drivers/trusty/trusty-smc.h
 @@ -0,0 +1,26 @@
@@ -6230,12 +7172,35 @@ index 0000000000000..b53e5abb4d056
 +			    unsigned long r6, unsigned long r7);
 +
 +#endif /* _TRUSTY_SMC_H */
-diff --git a/drivers/trusty/trusty-test.c b/drivers/trusty/trusty-test.c
+diff --git a/drivers/trusty/trusty-test-arm64.S b/drivers/trusty/trusty-test-arm64.S
 new file mode 100644
-index 0000000000000..3bf6d41da2ced
+index 0000000..07ea109
 --- /dev/null
-+++ b/drivers/trusty/trusty-test.c
-@@ -0,0 +1,440 @@
++++ b/drivers/trusty/trusty-test-arm64.S
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0-only
++ * Copyright (C) 2024 Google, Inc.
++ */
++
++#include <linux/linkage.h>
++
++#include <asm/fpsimdmacros.h>
++
++SYM_FUNC_START(trusty_fpsimd_save_state)
++	fpsimd_save	x0, 1
++	ret
++SYM_FUNC_END(trusty_fpsimd_save_state)
++
++SYM_FUNC_START(trusty_fpsimd_load_state)
++	fpsimd_restore	x0, 1
++	ret
++SYM_FUNC_END(trusty_fpsimd_load_state)
+diff --git a/drivers/trusty/trusty-test-main.c b/drivers/trusty/trusty-test-main.c
+new file mode 100644
+index 0000000..e705f2fb
+--- /dev/null
++++ b/drivers/trusty/trusty-test-main.c
+@@ -0,0 +1,594 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2020 Google, Inc.
@@ -6251,6 +7216,7 @@ index 0000000000000..3bf6d41da2ced
 +#include <linux/mm.h>
 +#include <linux/mod_devicetable.h>
 +#include <linux/module.h>
++#include <linux/version.h>
 +#include <linux/vmalloc.h>
 +
 +#include "trusty-test.h"
@@ -6377,7 +7343,8 @@ index 0000000000000..3bf6d41da2ced
 +		t1 = ktime_get();
 +		tmpret = trusty_share_memory(s->trusty_dev, &obj->mem_id,
 +					     obj->sgt.sgl, obj->sgt.nents,
-+					     PAGE_KERNEL);
++					     PAGE_KERNEL,
++					     TRUSTY_DEFAULT_MEM_OBJ_TAG);
 +		t2 = ktime_get();
 +		if (tmpret) {
 +			ret = tmpret;
@@ -6583,9 +7550,120 @@ index 0000000000000..3bf6d41da2ced
 +	return ret;
 +}
 +
++#ifdef CONFIG_ARM64
++static ssize_t trusty_test_fpsimd(struct trusty_test_state *s)
++{
++	struct trusty_test_fpsimd_state {
++		struct user_fpsimd_state old;
++		struct user_fpsimd_state random;
++		struct user_fpsimd_state new[2];
++	} *state;
++	unsigned long flags;
++	int ret;
++
++	/*
++	 * Allocate the test state on the kernel heap because
++	 * it overflows the stack.
++	 */
++	state = kzalloc(sizeof(*state), GFP_KERNEL);
++	if (!state) {
++		ret = -ENOMEM;
++		dev_err(s->dev, "failed to allocate fpsimd state\n");
++		goto err_alloc;
++	}
++
++	for (size_t i = 0; i < ARRAY_SIZE(state->random.vregs); i++)
++		state->random.vregs[i] = get_random_u64();
++	/*
++	 * TODO: set FPCR&FPSR to random values, but they need to be masked
++	 * because many of their bits are MBZ
++	 */
++
++	/*
++	 * Disable interrupts so we stay on the current CPU and
++	 * guarantee that nothing else touches the FP registers
++	 */
++	local_irq_save(flags);
++	trusty_fpsimd_save_state(&state->old);
++	trusty_fpsimd_load_state(&state->random);
++
++	ret = trusty_fast_call32(s->trusty_dev, SMC_FC_TEST_CLOBBER_FPSIMD_CLOBBER,
++				 0, 0, 0);
++	if (ret) {
++		dev_err(s->dev, "trusty fp clobber failed: %d\n", ret);
++		ret = -EIO;
++		goto err_call;
++	}
++
++	trusty_fpsimd_save_state(&state->new[0]);
++	trusty_fpsimd_load_state(&state->random);
++
++	/*
++	 * Call into Trusty again so it can check
++	 * that we didn't clobber its registers
++	 */
++	ret = trusty_fast_call32(s->trusty_dev, SMC_FC_TEST_CLOBBER_FPSIMD_CHECK,
++				 1, 0, 0);
++	if (ret) {
++		dev_err(s->dev, "trusty fp check failed: %d\n", ret);
++		ret = -EIO;
++		goto err_call;
++	}
++
++	/* Restore the old state */
++	trusty_fpsimd_save_state(&state->new[1]);
++	trusty_fpsimd_load_state(&state->old);
++	local_irq_restore(flags);
++
++	for (size_t i = 0; i < ARRAY_SIZE(state->new); i++) {
++		for (size_t j = 0; j < ARRAY_SIZE(state->random.vregs); j++) {
++			if (state->new[i].vregs[j] != state->random.vregs[j]) {
++				dev_err(s->dev, "vregs[%zu][%zu] mismatch\n",
++					i, j);
++				ret = -EIO;
++				goto err_check;
++			}
++		}
++		if (state->new[i].fpcr != state->random.fpcr) {
++			dev_err(s->dev, "FPCR[%zu] mismatch: %x != %x\n",
++				i, state->new[i].fpcr, state->random.fpcr);
++			ret = -EIO;
++			goto err_check;
++		}
++		if (state->new[i].fpsr != state->random.fpsr) {
++			dev_err(s->dev, "FPSR[%zu] mismatch: %x != %x\n",
++				i, state->new[i].fpsr, state->random.fpsr);
++			ret = -EIO;
++			goto err_check;
++		}
++	}
++
++	ret = 0;
++
++err_check:
++	if (0) {
++err_call:
++		trusty_fpsimd_load_state(&state->old);
++		local_irq_restore(flags);
++	}
++	kfree(state);
++err_alloc:
++	return ret;
++}
++#else
++static ssize_t trusty_test_fpsimd(struct trusty_test_state *s)
++{
++	/* This test is a no-op on other architectures, e.g., arm */
++	return 0;
++}
++#endif
++
 +/*
 + * Run tests described by a string in this format:
 + * <obj_size>,<obj_count=1>,<repeat_share=1>,<repeat_access=3>
++ *
++ * Run FP tests with this alternative format:
++ * fpsimd:<count>
 + */
 +static ssize_t trusty_test_run_store(struct device *dev,
 +				     struct device_attribute *attr,
@@ -6600,6 +7678,38 @@ index 0000000000000..3bf6d41da2ced
 +	int ret;
 +	char *buf_next;
 +
++	size = str_has_prefix(buf, "fpsimd:");
++	if (size) {
++		ret = kstrtoul(buf + size, 0, &obj_count);
++		if (ret) {
++			dev_err(s->dev, "invalid fpsimd test count: %d\n",
++				ret);
++			return ret;
++		}
++
++		dev_info(s->dev, "running trusty fpsimd tests %zu times...\n",
++			 obj_count);
++		/* Disable preemption so we stay on the same CPU */
++		preempt_disable();
++
++		ret = trusty_std_call32(s->trusty_dev, SMC_SC_NOP,
++					SMC_NC_TEST_CLOBBER_FPSIMD_TIMER,
++					0, 0);
++		if (ret != 1)
++			dev_warn(s->dev, "trusty fpsimd tests failed to start timer: %d\n", ret);
++
++		for (size_t i = 0; i < obj_count; i++) {
++			ret = trusty_test_fpsimd(s);
++			if (ret)
++				break;
++		}
++
++		preempt_enable();
++		dev_info(s->dev, "trusty fpsimd tests %s (%d)\n",
++			 ret ? "failed" : "passed", ret);
++		return ret ?: count;
++	}
++
 +	while (true) {
 +		while (isspace(*buf))
 +			buf++;
@@ -6608,7 +7718,7 @@ index 0000000000000..3bf6d41da2ced
 +			return count;
 +		buf = buf_next;
 +		obj_count = trusty_test_get_arg(&buf, 1);
-+		repeat_share = trusty_test_get_arg(&buf, 1);
++		repeat_share = trusty_test_get_arg(&buf, 2);
 +		repeat_access = trusty_test_get_arg(&buf, 3);
 +
 +		ret = trusty_test_run(s, DIV_ROUND_UP(size, PAGE_SIZE),
@@ -6648,11 +7758,20 @@ index 0000000000000..3bf6d41da2ced
 +	return 0;
 +}
 +
-+static void trusty_test_remove(struct platform_device *pdev)
++static
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++int
++#else
++void
++#endif
++trusty_test_remove(struct platform_device *pdev)
 +{
 +	struct trusty_log_state *s = platform_get_drvdata(pdev);
 +
 +	kfree(s);
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++	return 0;
++#endif
 +}
 +
 +static const struct of_device_id trusty_test_of_match[] = {
@@ -6678,10 +7797,10 @@ index 0000000000000..3bf6d41da2ced
 +MODULE_DESCRIPTION("Trusty test driver");
 diff --git a/drivers/trusty/trusty-test.h b/drivers/trusty/trusty-test.h
 new file mode 100644
-index 0000000000000..eea7beb968763
+index 0000000..119e2439
 --- /dev/null
 +++ b/drivers/trusty/trusty-test.h
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,61 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Copyright (c) 2020 Google, Inc.
@@ -6692,15 +7811,63 @@ index 0000000000000..eea7beb968763
 +#define SMC_SC_TEST_VERSION SMC_STDCALL_NR(SMC_ENTITY_TEST, 0)
 +#define SMC_SC_TEST_SHARED_MEM_RW SMC_STDCALL_NR(SMC_ENTITY_TEST, 1)
 +
++/**
++ * SMC_SC_TEST_CLOBBER_FPSIMD_CLOBBER - Test save and clobber of FP/SIMD
++ * registers during an NS <-> TF-A <-> Trusty roundtrip.
++ *
++ * Return: 0 on success, or one of the libsm errors otherwise:
++ * * %SM_ERR_NOT_ALLOWED: Not allowed to enable the FPU in Trusty.
++ * * %SM_ERR_INTERNAL_FAILURE: The test failed to load random values
++ *                             into the FP registers.
++ *
++ * Set all of the secure-side FP registers to random values.
++ */
++#define SMC_FC_TEST_CLOBBER_FPSIMD_CLOBBER SMC_FASTCALL_NR(SMC_ENTITY_TEST, 0)
++
++/**
++ * SMC_SC_TEST_CLOBBER_FPSIMD_CHECK - Check and restore FP/SIMD
++ * registers after an NS <-> TF-A <-> Trusty roundtrip.
++ *
++ * Return: 0 on success, or one of the libsm errors otherwise:
++ * * %SM_ERR_NOT_ALLOWED: Not allowed to enable the FPU in Trusty.
++ * * %SM_ERR_BUSY: Another thread clobbered our registers.
++ * * %SM_ERR_INTERNAL_FAILURE: The FP registers did not match
++ *                             the expected values.
++ *
++ * The call should immediately follow a corresponding clobber,
++ * since the latter stores some internal state in Trusty.
++ *
++ * The caller should disable interrupts before
++ * &SMC_FC_TEST_CLOBBER_FPSIMD_CLOBBER and don't re-enable before
++ * &SMC_FC_TEST_CLOBBER_FPSIMD_CHECK returns to avoid the %SM_ERR_BUSY error.
++ */
++#define SMC_FC_TEST_CLOBBER_FPSIMD_CHECK SMC_FASTCALL_NR(SMC_ENTITY_TEST, 1)
++
++/**
++ * SMC_NC_TEST_CLOBBER_FPSIMD_TIMER - Trigger the FP/SIMD test timer.
++ *
++ * Return: 1 on success, or one of the libsm errors otherwise.
++ *
++ * Trigger a secure timer that runs periodically a fixed number of
++ * times, then automatically disables itself.
++ *
++ * The timer is not strictly required for the test, so failing to
++ * start or stop the timer is not an error per se.
++ */
++#define SMC_NC_TEST_CLOBBER_FPSIMD_TIMER SMC_STDCALL_NR(SMC_ENTITY_TEST, 0)
++
 +#define TRUSTY_STDCALLTEST_API_VERSION 1
++
++void trusty_fpsimd_save_state(struct user_fpsimd_state *fp_regs);
++void trusty_fpsimd_load_state(struct user_fpsimd_state *fp_regs);
 +
 +#endif /* _TRUSTY_TEST_H */
 diff --git a/drivers/trusty/trusty-trace.h b/drivers/trusty/trusty-trace.h
 new file mode 100644
-index 0000000000000..f4157931f9616
+index 0000000..4fcb24e
 --- /dev/null
 +++ b/drivers/trusty/trusty-trace.h
-@@ -0,0 +1,268 @@
+@@ -0,0 +1,271 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Copyright (C) 2022 Google, Inc.
@@ -6858,19 +8025,22 @@ index 0000000000000..f4157931f9616
 +);
 +
 +TRACE_EVENT(trusty_enqueue_nop,
-+	TP_PROTO(struct trusty_nop *nop),
-+	TP_ARGS(nop),
++	TP_PROTO(struct trusty_nop *nop, int cpu),
++	TP_ARGS(nop, cpu),
 +	TP_STRUCT__entry(
 +		__field(u32, arg1)
 +		__field(u32, arg2)
 +		__field(u32, arg3)
++		__field(int, cpu)
 +	),
 +	TP_fast_assign(
 +		__entry->arg1 = nop ? nop->args[0] : 0U;
 +		__entry->arg2 = nop ? nop->args[1] : 0U;
 +		__entry->arg3 = nop ? nop->args[2] : 0U;
++		__entry->cpu = cpu;
 +	),
-+	TP_printk("arg1=0x%x, arg2=0x%x, arg3=0x%x", __entry->arg1, __entry->arg2, __entry->arg3)
++	TP_printk("arg1=0x%x, arg2=0x%x, arg3=0x%x, cpu=%d", __entry->arg1, __entry->arg2,
++		__entry->arg3, __entry->cpu)
 +);
 +
 +TRACE_EVENT(trusty_dequeue_nop,
@@ -6966,15 +8136,69 @@ index 0000000000000..f4157931f9616
 +
 +#undef TRACE_INCLUDE_PATH
 +#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_PATH ../../drivers/trusty
++#define TRACE_INCLUDE_PATH .
 +#define TRACE_INCLUDE_FILE trusty-trace
 +#include <trace/define_trace.h>
+diff --git a/drivers/trusty/trusty-transport.h b/drivers/trusty/trusty-transport.h
+new file mode 100644
+index 0000000..1af71ee
+--- /dev/null
++++ b/drivers/trusty/trusty-transport.h
+@@ -0,0 +1,48 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2022 ARM Ltd.
++ */
++
++#ifndef _TRUSTY_TRANSPORT_H
++#define _TRUSTY_TRANSPORT_H
++
++#include <linux/device.h>
++#include <linux/types.h>
++
++/* 'TrsTrnsp' in hex */
++#define TRUSTY_TRANSPORT_MAGIC 0x54727354726E7370ULL
++
++struct ns_mem_page_info;
++struct trusty_sched_share_state;
++struct trusty_transport;
++
++struct trusty_transport_ops {
++	unsigned long (*call)(struct trusty_transport *tr, unsigned long smcnr,
++			      unsigned long a0, unsigned long a1,
++			      unsigned long a2);
++	int (*share_or_lend_memory)(struct trusty_transport *tr, u64 *id,
++				    struct scatterlist *sglist,
++				    unsigned int nents, pgprot_t pgprot, u64 tag,
++				    bool lend, struct ns_mem_page_info *pg_inf);
++	int (*reclaim_memory)(struct trusty_transport *tr, u64 id,
++			      struct scatterlist *sglist,
++			      unsigned int nents);
++	void (*set_sched_share_state)(struct trusty_transport *tr,
++				      struct trusty_sched_share_state *tsss);
++};
++
++struct trusty_transport {
++	u64 magic;
++	const struct trusty_transport_ops *ops;
++
++	/*
++	 * Whether the NOP calls with arguments are invoked
++	 * separately from the no-arguments calls that give
++	 * Trusty cycles (like on the FF-A) transport.
++	 * Set to 0 for transports where every SMC_SC_NOP
++	 * always give Trusty scheduler cycles.
++	 */
++	unsigned split_nopcalls:1;
++};
++
++#endif /* _TRUSTY_TRANSPORT_H */
 diff --git a/drivers/trusty/trusty-virtio.c b/drivers/trusty/trusty-virtio.c
 new file mode 100644
-index 0000000000000..227c53aab4eb9
+index 0000000..2e1c0e4
 --- /dev/null
 +++ b/drivers/trusty/trusty-virtio.c
-@@ -0,0 +1,852 @@
+@@ -0,0 +1,1031 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Trusty Virtio driver
@@ -6984,8 +8208,10 @@ index 0000000000000..227c53aab4eb9
 +#include <linux/device.h>
 +#include <linux/err.h>
 +#include <linux/kernel.h>
++#include <linux/version.h>
 +
 +#include <linux/dma-map-ops.h>
++#include <linux/hrtimer.h>
 +#include <linux/module.h>
 +#include <linux/mutex.h>
 +#include <linux/notifier.h>
@@ -7011,6 +8237,11 @@ index 0000000000000..227c53aab4eb9
 +static bool use_high_wq;
 +module_param(use_high_wq, bool, 0660);
 +
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++static ulong default_vq_check_period_ms;
++module_param(default_vq_check_period_ms, ulong, 0660);
++#endif
++
 +struct trusty_ctx {
 +	struct device		*dev;
 +	void			*shared_va;
@@ -7022,6 +8253,11 @@ index 0000000000000..227c53aab4eb9
 +	struct notifier_block	call_notifier;
 +	struct list_head	vdev_list;
 +	struct mutex		mlock; /* protects vdev_list */
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++	struct mutex		vq_timer_lock;
++	u64			vq_check_period_ms;
++	struct hrtimer		vq_timer;
++#endif
 +	struct workqueue_struct	*kick_wq;
 +	struct workqueue_struct	*check_wq;
 +};
@@ -7067,6 +8303,23 @@ index 0000000000000..227c53aab4eb9
 +			if (tvdev->vrings[i].vq)
 +				vring_interrupt(0, tvdev->vrings[i].vq);
 +	}
++
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++	/*
++	 * There are two ways we can get here: from trusty_call_notify
++	 * or the timer callback; to cover both cases and because
++	 * hrtimer_forward_now needs the timer to not be enqueued, we
++	 * do this the hard way: cancel the timer if it's queued, then
++	 * restart it
++	 */
++	mutex_lock(&tctx->vq_timer_lock);
++	hrtimer_cancel(&tctx->vq_timer);
++	if (tctx->vq_check_period_ms)
++		hrtimer_start(&tctx->vq_timer,
++			      ms_to_ktime(tctx->vq_check_period_ms),
++			      HRTIMER_MODE_REL);
++	mutex_unlock(&tctx->vq_timer_lock);
++#endif
 +}
 +
 +static int trusty_call_notify(struct notifier_block *nb,
@@ -7082,6 +8335,60 @@ index 0000000000000..227c53aab4eb9
 +
 +	return NOTIFY_OK;
 +}
++
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++static enum hrtimer_restart vq_timer_fn(struct hrtimer *timer)
++{
++	struct trusty_ctx *tctx = container_of(timer, struct trusty_ctx,
++					       vq_timer);
++
++	queue_work(tctx->check_wq, &tctx->check_vqs);
++
++	/* The timer callback will start the timer */
++	return HRTIMER_NORESTART;
++}
++
++static ssize_t vq_check_period_ms_show(struct device *dev, struct device_attribute *attr,
++				       char *buf)
++{
++	struct trusty_ctx *tctx = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%llu\n", tctx->vq_check_period_ms);
++}
++
++static ssize_t vq_check_period_ms_store(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
++{
++	struct trusty_ctx *tctx = dev_get_drvdata(dev);
++	u64 value;
++	int rc;
++
++	rc = kstrtou64(buf, 0, &value);
++	if (rc)
++		return -EINVAL;
++
++	mutex_lock(&tctx->vq_timer_lock);
++	hrtimer_cancel(&tctx->vq_timer);
++	tctx->vq_check_period_ms = value;
++	if (tctx->vq_check_period_ms)
++		hrtimer_start(&tctx->vq_timer,
++			      ms_to_ktime(tctx->vq_check_period_ms),
++			      HRTIMER_MODE_REL);
++	mutex_unlock(&tctx->vq_timer_lock);
++
++	return count;
++}
++static DEVICE_ATTR_RW(vq_check_period_ms);
++#endif
++
++static struct attribute *trusty_virtio_attrs[] = {
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++	&dev_attr_vq_check_period_ms.attr,
++#endif
++	NULL,
++};
++ATTRIBUTE_GROUPS(trusty_virtio);
 +
 +static void kick_vq(struct trusty_ctx *tctx,
 +		    struct trusty_vdev *tvdev,
@@ -7386,20 +8693,44 @@ index 0000000000000..227c53aab4eb9
 +
 +static int trusty_virtio_find_vqs(struct virtio_device *vdev, unsigned int nvqs,
 +				  struct virtqueue *vqs[],
++/*
++ * TODO: change to 6.11. The version here should be 6.11, but android-mainline
++ * is still on 6.10 with 6.11 some changes merged. Since there is no other
++ * 6.10 gki kernel temporarily treat 6.10 as 6.11.
++ */
++#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
 +				  struct virtqueue_info vqs_info[],
++#else
++				  vq_callback_t *callbacks[],
++				  const char * const names[],
++				  const bool *ctxs,
++#endif
 +				  struct irq_affinity *desc)
 +{
-+	struct virtqueue_info *vqi;
 +	unsigned int i;
 +	int ret;
++	vq_callback_t *callback;
++	const char *name;
 +	bool ctx = false;
 +
 +	for (i = 0; i < nvqs; i++) {
-+		vqi = &vqs_info[i];
++/*
++ * TODO: change to 6.11. The version here should be 6.11, but android-mainline
++ * is still on 6.10 with 6.11 some changes merged. Since there is no other
++ * 6.10 gki kernel temporarily treat 6.10 as 6.11.
++ */
++#if (KERNEL_VERSION(6, 10, 0) <= LINUX_VERSION_CODE)
++		callback = vqs_info[i].callback;
++		name = vqs_info[i].name;
++		ctx = vqs_info[i].ctx;
++#else
++		callback = callbacks[i];
++		name = names[i];
 +		ctx = false;
-+		if (vqi->ctx)
-+			ctx = vqi->ctx;
-+		vqs[i] = _find_vq(vdev, i, vqi->callback, vqi->name, ctx);
++		if (ctxs)
++			ctx = ctxs[i];
++#endif
++		vqs[i] = _find_vq(vdev, i, callback, name, ctx);
 +		if (IS_ERR(vqs[i])) {
 +			ret = PTR_ERR(vqs[i]);
 +			_del_vqs(vdev);
@@ -7428,6 +8759,15 @@ index 0000000000000..227c53aab4eb9
 +	.bus_name = trusty_virtio_bus_name,
 +};
 +
++static void trusty_virtio_release_device(struct device *dev)
++{
++	struct virtio_device *vdev =
++			container_of(dev, struct virtio_device, dev);
++	struct trusty_vdev *tvdev = vdev_to_tvdev(vdev);
++
++	kfree(tvdev);
++}
++
 +static int trusty_virtio_add_device(struct trusty_ctx *tctx,
 +				    struct fw_rsc_vdev *vdev_descr,
 +				    struct fw_rsc_vdev_vring *vr_descr,
@@ -7444,6 +8784,7 @@ index 0000000000000..227c53aab4eb9
 +	/* setup vdev */
 +	tvdev->tctx = tctx;
 +	tvdev->vdev.dev.parent = tctx->dev;
++	tvdev->vdev.dev.release = trusty_virtio_release_device;
 +	tvdev->vdev.id.device  = vdev_descr->id;
 +	tvdev->vdev.config = &trusty_virtio_config_ops;
 +	tvdev->vdev_descr = vdev_descr;
@@ -7483,7 +8824,12 @@ index 0000000000000..227c53aab4eb9
 +	return 0;
 +
 +err_register:
-+	kfree(tvdev);
++	/*
++	 * Once we call register_virtio_device, we need to free
++	 * the device using put_device(). Before that, we should
++	 * call kfree instead.
++	 */
++	put_device(&tvdev->vdev.dev);
 +	return ret;
 +}
 +
@@ -7575,7 +8921,6 @@ index 0000000000000..227c53aab4eb9
 +	list_for_each_entry_safe(tvdev, next, &tctx->vdev_list, node) {
 +		list_del(&tvdev->node);
 +		unregister_virtio_device(&tvdev->vdev);
-+		kfree(tvdev);
 +	}
 +}
 +
@@ -7605,7 +8950,8 @@ index 0000000000000..227c53aab4eb9
 +
 +	sg_init_one(&tctx->shared_sg, descr_va, descr_buf_sz);
 +	ret = trusty_share_memory(tctx->dev->parent, &descr_id,
-+				  &tctx->shared_sg, 1, PAGE_KERNEL);
++				  &tctx->shared_sg, 1, PAGE_KERNEL,
++				  TRUSTY_DEFAULT_MEM_OBJ_TAG);
 +	if (ret) {
 +		dev_err(tctx->dev, "trusty_share_memory failed: %d\n", ret);
 +		goto err_share_memory;
@@ -7692,19 +9038,58 @@ index 0000000000000..227c53aab4eb9
 +	return buf->buf_id;
 +}
 +
++/* The kernel requires this to exist, but doesn't require it do anything */
 +static void trusty_virtio_dma_unmap_page(struct device *dev,
 +					 dma_addr_t dma_handle,
 +					 size_t size,
 +					 enum dma_data_direction dir,
 +					 unsigned long attrs)
 +{
-+	return;
++}
++
++/* The kernel requires this to exist, but doesn't require it do anything */
++static int trusty_virtio_dma_map_sg(struct device *dev,
++				    struct scatterlist *sg, int nents,
++				    enum dma_data_direction dir,
++				    unsigned long attrs)
++{
++	WARN_ON_ONCE(true);
++
++#if (KERNEL_VERSION(5, 15, 0) > LINUX_VERSION_CODE)
++	return 0;
++#else
++	return -EINVAL;
++#endif
++}
++
++/* The kernel requires this to exist, but doesn't require it do anything */
++static void trusty_virtio_dma_unmap_sg(struct device *dev,
++				       struct scatterlist *sg, int nents,
++				       enum dma_data_direction dir,
++				       unsigned long attrs)
++{
++	WARN_ON_ONCE(true);
 +}
 +
 +static const struct dma_map_ops trusty_virtio_dma_map_ops = {
 +	.map_page = trusty_virtio_dma_map_page,
 +	.unmap_page = trusty_virtio_dma_unmap_page,
++	.map_sg = trusty_virtio_dma_map_sg,
++	.unmap_sg = trusty_virtio_dma_unmap_sg,
 +};
++
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++#if (KERNEL_VERSION(6, 13, 0) > LINUX_VERSION_CODE)
++static void hrtimer_setup(struct hrtimer *timer, enum hrtimer_restart (*function)(struct hrtimer *),
++			  clockid_t clock_id, enum hrtimer_mode mode)
++{
++	BUG_ON(!function);
++
++	hrtimer_init(timer, clock_id, mode);
++	timer->function = function;
++}
++#endif
++#endif
 +
 +static int trusty_virtio_probe(struct platform_device *pdev)
 +{
@@ -7719,6 +9104,11 @@ index 0000000000000..227c53aab4eb9
 +	tctx->call_notifier.notifier_call = trusty_call_notify;
 +	mutex_init(&tctx->mlock);
 +	INIT_LIST_HEAD(&tctx->vdev_list);
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++	mutex_init(&tctx->vq_timer_lock);
++	hrtimer_setup(&tctx->vq_timer, vq_timer_fn, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	tctx->vq_check_period_ms = default_vq_check_period_ms;
++#endif
 +	INIT_WORK(&tctx->check_vqs, check_all_vqs);
 +	INIT_WORK(&tctx->kick_vqs, kick_vqs);
 +	platform_set_drvdata(pdev, tctx);
@@ -7759,7 +9149,13 @@ index 0000000000000..227c53aab4eb9
 +	return ret;
 +}
 +
-+static void trusty_virtio_remove(struct platform_device *pdev)
++static
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++int
++#else
++void
++#endif
++trusty_virtio_remove(struct platform_device *pdev)
 +{
 +	struct trusty_ctx *tctx = platform_get_drvdata(pdev);
 +	int ret;
@@ -7768,6 +9164,9 @@ index 0000000000000..227c53aab4eb9
 +	trusty_call_notifier_unregister(tctx->dev->parent,
 +					&tctx->call_notifier);
 +	cancel_work_sync(&tctx->check_vqs);
++#if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
++	hrtimer_cancel(&tctx->vq_timer);
++#endif
 +
 +	/* remove virtio devices */
 +	trusty_virtio_remove_devices(tctx);
@@ -7796,6 +9195,9 @@ index 0000000000000..227c53aab4eb9
 +
 +	/* free context */
 +	kfree(tctx);
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++	return 0;
++#endif
 +}
 +
 +static const struct of_device_id trusty_of_match[] = {
@@ -7813,6 +9215,7 @@ index 0000000000000..227c53aab4eb9
 +	.driver = {
 +		.name = "trusty-virtio",
 +		.of_match_table = trusty_of_match,
++		.dev_groups = trusty_virtio_groups,
 +	},
 +};
 +
@@ -7829,10 +9232,10 @@ index 0000000000000..227c53aab4eb9
 +MODULE_SOFTDEP("pre: trusty-ipc");
 diff --git a/drivers/trusty/trusty.c b/drivers/trusty/trusty.c
 new file mode 100644
-index 0000000000000..aa2da88319235
+index 0000000..eef264e
 --- /dev/null
 +++ b/drivers/trusty/trusty.c
-@@ -0,0 +1,1266 @@
+@@ -0,0 +1,1193 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (C) 2013 Google, Inc.
@@ -7847,17 +9250,21 @@ index 0000000000000..aa2da88319235
 +#include <linux/slab.h>
 +#include <linux/stat.h>
 +#include <linux/string.h>
-+#include <linux/trusty/arm_ffa.h>
 +#include <linux/trusty/smcall.h>
 +#include <linux/trusty/sm_err.h>
 +#include <linux/trusty/trusty.h>
++#include <linux/version.h>
 +
 +#include <linux/scatterlist.h>
 +#include <linux/dma-mapping.h>
 +
++#if CONFIG_ARM64
++#include <asm/daifflags.h>
++#endif
++
 +#include "trusty-irq.h"
-+#include "trusty-smc.h"
 +#include "trusty-trace.h"
++#include "trusty-transport.h"
 +#include "trusty-sched-share-api.h"
 +
 +
@@ -7887,58 +9294,65 @@ index 0000000000000..aa2da88319235
 +	u32 api_version;
 +	bool trusty_panicked;
 +	struct device *dev;
++	struct trusty_transport *transport;
 +	struct hlist_node cpuhp_node;
 +	struct trusty_work __percpu *nop_works;
 +	struct list_head nop_queue;
 +	spinlock_t nop_lock; /* protects nop_queue */
 +	struct device_dma_parameters dma_parms;
 +	struct trusty_sched_share_state *trusty_sched_share_state;
-+	void *ffa_tx;
-+	void *ffa_rx;
-+	u16 ffa_local_id;
-+	u16 ffa_remote_id;
-+	struct mutex share_memory_msg_lock; /* protects share_memory_msg */
 +};
 +
-+static inline unsigned long smc(unsigned long r0, unsigned long r1,
++static struct trusty_state *trusty_get_state(struct device *dev)
++{
++	if (WARN_ON(!dev))
++		return NULL;
++	if (WARN_ON(dev->driver != &trusty_driver.driver))
++		return NULL;
++
++	return platform_get_drvdata(to_platform_device(dev));
++}
++
++static inline unsigned long smc(struct trusty_state *s,
++				unsigned long r0, unsigned long r1,
 +				unsigned long r2, unsigned long r3)
 +{
 +	unsigned long ret;
 +
 +	trace_trusty_smc(r0, r1, r2, r3);
-+	ret = trusty_smc8(r0, r1, r2, r3, 0, 0, 0, 0).r0;
++	ret = s->transport->ops->call(s->transport, r0, r1, r2, r3);
 +	trace_trusty_smc_done(ret);
 +	return ret;
 +}
 +
 +s32 trusty_fast_call32(struct device *dev, u32 smcnr, u32 a0, u32 a1, u32 a2)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
 +
-+	if (WARN_ON(!s))
++	if (!s)
 +		return SM_ERR_INVALID_PARAMETERS;
 +	if (WARN_ON(!SMC_IS_FASTCALL(smcnr)))
 +		return SM_ERR_INVALID_PARAMETERS;
 +	if (WARN_ON(SMC_IS_SMC64(smcnr)))
 +		return SM_ERR_INVALID_PARAMETERS;
 +
-+	return smc(smcnr, a0, a1, a2);
++	return smc(s, smcnr, a0, a1, a2);
 +}
 +EXPORT_SYMBOL(trusty_fast_call32);
 +
 +#ifdef CONFIG_64BIT
 +s64 trusty_fast_call64(struct device *dev, u64 smcnr, u64 a0, u64 a1, u64 a2)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
 +
-+	if (WARN_ON(!s))
++	if (!s)
 +		return SM_ERR_INVALID_PARAMETERS;
 +	if (WARN_ON(!SMC_IS_FASTCALL(smcnr)))
 +		return SM_ERR_INVALID_PARAMETERS;
 +	if (WARN_ON(!SMC_IS_SMC64(smcnr)))
 +		return SM_ERR_INVALID_PARAMETERS;
 +
-+	return smc(smcnr, a0, a1, a2);
++	return smc(s, smcnr, a0, a1, a2);
 +}
 +EXPORT_SYMBOL(trusty_fast_call64);
 +#endif
@@ -7948,15 +9362,19 @@ index 0000000000000..aa2da88319235
 +					   unsigned long a0, unsigned long a1,
 +					   unsigned long a2)
 +{
++	struct trusty_state *s = trusty_get_state(dev);
 +	unsigned long ret;
 +	int retry = 5;
++
++	if (!s)
++		return SM_ERR_INVALID_PARAMETERS;
 +
 +	dev_dbg(dev, "%s(0x%lx 0x%lx 0x%lx 0x%lx)\n",
 +		__func__, smcnr, a0, a1, a2);
 +	while (true) {
-+		ret = smc(smcnr, a0, a1, a2);
++		ret = smc(s, smcnr, a0, a1, a2);
 +		while ((s32)ret == SM_ERR_FIQ_INTERRUPTED)
-+			ret = smc(SMC_SC_RESTART_FIQ, 0, 0, 0);
++			ret = smc(s, SMC_SC_RESTART_FIQ, 0, 0, 0);
 +		if ((int)ret != SM_ERR_BUSY || !retry)
 +			break;
 +
@@ -7968,6 +9386,32 @@ index 0000000000000..aa2da88319235
 +	return ret;
 +}
 +
++#if CONFIG_ARM64
++
++static void trusty_local_irq_disable_before_smc(void)
++{
++	local_daif_mask();
++}
++
++static void trusty_local_irq_enable_after_smc(void)
++{
++	local_daif_restore(DAIF_PROCCTX);
++}
++
++#else
++
++static void trusty_local_irq_disable_before_smc(void)
++{
++	local_irq_disable();
++}
++
++static void trusty_local_irq_enable_after_smc(void)
++{
++	local_irq_enable();
++}
++
++#endif
++
 +static unsigned long trusty_std_call_helper(struct device *dev,
 +					    unsigned long smcnr,
 +					    unsigned long a0, unsigned long a1,
@@ -7975,10 +9419,13 @@ index 0000000000000..aa2da88319235
 +{
 +	unsigned long ret;
 +	int sleep_time = 1;
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
++		return SM_ERR_INVALID_PARAMETERS;
 +
 +	while (true) {
-+		local_irq_disable();
++		trusty_local_irq_disable_before_smc();
 +
 +		/* tell Trusty scheduler what the current priority is */
 +		WARN_ON_ONCE(current->policy != SCHED_NORMAL);
@@ -8006,7 +9453,7 @@ index 0000000000000..aa2da88319235
 +			 */
 +			trusty_enqueue_nop(dev, NULL);
 +		}
-+		local_irq_enable();
++		trusty_local_irq_enable_after_smc();
 +
 +		if ((int)ret != SM_ERR_BUSY)
 +			break;
@@ -8047,7 +9494,10 @@ index 0000000000000..aa2da88319235
 +s32 trusty_std_call32(struct device *dev, u32 smcnr, u32 a0, u32 a1, u32 a2)
 +{
 +	int ret;
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
++		return SM_ERR_INVALID_PARAMETERS;
 +
 +	if (WARN_ON(SMC_IS_FASTCALL(smcnr)))
 +		return SM_ERR_INVALID_PARAMETERS;
@@ -8095,20 +9545,11 @@ index 0000000000000..aa2da88319235
 +}
 +EXPORT_SYMBOL(trusty_std_call32);
 +
-+int trusty_share_memory(struct device *dev, u64 *id,
-+			struct scatterlist *sglist, unsigned int nents,
-+			pgprot_t pgprot)
++static int __trusty_share_memory(struct device *dev, u64 *id,
++				 struct scatterlist *sglist, unsigned int nents,
++				 pgprot_t pgprot, u64 tag, bool lend)
 +{
-+	return trusty_transfer_memory(dev, id, sglist, nents, pgprot, 0,
-+				      false);
-+}
-+EXPORT_SYMBOL(trusty_share_memory);
-+
-+int trusty_transfer_memory(struct device *dev, u64 *id,
-+			   struct scatterlist *sglist, unsigned int nents,
-+			   pgprot_t pgprot, u64 tag, bool lend)
-+{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
 +	int ret;
 +	struct ns_mem_page_info pg_inf;
 +	struct scatterlist *sg;
@@ -8116,18 +9557,8 @@ index 0000000000000..aa2da88319235
 +	size_t i;
 +	size_t len = 0;
 +	u64 ffa_handle = 0;
-+	size_t total_len;
-+	size_t endpoint_count = 1;
-+	struct ffa_mtd *mtd = s->ffa_tx;
-+	size_t comp_mrd_offset = offsetof(struct ffa_mtd, emad[endpoint_count]);
-+	struct ffa_comp_mrd *comp_mrd = s->ffa_tx + comp_mrd_offset;
-+	struct ffa_cons_mrd *cons_mrd = comp_mrd->address_range_array;
-+	size_t cons_mrd_offset = (void *)cons_mrd - s->ffa_tx;
-+	struct smc_ret8 smc_ret;
-+	u32 cookie_low;
-+	u32 cookie_high;
 +
-+	if (WARN_ON(dev->driver != &trusty_driver.driver))
++	if (!s)
 +		return -EINVAL;
 +
 +	if (WARN_ON(nents < 1))
@@ -8165,106 +9596,11 @@ index 0000000000000..aa2da88319235
 +
 +	trace_trusty_share_memory(len, nents, lend);
 +
-+	mutex_lock(&s->share_memory_msg_lock);
-+
-+	mtd->sender_id = s->ffa_local_id;
-+	mtd->memory_region_attributes = pg_inf.ffa_mem_attr;
-+	mtd->reserved_3 = 0;
-+	mtd->flags = 0;
-+	mtd->handle = 0;
-+	mtd->tag = tag;
-+	mtd->reserved_24_27 = 0;
-+	mtd->emad_count = endpoint_count;
-+	for (i = 0; i < endpoint_count; i++) {
-+		struct ffa_emad *emad = &mtd->emad[i];
-+		/* TODO: support stream ids */
-+		emad->mapd.endpoint_id = s->ffa_remote_id;
-+		emad->mapd.memory_access_permissions = pg_inf.ffa_mem_perm;
-+		emad->mapd.flags = 0;
-+		emad->comp_mrd_offset = comp_mrd_offset;
-+		emad->reserved_8_15 = 0;
-+	}
-+	comp_mrd->total_page_count = len / FFA_PAGE_SIZE;
-+	comp_mrd->address_range_count = nents;
-+	comp_mrd->reserved_8_15 = 0;
-+
-+	total_len = cons_mrd_offset + nents * sizeof(*cons_mrd);
-+	sg = sglist;
-+	while (count) {
-+		size_t lcount =
-+			min_t(size_t, count, (PAGE_SIZE - cons_mrd_offset) /
-+			      sizeof(*cons_mrd));
-+		size_t fragment_len = lcount * sizeof(*cons_mrd) +
-+				      cons_mrd_offset;
-+
-+		for (i = 0; i < lcount; i++) {
-+			cons_mrd[i].address = sg_dma_address(sg);
-+			cons_mrd[i].page_count = sg_dma_len(sg) / FFA_PAGE_SIZE;
-+			cons_mrd[i].reserved_12_15 = 0;
-+			sg = sg_next(sg);
-+		}
-+		count -= lcount;
-+		if (cons_mrd_offset) {
-+			u32 smc = lend ? SMC_FC_FFA_MEM_LEND :
-+					 SMC_FC_FFA_MEM_SHARE;
-+			/* First fragment */
-+			smc_ret = trusty_smc8(smc, total_len,
-+					      fragment_len, 0, 0, 0, 0, 0);
-+		} else {
-+			smc_ret = trusty_smc8(SMC_FC_FFA_MEM_FRAG_TX,
-+					      cookie_low, cookie_high,
-+					      fragment_len, 0, 0, 0, 0);
-+		}
-+		if (smc_ret.r0 == SMC_FC_FFA_MEM_FRAG_RX) {
-+			cookie_low = smc_ret.r1;
-+			cookie_high = smc_ret.r2;
-+			dev_dbg(s->dev, "cookie %x %x", cookie_low,
-+				cookie_high);
-+			if (!count) {
-+				/*
-+				 * We have sent all our descriptors. Expected
-+				 * SMC_FC_FFA_SUCCESS, not a request to send
-+				 * another fragment.
-+				 */
-+				dev_err(s->dev, "%s: fragment_len %zd/%zd, unexpected SMC_FC_FFA_MEM_FRAG_RX\n",
-+					__func__, fragment_len, total_len);
-+				ret = -EIO;
-+				break;
-+			}
-+		} else if (smc_ret.r0 == SMC_FC_FFA_SUCCESS) {
-+			ffa_handle = smc_ret.r2 | (u64)smc_ret.r3 << 32;
-+			dev_dbg(s->dev, "%s: fragment_len %zu/%zu, got handle 0x%llx\n",
-+				__func__, fragment_len, total_len,
-+				ffa_handle);
-+			if (count) {
-+				/*
-+				 * We have not sent all our descriptors.
-+				 * Expected SMC_FC_FFA_MEM_FRAG_RX not
-+				 * SMC_FC_FFA_SUCCESS.
-+				 */
-+				dev_err(s->dev, "%s: fragment_len %zu/%zu, unexpected SMC_FC_FFA_SUCCESS, count %zu != 0\n",
-+					__func__, fragment_len, total_len,
-+					count);
-+				ret = -EIO;
-+				break;
-+			}
-+		} else {
-+			dev_err(s->dev, "%s: fragment_len %zu/%zu, SMC_FC_FFA_MEM_SHARE failed 0x%lx 0x%lx 0x%lx",
-+				__func__, fragment_len, total_len,
-+				smc_ret.r0, smc_ret.r1, smc_ret.r2);
-+			ret = -EIO;
-+			break;
-+		}
-+
-+		cons_mrd = s->ffa_tx;
-+		cons_mrd_offset = 0;
-+	}
-+
-+	mutex_unlock(&s->share_memory_msg_lock);
++	ret = s->transport->ops->share_or_lend_memory(s->transport, &ffa_handle, sglist, nents,
++						      pgprot, tag, lend, &pg_inf);
 +
 +	if (!ret) {
 +		*id = ffa_handle;
-+		dev_dbg(s->dev, "%s: done\n", __func__);
 +		goto done;
 +	}
 +
@@ -8276,7 +9612,22 @@ index 0000000000000..aa2da88319235
 +	trace_trusty_share_memory_done(len, nents, lend, ffa_handle, ret);
 +	return ret;
 +}
-+EXPORT_SYMBOL(trusty_transfer_memory);
++
++int trusty_share_memory(struct device *dev, u64 *id,
++			struct scatterlist *sglist, unsigned int nents,
++			pgprot_t pgprot, u64 tag)
++{
++	return __trusty_share_memory(dev, id, sglist, nents, pgprot, tag, false);
++}
++EXPORT_SYMBOL(trusty_share_memory);
++
++int trusty_lend_memory(struct device *dev, u64 *id,
++		       struct scatterlist *sglist, unsigned int nents,
++		       pgprot_t pgprot, u64 tag)
++{
++	return __trusty_share_memory(dev, id, sglist, nents, pgprot, tag, true);
++}
++EXPORT_SYMBOL(trusty_lend_memory);
 +
 +/*
 + * trusty_share_memory_compat - trusty_share_memory wrapper for old apis
@@ -8290,9 +9641,13 @@ index 0000000000000..aa2da88319235
 +			       pgprot_t pgprot)
 +{
 +	int ret;
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
 +
-+	ret = trusty_share_memory(dev, id, sglist, nents, pgprot);
++	if (!s)
++		return -EINVAL;
++
++	ret = trusty_share_memory(dev, id, sglist, nents, pgprot,
++				  TRUSTY_DEFAULT_MEM_OBJ_TAG);
 +	if (!ret && s->api_version < TRUSTY_API_VERSION_PHYS_MEM_OBJ)
 +		*id &= 0x0000FFFFFFFFF000ull;
 +
@@ -8303,11 +9658,10 @@ index 0000000000000..aa2da88319235
 +int trusty_reclaim_memory(struct device *dev, u64 id,
 +			  struct scatterlist *sglist, unsigned int nents)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
 +	int ret = 0;
-+	struct smc_ret8 smc_ret;
 +
-+	if (WARN_ON(dev->driver != &trusty_driver.driver))
++	if (!s)
 +		return -EINVAL;
 +
 +	if (WARN_ON(nents < 1))
@@ -8321,33 +9675,16 @@ index 0000000000000..aa2da88319235
 +
 +		dma_unmap_sg(dev, sglist, nents, DMA_BIDIRECTIONAL);
 +
-+		dev_dbg(s->dev, "%s: done\n", __func__);
 +		return 0;
 +	}
 +
 +	trace_trusty_reclaim_memory(id);
-+	mutex_lock(&s->share_memory_msg_lock);
-+
-+	smc_ret = trusty_smc8(SMC_FC_FFA_MEM_RECLAIM, (u32)id, id >> 32, 0, 0,
-+			      0, 0, 0);
-+	if (smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
-+		dev_err(s->dev, "%s: SMC_FC_FFA_MEM_RECLAIM failed 0x%lx 0x%lx 0x%lx",
-+			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
-+		if (smc_ret.r0 == SMC_FC_FFA_ERROR &&
-+		    smc_ret.r2 == FFA_ERROR_DENIED)
-+			ret = -EBUSY;
-+		else
-+			ret = -EIO;
-+	}
-+
-+	mutex_unlock(&s->share_memory_msg_lock);
++	ret = s->transport->ops->reclaim_memory(s->transport, id, sglist, nents);
 +
 +	if (ret != 0)
 +		goto err_ffa_mem_reclaim;
 +
 +	dma_unmap_sg(dev, sglist, nents, DMA_BIDIRECTIONAL);
-+
-+	dev_dbg(s->dev, "%s: done\n", __func__);
 +
 +err_ffa_mem_reclaim:
 +	trace_trusty_reclaim_memory_done(id, ret);
@@ -8357,7 +9694,10 @@ index 0000000000000..aa2da88319235
 +
 +int trusty_call_notifier_register(struct device *dev, struct notifier_block *n)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
++		return -EINVAL;
 +
 +	return atomic_notifier_chain_register(&s->notifier, n);
 +}
@@ -8366,7 +9706,10 @@ index 0000000000000..aa2da88319235
 +int trusty_call_notifier_unregister(struct device *dev,
 +				    struct notifier_block *n)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
++		return -EINVAL;
 +
 +	return atomic_notifier_chain_unregister(&s->notifier, n);
 +}
@@ -8381,7 +9724,10 @@ index 0000000000000..aa2da88319235
 +static ssize_t trusty_version_show(struct device *dev,
 +				   struct device_attribute *attr, char *buf)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
++		return -EINVAL;
 +
 +	return scnprintf(buf, PAGE_SIZE, "%s\n", s->version_str ?: "unknown");
 +}
@@ -8396,131 +9742,14 @@ index 0000000000000..aa2da88319235
 +
 +const char *trusty_version_str_get(struct device *dev)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
++		return NULL;
 +
 +	return s->version_str;
 +}
 +EXPORT_SYMBOL(trusty_version_str_get);
-+
-+static int trusty_init_msg_buf(struct trusty_state *s, struct device *dev)
-+{
-+	phys_addr_t tx_paddr;
-+	phys_addr_t rx_paddr;
-+	int ret;
-+	struct smc_ret8 smc_ret;
-+
-+	if (s->api_version < TRUSTY_API_VERSION_MEM_OBJ)
-+		return 0;
-+
-+	/* Get supported FF-A version and check if it is compatible */
-+	smc_ret = trusty_smc8(SMC_FC_FFA_VERSION, FFA_CURRENT_VERSION, 0, 0,
-+			      0, 0, 0, 0);
-+	if (FFA_VERSION_TO_MAJOR(smc_ret.r0) != FFA_CURRENT_VERSION_MAJOR) {
-+		dev_err(s->dev,
-+			"%s: Unsupported FF-A version 0x%lx, expected 0x%x\n",
-+			__func__, smc_ret.r0, FFA_CURRENT_VERSION);
-+		ret = -EIO;
-+		goto err_version;
-+	}
-+
-+	/* Check that SMC_FC_FFA_MEM_SHARE is implemented */
-+	smc_ret = trusty_smc8(SMC_FC_FFA_FEATURES, SMC_FC_FFA_MEM_SHARE, 0, 0,
-+			      0, 0, 0, 0);
-+	if (smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
-+		dev_err(s->dev,
-+			"%s: SMC_FC_FFA_FEATURES(SMC_FC_FFA_MEM_SHARE) failed 0x%lx 0x%lx 0x%lx\n",
-+			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
-+		ret = -EIO;
-+		goto err_features;
-+	}
-+
-+	/*
-+	 * Set FF-A endpoint IDs.
-+	 *
-+	 * Hardcode 0x8000 for the secure os.
-+	 * TODO: Use FF-A call or device tree to configure this dynamically
-+	 */
-+	smc_ret = trusty_smc8(SMC_FC_FFA_ID_GET, 0, 0, 0, 0, 0, 0, 0);
-+	if (smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
-+		dev_err(s->dev,
-+			"%s: SMC_FC_FFA_ID_GET failed 0x%lx 0x%lx 0x%lx\n",
-+			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
-+		ret = -EIO;
-+		goto err_id_get;
-+	}
-+
-+	s->ffa_local_id = smc_ret.r2;
-+	s->ffa_remote_id = 0x8000;
-+
-+	/*
-+	 * The pKVM hypervisor uses the same page size as the host, including for
-+	 * stage-2 mappings. So the rx/tx buffers need to be page-sized multiple,
-+	 * and page-aligned.
-+	 *
-+	 * TODO: This can be made more generic by discovering the required size
-+	 * through SMC_FC_FFA_FEATURES later.
-+	 */
-+	s->ffa_tx = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!s->ffa_tx) {
-+		ret = -ENOMEM;
-+		goto err_alloc_tx;
-+	}
-+	tx_paddr = virt_to_phys(s->ffa_tx);
-+	if (WARN_ON(tx_paddr & (PAGE_SIZE - 1))) {
-+		ret = -EINVAL;
-+		goto err_unaligned_tx_buf;
-+	}
-+
-+	s->ffa_rx = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!s->ffa_rx) {
-+		ret = -ENOMEM;
-+		goto err_alloc_rx;
-+	}
-+	rx_paddr = virt_to_phys(s->ffa_rx);
-+	if (WARN_ON(rx_paddr & (PAGE_SIZE - 1))) {
-+		ret = -EINVAL;
-+		goto err_unaligned_rx_buf;
-+	}
-+
-+	smc_ret = trusty_smc8(SMC_FCZ_FFA_RXTX_MAP, tx_paddr, rx_paddr,
-+				PAGE_SIZE / FFA_PAGE_SIZE, 0, 0, 0, 0);
-+	if (smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
-+		dev_err(s->dev, "%s: SMC_FCZ_FFA_RXTX_MAP failed 0x%lx 0x%lx 0x%lx\n",
-+			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
-+		ret = -EIO;
-+		goto err_rxtx_map;
-+	}
-+
-+	return 0;
-+
-+err_rxtx_map:
-+err_unaligned_rx_buf:
-+	kfree(s->ffa_rx);
-+	s->ffa_rx = NULL;
-+err_alloc_rx:
-+err_unaligned_tx_buf:
-+	kfree(s->ffa_tx);
-+	s->ffa_tx = NULL;
-+err_alloc_tx:
-+err_id_get:
-+err_features:
-+err_version:
-+	return ret;
-+}
-+
-+static void trusty_free_msg_buf(struct trusty_state *s, struct device *dev)
-+{
-+	struct smc_ret8 smc_ret;
-+
-+	smc_ret = trusty_smc8(SMC_FC_FFA_RXTX_UNMAP, 0, 0, 0, 0, 0, 0, 0);
-+	if (smc_ret.r0 != SMC_FC_FFA_SUCCESS) {
-+		dev_err(s->dev, "%s: SMC_FC_FFA_RXTX_UNMAP failed 0x%lx 0x%lx 0x%lx\n",
-+			__func__, smc_ret.r0, smc_ret.r1, smc_ret.r2);
-+	} else {
-+		kfree(s->ffa_rx);
-+		kfree(s->ffa_tx);
-+	}
-+}
 +
 +static void trusty_init_version(struct trusty_state *s, struct device *dev)
 +{
@@ -8555,7 +9784,10 @@ index 0000000000000..aa2da88319235
 +
 +u32 trusty_get_api_version(struct device *dev)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
++		return 0;
 +
 +	return s->api_version;
 +}
@@ -8563,9 +9795,11 @@ index 0000000000000..aa2da88319235
 +
 +bool trusty_get_panic_status(struct device *dev)
 +{
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
-+	if (WARN_ON(dev->driver != &trusty_driver.driver))
++	struct trusty_state *s = trusty_get_state(dev);
++
++	if (!s)
 +		return false;
++
 +	return s->trusty_panicked;
 +}
 +EXPORT_SYMBOL(trusty_get_panic_status);
@@ -8618,14 +9852,24 @@ index 0000000000000..aa2da88319235
 +			queue_emptied = true;
 +
 +		ret = true;
++
++		/*
++		 * For transports with split nopcalls, this
++		 * code path isn't guaranteed to give Trusty cycles
++		 * so don't clear the signaled flag here. This
++		 * ensures that we will get a NULL call later,
++		 * e.g. on FF-A where we need to invoke FFA_RUN.
++		 */
++		if (!s->transport->split_nopcalls)
++			tw->signaled = false;
 +	} else {
 +		args[0] = 0;
 +		args[1] = 0;
 +		args[2] = 0;
 +
 +		ret = tw->signaled;
++		tw->signaled = false;
 +	}
-+	tw->signaled = false;
 +	spin_unlock_irqrestore(&s->nop_lock, flags);
 +
 +	/* don't log when false as it is preempt case which can be very noisy */
@@ -8633,6 +9877,11 @@ index 0000000000000..aa2da88319235
 +		trace_trusty_dequeue_nop(signaled, nop_dequeued, queue_emptied);
 +
 +	return ret;
++}
++
++int trusty_nop_nice_value(void)
++{
++	return nop_nice_value;
 +}
 +
 +static void locked_nop_work_func(struct trusty_work *tw)
@@ -8663,7 +9912,7 @@ index 0000000000000..aa2da88319235
 +	unsigned long flags;
 +	struct trusty_work *tw;
 +
-+	local_irq_save(flags);
++	spin_lock_irqsave(&s->nop_lock, flags);
 +
 +	cur_nice = task_nice(current);
 +
@@ -8697,7 +9946,7 @@ index 0000000000000..aa2da88319235
 +	/* tell Linux the desired priority */
 +	set_user_nice(current, req_nice);
 +
-+	local_irq_restore(flags);
++	spin_unlock_irqrestore(&s->nop_lock, flags);
 +}
 +
 +static void nop_work_func(struct trusty_work *tw)
@@ -8760,23 +10009,25 @@ index 0000000000000..aa2da88319235
 +	dev_dbg(s->dev, "%s: done\n", __func__);
 +}
 +
-+void trusty_enqueue_nop(struct device *dev, struct trusty_nop *nop)
++void trusty_enqueue_nop_on_cpu(struct device *dev, struct trusty_nop *nop, int cpu)
 +{
 +	unsigned long flags;
 +	struct trusty_work *tw;
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
 +	int cur_nice;
 +
-+	trace_trusty_enqueue_nop(nop);
-+	preempt_disable();
-+	tw = this_cpu_ptr(s->nop_works);
++	if (!s)
++		return;
++
++	spin_lock_irqsave(&s->nop_lock, flags);
++
++	trace_trusty_enqueue_nop(nop, cpu);
++	tw = per_cpu_ptr(s->nop_works, cpu);
 +	if (nop) {
 +		WARN_ON(s->api_version < TRUSTY_API_VERSION_SMP_NOP);
 +
-+		spin_lock_irqsave(&s->nop_lock, flags);
 +		if (list_empty(&nop->node))
 +			list_add_tail(&nop->node, &s->nop_queue);
-+		spin_unlock_irqrestore(&s->nop_lock, flags);
 +	}
 +
 +	/* boost the priority here so the thread can get to it fast */
@@ -8789,8 +10040,16 @@ index 0000000000000..aa2da88319235
 +
 +	/* indicate that this cpu was signaled */
 +	tw->signaled = true;
++	spin_unlock_irqrestore(&s->nop_lock, flags);
 +
 +	wake_up_interruptible(&tw->nop_event_wait);
++}
++EXPORT_SYMBOL(trusty_enqueue_nop_on_cpu);
++
++void trusty_enqueue_nop(struct device *dev, struct trusty_nop *nop)
++{
++	preempt_disable();
++	trusty_enqueue_nop_on_cpu(dev, nop, smp_processor_id());
 +	preempt_enable();
 +}
 +EXPORT_SYMBOL(trusty_enqueue_nop);
@@ -8798,8 +10057,10 @@ index 0000000000000..aa2da88319235
 +void trusty_dequeue_nop(struct device *dev, struct trusty_nop *nop)
 +{
 +	unsigned long flags;
-+	struct trusty_state *s = platform_get_drvdata(to_platform_device(dev));
++	struct trusty_state *s = trusty_get_state(dev);
 +
++	if (!s)
++		return;
 +	if (WARN_ON(!nop))
 +		return;
 +
@@ -8849,7 +10110,6 @@ index 0000000000000..aa2da88319235
 +
 +	s = container_of(node, struct trusty_state, cpuhp_node);
 +	tw = this_cpu_ptr(s->nop_works);
-+	set_cpus_allowed_ptr(tw->nop_thread, cpumask_of(cpu));
 +	kthread_unpark(tw->nop_thread);
 +
 +	dev_dbg(s->dev, "cpu %d up\n", cpu);
@@ -8875,11 +10135,53 @@ index 0000000000000..aa2da88319235
 +{
 +	int ret;
 +	unsigned int cpu;
++	struct trusty_transport *tr;
 +	struct trusty_state *s;
 +	struct device_node *node = pdev->dev.of_node;
 +
-+	if (!node) {
-+		dev_err(&pdev->dev, "of_node required\n");
++	/*
++	 * In trusty-smc-v2 and trusty-ffa-v1, the hierarchy of device tree
++	 * nodes is:
++	 * +- trusty-smc or trusty-ffa
++	 *    +- trusty-core
++	 *       +- trusty-irq
++	 *       +- trusty-log
++	 *       +- trusty-test
++	 *       +- trusty-virtio
++	 *
++	 * So all the children are attached to the current node. In the old
++	 * backwards-compatible trusty-smc-v1 tree, the lower children are
++	 * attached to the top node:
++	 * +- trusty
++	 *    +- trusty-irq
++	 *    +- trusty-log
++	 *    +- trusty-test
++	 *    +- trusty-virtio
++	 *
++	 * In the latter case, the trusty-smc driver inserts a new fake
++	 * trusty-core Linux device between trusty and its children, and
++	 * the new trusty-core is the platform device that is being probed.
++	 *
++	 * For this reason, we check both the current node (trusty-core)
++	 * and the parent (the old trusty node) for the
++	 * children that we populate under the current device.
++	 */
++	if (!node)
++		node = pdev->dev.parent->of_node;
++
++	tr = dev_get_drvdata(pdev->dev.parent);
++	if (!tr)
++		return -EPROBE_DEFER;
++
++	if (tr->magic != TRUSTY_TRANSPORT_MAGIC) {
++		dev_err(pdev->dev.parent, "Invalid transport magic %llx\n",
++			tr->magic);
++		return -EINVAL;
++	}
++	if (!tr->ops->call ||
++	    !tr->ops->share_or_lend_memory ||
++	    !tr->ops->reclaim_memory) {
++		dev_err(pdev->dev.parent, "Missing transport operations\n");
 +		return -EINVAL;
 +	}
 +
@@ -8890,10 +10192,10 @@ index 0000000000000..aa2da88319235
 +	}
 +
 +	s->dev = &pdev->dev;
++	s->transport = tr;
 +	spin_lock_init(&s->nop_lock);
 +	INIT_LIST_HEAD(&s->nop_queue);
 +	mutex_init(&s->smc_lock);
-+	mutex_init(&s->share_memory_msg_lock);
 +	ATOMIC_INIT_NOTIFIER_HEAD(&s->notifier);
 +	init_completion(&s->cpu_idle_completion);
 +
@@ -8912,10 +10214,6 @@ index 0000000000000..aa2da88319235
 +	ret = trusty_init_api_version(s, &pdev->dev);
 +	if (ret < 0)
 +		goto err_api_version;
-+
-+	ret = trusty_init_msg_buf(s, &pdev->dev);
-+	if (ret < 0)
-+		goto err_init_msg_buf;
 +
 +	s->nop_works = alloc_percpu(struct trusty_work);
 +	if (!s->nop_works) {
@@ -8945,6 +10243,7 @@ index 0000000000000..aa2da88319235
 +					__func__, cpu, tw->nop_thread);
 +			goto err_thread_create;
 +		}
++		kthread_set_per_cpu(tw->nop_thread, cpu);
 +		kthread_park(tw->nop_thread);
 +	}
 +
@@ -8962,16 +10261,39 @@ index 0000000000000..aa2da88319235
 +		goto err_alloc_sched_share;
 +	}
 +
-+	ret = of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Failed to add children: %d\n", ret);
-+		goto err_add_children;
++	/*
++	 * Register the scheduler state with the transport.
++	 * We need to do this before of_platform_populate
++	 * because the FF-A transport uses it for NOP calls.
++	 */
++	if (s->transport->ops->set_sched_share_state)
++		s->transport->ops->set_sched_share_state(s->transport,
++							 s->trusty_sched_share_state);
++
++	if (node) {
++		ret = of_platform_populate(node, NULL, NULL, &pdev->dev);
++		if (ret < 0) {
++			dev_err(&pdev->dev, "Failed to add children: %d\n", ret);
++			goto err_add_children;
++		}
++	} else {
++		dev_warn(&pdev->dev, "of_node not found\n");
 +	}
 +
 +	/* attempt to share; it is optional for compatibility with Trusty
-+	 * versions that don't support priority sharing
++	 * versions that don't support priority sharing, but required
++	 * for transports that provide set_sched_share_state, e.g., FF-A.
 +	 */
-+	trusty_register_sched_share(s->dev, s->trusty_sched_share_state);
++	ret = trusty_register_sched_share(s->dev, s->trusty_sched_share_state);
++
++	/*
++	 * Clear the scheduler state with the transport if we got an error.
++	 * The FF-A NOP handler needs the state for FFA_RUN but checks
++	 * if the state is set. We get an error there if it is missing,
++	 * but only if we actually need to call FFA_RUN.
++	 */
++	if (s->transport->ops->set_sched_share_state && ret)
++		s->transport->ops->set_sched_share_state(s->transport, NULL);
 +
 +	return 0;
 +
@@ -8989,23 +10311,30 @@ index 0000000000000..aa2da88319235
 +	}
 +	free_percpu(s->nop_works);
 +err_alloc_works:
-+	trusty_free_msg_buf(s, &pdev->dev);
-+err_init_msg_buf:
 +err_api_version:
 +	s->dev->dma_parms = NULL;
 +	kfree(s->version_str);
 +	device_for_each_child(&pdev->dev, NULL, trusty_remove_child);
-+	mutex_destroy(&s->share_memory_msg_lock);
 +	mutex_destroy(&s->smc_lock);
 +	kfree(s);
 +err_allocate_state:
 +	return ret;
 +}
 +
-+static void trusty_remove(struct platform_device *pdev)
++
++static
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++int
++#else
++void
++#endif
++trusty_remove(struct platform_device *pdev)
 +{
 +	unsigned int cpu;
-+	struct trusty_state *s = platform_get_drvdata(pdev);
++	struct trusty_state *s = trusty_get_state(&pdev->dev);
++
++	if (!s)
++		return;
 +
 +	trusty_unregister_sched_share(s->trusty_sched_share_state);
 +
@@ -9022,16 +10351,17 @@ index 0000000000000..aa2da88319235
 +
 +	trusty_free_sched_share(s->trusty_sched_share_state);
 +
-+	mutex_destroy(&s->share_memory_msg_lock);
 +	mutex_destroy(&s->smc_lock);
-+	trusty_free_msg_buf(s, &pdev->dev);
 +	s->dev->dma_parms = NULL;
 +	kfree(s->version_str);
 +	kfree(s);
++#if (KERNEL_VERSION(6, 12, 0) > LINUX_VERSION_CODE)
++	return 0;
++#endif
 +}
 +
 +static const struct of_device_id trusty_of_match[] = {
-+	{ .compatible = "android,trusty-smc-v1", },
++	{ .compatible = "android,trusty-core-v1", },
 +	{},
 +};
 +
@@ -9041,7 +10371,7 @@ index 0000000000000..aa2da88319235
 +	.probe = trusty_probe,
 +	.remove = trusty_remove,
 +	.driver	= {
-+		.name = "trusty",
++		.name = "trusty-core",
 +		.of_match_table = trusty_of_match,
 +		.dev_groups = trusty_groups,
 +	},
@@ -9099,17 +10429,9 @@ index 0000000000000..aa2da88319235
 +
 +MODULE_LICENSE("GPL v2");
 +MODULE_DESCRIPTION("Trusty core driver");
-diff --git a/include/linux/trusty/OWNERS b/include/linux/trusty/OWNERS
-new file mode 100644
-index 0000000000000..0f6b8454aafcf
---- /dev/null
-+++ b/include/linux/trusty/OWNERS
-@@ -0,0 +1,2 @@
-+# include OWNERS from the top level trusty repo
-+include trusty:refs/meta/config:/OWNERS
 diff --git a/include/linux/trusty/arm_ffa.h b/include/linux/trusty/arm_ffa.h
 new file mode 100644
-index 0000000000000..95d31b32bac6d
+index 0000000..0590776
 --- /dev/null
 +++ b/include/linux/trusty/arm_ffa.h
 @@ -0,0 +1,597 @@
@@ -9137,7 +10459,7 @@ index 0000000000000..95d31b32bac6d
 +#define FFA_CURRENT_VERSION_MAJOR (1U)
 +#define FFA_CURRENT_VERSION_MINOR (0U)
 +
-+#define FFA_VERSION_TO_MAJOR(version) ((version) >> 16)
++#define FFA_VERSION_TO_MAJOR(version) (((version) >> 16) & (0xffff))
 +#define FFA_VERSION_TO_MINOR(version) ((version) & (0xffff))
 +#define FFA_VERSION(major, minor) (((major) << 16) | (minor))
 +#define FFA_CURRENT_VERSION \
@@ -9712,7 +11034,7 @@ index 0000000000000..95d31b32bac6d
 +#endif /* __LINUX_TRUSTY_ARM_FFA_H */
 diff --git a/include/linux/trusty/sm_err.h b/include/linux/trusty/sm_err.h
 new file mode 100644
-index 0000000000000..f6504448c6c32
+index 0000000..f650444
 --- /dev/null
 +++ b/include/linux/trusty/sm_err.h
 @@ -0,0 +1,28 @@
@@ -9746,10 +11068,10 @@ index 0000000000000..f6504448c6c32
 +#endif
 diff --git a/include/linux/trusty/smcall.h b/include/linux/trusty/smcall.h
 new file mode 100644
-index 0000000000000..9ce498d90d7cf
+index 0000000..9ac10f8
 --- /dev/null
 +++ b/include/linux/trusty/smcall.h
-@@ -0,0 +1,154 @@
+@@ -0,0 +1,233 @@
 +/* SPDX-License-Identifier: MIT */
 +/*
 + * Copyright (c) 2013-2014 Google Inc. All rights reserved
@@ -9903,13 +11225,92 @@ index 0000000000000..9ce498d90d7cf
 +#define SMC_SC_VDEV_KICK_VQ	SMC_STDCALL_NR(SMC_ENTITY_TRUSTED_OS, 24)
 +#define SMC_NC_VDEV_KICK_VQ	SMC_STDCALL_NR(SMC_ENTITY_TRUSTED_OS, 25)
 +
++/**
++ * TRUSTY_FFA_MSG_RUN_FASTCALL - Run a Trusty fastcall synchronously.
++ *
++ * @r3: The value of %TRUSTY_FFA_MSG_RUN_FASTCALL.
++ * @r4: The fid of the Trusty fastcall.
++ * @r5: The 1st argument of the fastcall.
++ * @r6: The 2nd argument of the fastcall.
++ * @r7: The 3rd argument of the fastcall.
++ *
++ * Execute a Trusty fastcall synchronously with interrupts disabled,
++ * blocking until it completes and returning its result directly
++ * as a direct message response.
++ */
++#define TRUSTY_FFA_MSG_RUN_FASTCALL	(0)
++
++/**
++ * TRUSTY_FFA_MSG_QUEUE_STDCALL - Asynchronously queue a Trusty stdcall.
++ *
++ * @r3: The value of %TRUSTY_FFA_MSG_QUEUE_STDCALL.
++ * @r4: The fid of the Trusty stdcall.
++ * @r5: The 1st argument of the stdcall.
++ * @r6: The 2nd argument of the stdcall.
++ * @r7: The 3rd argument of the stdcall.
++ *
++ * Queue a Trusty stdcall asynchronously for execution in the stdcall thread.
++ * The non-secure world should assign cycles to Trusty separately and
++ * call %TRUSTY_FFA_MSG_GET_STDCALL_RET to check if the call completed.
++ *
++ * Returns 0 on success, or %SM_ERR_BUSY if Trusty has another queued stdcall.
++ */
++#define TRUSTY_FFA_MSG_QUEUE_STDCALL	(1)
++
++/**
++ * TRUSTY_FFA_MSG_GET_STDCALL_RET - Get the result of a Trusty stdcall.
++ *
++ * @r3: [out] The result of the call.
++ *
++ * The non-secure world should call this interface to
++ * retrieve the result of a previously queued stdcall.
++ * The request will return %SM_ERR_CPU_IDLE if the stdcall is still running.
++ */
++#define TRUSTY_FFA_MSG_GET_STDCALL_RET	(2)
++
++/**
++ * TRUSTY_FFA_MSG_RUN_NOPCALL - Run the Trusty handler for a nopcall.
++ *
++ * @r3: The value of %TRUSTY_FFA_MSG_RUN_NOPCALL.
++ * @r4: The 1st argument of the nopcall.
++ * @r5: The 2nd argument of the nopcall.
++ * @r6: The 3rd argument of the nopcall.
++ *
++ * Returns 0 in @r3 on success, or one of the libsm error codes
++ * in case of failure.
++ *
++ * Execute a Trusty nopcall handler synchronously with interrupts disabled,
++ * blocking until it completes and returning its result directly
++ * as a direct message response. If Trusty should get more cycles to run
++ * the second half of the nopcall (triggered by the handler), it should
++ * signal the primary scheduler to enqueue a Trusty NOP.
++ */
++#define TRUSTY_FFA_MSG_RUN_NOPCALL	(3)
++
++/**
++ * TRUSTY_FFA_MSG_IS_IDLE - Check if Trusty is idle on the current CPU.
++ *
++ * Return:
++ * * 1 in @r3 if the current CPU is idle
++ * * 0 if Trusty is busy (e.g. was interrupted)
++ * * One of the libsm error codes in case of error
++ *
++ * The non-secure scheduler needs to know if Trusty is idle to determine
++ * whether to give it more CPU cycles when it gets preempted. On Linux,
++ * we use the shadow priority but that requires sharing the sched-share state
++ * between NS and Trusty. %TRUSTY_FFA_MSG_IS_IDLE is a backup direct message
++ * that returns the same information to environments where this structure
++ * is not already shared, e.g., in bootloaders.
++ */
++#define TRUSTY_FFA_MSG_IS_IDLE		(4)
++
 +#endif /* __LINUX_TRUSTY_SMCALL_H */
 diff --git a/include/linux/trusty/trusty.h b/include/linux/trusty/trusty.h
 new file mode 100644
-index 0000000000000..751e5c712adba
+index 0000000..c5185dd
 --- /dev/null
 +++ b/include/linux/trusty/trusty.h
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,141 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Copyright (C) 2013 Google, Inc.
@@ -9923,6 +11324,7 @@ index 0000000000000..751e5c712adba
 +#include <linux/device.h>
 +#include <linux/pagemap.h>
 +
++#define TRUSTY_DEFAULT_MEM_OBJ_TAG	(0)
 +
 +/*
 + * map Trusty priorities to Linux nice values (see trusty-sched-share.h)
@@ -9984,13 +11386,13 @@ index 0000000000000..751e5c712adba
 +typedef u64 trusty_shared_mem_id_t;
 +int trusty_share_memory(struct device *dev, trusty_shared_mem_id_t *id,
 +			struct scatterlist *sglist, unsigned int nents,
-+			pgprot_t pgprot);
++			pgprot_t pgprot, u64 tag);
 +int trusty_share_memory_compat(struct device *dev, trusty_shared_mem_id_t *id,
 +			       struct scatterlist *sglist, unsigned int nents,
 +			       pgprot_t pgprot);
-+int trusty_transfer_memory(struct device *dev, u64 *id,
-+			   struct scatterlist *sglist, unsigned int nents,
-+			   pgprot_t pgprot, u64 tag, bool lend);
++int trusty_lend_memory(struct device *dev, u64 *id,
++		       struct scatterlist *sglist, unsigned int nents,
++		       pgprot_t pgprot, u64 tag);
 +int trusty_reclaim_memory(struct device *dev, trusty_shared_mem_id_t id,
 +			  struct scatterlist *sglist, unsigned int nents);
 +
@@ -10000,7 +11402,7 @@ index 0000000000000..751e5c712adba
 +#else
 +static inline u64 trusty_dma_buf_get_ffa_tag(struct dma_buf *dma_buf)
 +{
-+	return 0;
++	return TRUSTY_DEFAULT_MEM_OBJ_TAG;
 +}
 +#endif
 +
@@ -10044,13 +11446,15 @@ index 0000000000000..751e5c712adba
 +	nop->args[2] = arg2;
 +}
 +
++void trusty_enqueue_nop_on_cpu(struct device *dev, struct trusty_nop *nop, int cpu);
 +void trusty_enqueue_nop(struct device *dev, struct trusty_nop *nop);
 +void trusty_dequeue_nop(struct device *dev, struct trusty_nop *nop);
++int trusty_nop_nice_value(void);
 +
 +#endif
 diff --git a/include/linux/trusty/trusty_ipc.h b/include/linux/trusty/trusty_ipc.h
 new file mode 100644
-index 0000000000000..3b17ddb7f23ee
+index 0000000..3b17ddb
 --- /dev/null
 +++ b/include/linux/trusty/trusty_ipc.h
 @@ -0,0 +1,90 @@
@@ -10144,20 +11548,12 @@ index 0000000000000..3b17ddb7f23ee
 +
 +#endif /* __LINUX_TRUSTY_TRUSTY_IPC_H */
 +
-diff --git a/include/uapi/linux/trusty/OWNERS b/include/uapi/linux/trusty/OWNERS
-new file mode 100644
-index 0000000000000..0f6b8454aafcf
---- /dev/null
-+++ b/include/uapi/linux/trusty/OWNERS
-@@ -0,0 +1,2 @@
-+# include OWNERS from the top level trusty repo
-+include trusty:refs/meta/config:/OWNERS
 diff --git a/include/uapi/linux/trusty/ipc.h b/include/uapi/linux/trusty/ipc.h
 new file mode 100644
-index 0000000000000..af91035484f10
+index 0000000..dc70a74
 --- /dev/null
 +++ b/include/uapi/linux/trusty/ipc.h
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,66 @@
 +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 +
 +#ifndef _UAPI_LINUX_TRUSTY_IPC_H_
@@ -10190,6 +11586,7 @@ index 0000000000000..af91035484f10
 +	TRUSTY_SHARE = 0,
 +	TRUSTY_LEND = 1,
 +	TRUSTY_SEND_SECURE = 2,
++	TRUSTY_SEND_SECURE_OR_SHARE = 3,
 +};
 +
 +/**
@@ -10223,19 +11620,3 @@ index 0000000000000..af91035484f10
 +					     struct tipc_send_msg_req)
 +
 +#endif
-diff --git a/include/uapi/linux/virtio_ids.h b/include/uapi/linux/virtio_ids.h
-index 7aa2eb7662050..a01272f7e7805 100644
---- a/include/uapi/linux/virtio_ids.h
-+++ b/include/uapi/linux/virtio_ids.h
-@@ -41,7 +41,7 @@
- #define VIRTIO_ID_MAC80211_WLAN		10 /* virtio WLAN MAC */
- #define VIRTIO_ID_RPROC_SERIAL		11 /* virtio remoteproc serial link */
- #define VIRTIO_ID_CAIF			12 /* Virtio caif */
--#define VIRTIO_ID_MEMORY_BALLOON	13 /* virtio memory balloon */
-+#define VIRTIO_ID_TRUSTY_IPC		13 /* virtio trusty ipc */
- #define VIRTIO_ID_GPU			16 /* virtio GPU */
- #define VIRTIO_ID_CLOCK			17 /* virtio clock/timer */
- #define VIRTIO_ID_INPUT			18 /* virtio input */
--- 
-2.34.1
-
