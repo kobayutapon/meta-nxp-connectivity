@@ -61,16 +61,31 @@
 		#gpio-cells = <2>;
 		status = "okay";
 		gpio-line-names = "IWxxx_NB_SPI_ENA", "IWxxx_NB_IND_RST_15_4";
+
+		spi-en-hog {
+			gpio-hog;
+			gpios = <0 GPIO_ACTIVE_HIGH>;
+			output-high;
+		};
 	};
 };
+
+&adp5585 {
+	/delete-node/ exp-sel-hog;
+
+	spi3-sel-hog {
+		gpio-hog;
+		gpios = <4 GPIO_ACTIVE_LOW>;
+		output-low;
+	};
+};
+
 &lpspi3 {
 	fsl,spi-num-chipselects = <1>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_lpspi3>;
 	pinctrl-1 = <&pinctrl_lpspi3>;
 	cs-gpios = <&gpio2 8 GPIO_ACTIVE_LOW>;
-	pinctrl-assert-gpios = <&adp5585gpio 4 GPIO_ACTIVE_LOW>;
-	pinctrl-assert-gpios = <&pcal6408 0 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
 	spidev0: spi@0 {
