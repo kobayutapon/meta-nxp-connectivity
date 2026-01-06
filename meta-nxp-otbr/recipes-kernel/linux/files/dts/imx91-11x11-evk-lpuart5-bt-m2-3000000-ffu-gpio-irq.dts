@@ -75,7 +75,7 @@
 
 	spi3-sel-hog {
 		gpio-hog;
-		gpios = <4 GPIO_ACTIVE_LOW>;
+		gpios = <4 GPIO_ACTIVE_HIGH>;
 		output-low;
 	};
 };
