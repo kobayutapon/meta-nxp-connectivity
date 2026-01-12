@@ -291,6 +291,7 @@ for machine_name in "${SELECTED_MACHINES[@]}"; do
         failed_machines="${failed_machines} ${machine_name}"
         log "WARNING" "Failed to process ${RED}${machine_name}${NC}"
     fi
+    sleep 200
 
     echo "${SEPARATOR}" >> "${LOG_FILE}"
 done
