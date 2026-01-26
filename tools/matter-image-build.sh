@@ -15,6 +15,86 @@ DEFAULT_MACHINES=(
     "imx95-19x19-evk-iwxxx-matter"
 )
 
+detect_yocto_root() {
+    local current_dir="$1"
+    local max_levels=5
+    local level=0
+    
+    while [ $level -lt $max_levels ]; do
+        if [ -d "${current_dir}/sources" ] && [ -d "${current_dir}/sources/meta-nxp-connectivity" ]; then
+            echo "${current_dir}"
+            return 0
+        fi
+        
+        if [ "${current_dir}" = "/" ]; then
+            break
+        fi
+        
+        current_dir=$(dirname "${current_dir}")
+        level=$((level + 1))
+    done
+    
+    return 1
+}
+
+select_codebase() {
+    # If CODEBASE is already set, skip selection
+    if [ -n "${CODEBASE}" ]; then
+        return 0
+    fi
+    
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local detected_root=""
+    
+    detected_root=$(detect_yocto_root "${script_dir}")
+    
+    if [ -n "${detected_root}" ]; then
+        local choice
+        choice=$(whiptail --title "CODEBASE Configuration" \
+            --yesno "\nDetected Yocto root directory:\n${detected_root}\n\nUse this as CODEBASE?" \
+            12 70 3>&1 1>&2 2>&3)
+        
+        if [ $? -eq 0 ]; then
+            CODEBASE="${detected_root}"
+            export CODEBASE
+            return 0
+        fi
+    fi
+    
+    local codebase_input
+    if [ -n "${detected_root}" ]; then
+        local default_path="${detected_root}"
+    else
+        local default_path="$(dirname "$(dirname "${script_dir}")")"
+    fi
+    
+    codebase_input=$(whiptail --title "Set CODEBASE" \
+        --inputbox "\nPlease enter the Yocto project root directory:" \
+        10 70 "${default_path}" 3>&1 1>&2 2>&3)
+    
+    if [ $? -ne 0 ]; then
+        echo "User canceled the operation. Exiting program." >&2
+        exit 1
+    fi
+    
+    if [ ! -d "${codebase_input}" ]; then
+        whiptail --title "Error" --msgbox "\nDirectory does not exist: ${codebase_input}" 8 70
+        select_codebase
+        return
+    fi
+    
+    if [ ! -d "${codebase_input}/sources" ]; then
+        whiptail --title "Warning" --yesno "\nWarning: 'sources' directory not found in:\n${codebase_input}\n\nContinue anyway?" 10 70
+        if [ $? -ne 0 ]; then
+            select_codebase
+            return
+        fi
+    fi
+    
+    CODEBASE="${codebase_input}"
+    export CODEBASE
+}
+
 show_scp_menu() {
     local MENU_HEIGHT=10
     local MENU_WIDTH=60
@@ -96,9 +176,13 @@ if [[ "$1" == "-f" ]]; then
     FORCE_FULL_BUILD=true
 fi
 
+# Setup CODEBASE first (required for LOG_FILE path)
+if [ -z "${CODEBASE}" ]; then
+    select_codebase
+fi
+
 show_machine_menu
 
-CODEBASE="${CODEBASE:-}"
 SCP_TARGET_PATH="${SCP_TARGET_PATH:-}"
 
 RED='\033[0;31m'
