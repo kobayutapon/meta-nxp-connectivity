@@ -1,0 +1,81 @@
+/*
+*  Copyright (c) 2020, The OpenThread Authors.
+*  Copyright 2026 NXP
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions are met:
+*  1. Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*  2. Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in the
+*     documentation and/or other materials provided with the distribution.
+*  3. Neither the name of the copyright holder nor the
+*     names of its contributors may be used to endorse or promote products
+*     derived from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+*  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+*  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+*  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+*  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+*  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+*  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+*  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+*  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*/
+ 
+/*
+* Header for patch information.
+* Description           : Only include posix/platform/vendor_interface.hpp when OPENTHREAD_POSIX_CONFIG_SPINEL_VENDOR_INTERFACE_ENABLE is ON
+* Version               : v001
+* Mandatory/Optional    : Mandatory
+* Impact if not applied : otbr-agent build error because of RadioSpinel::GetBusSpeed rework
+*/
+ 
+Upstream-Status: Inappropriate [platform specific changes]
+ 
+diff --git a/src/posix/platform/radio.hpp b/src/posix/platform/radio.hpp
+index aa45f466a..9dca2e454 100644
+--- a/src/posix/platform/radio.hpp
++++ b/src/posix/platform/radio.hpp
+@@ -36,7 +36,9 @@
+ #include "spi_interface.hpp"
+ #include "spinel_manager.hpp"
+ #include "tmp_storage.hpp"
++#if OPENTHREAD_POSIX_CONFIG_SPINEL_VENDOR_INTERFACE_ENABLE
+ #include "vendor_interface.hpp"
++#endif
+ #include "common/code_utils.hpp"
+ #include "lib/spinel/radio_spinel.hpp"
+ #include "lib/spinel/spinel_driver.hpp"
+diff --git a/src/posix/platform/spinel_manager.cpp b/src/posix/platform/spinel_manager.cpp
+index 761b8fb2d..b8fc40dda 100644
+--- a/src/posix/platform/spinel_manager.cpp
++++ b/src/posix/platform/spinel_manager.cpp
+@@ -37,7 +37,9 @@
+ #include "posix/platform/radio_url.hpp"
+ #include "posix/platform/spi_interface.hpp"
+ #include "posix/platform/spinel_driver_getter.hpp"
++#if OPENTHREAD_POSIX_CONFIG_SPINEL_VENDOR_INTERFACE_ENABLE
+ #include "posix/platform/vendor_interface.hpp"
++#endif
+ 
+ static ot::Posix::SpinelManager sSpinelManager;
+ 
+diff --git a/src/posix/platform/spinel_manager.hpp b/src/posix/platform/spinel_manager.hpp
+index 13d0588e9..8592054df 100644
+--- a/src/posix/platform/spinel_manager.hpp
++++ b/src/posix/platform/spinel_manager.hpp
+@@ -36,7 +36,9 @@
+ #include "posix/platform/hdlc_interface.hpp"
+ #include "posix/platform/radio_url.hpp"
+ #include "posix/platform/spi_interface.hpp"
++#if OPENTHREAD_POSIX_CONFIG_SPINEL_VENDOR_INTERFACE_ENABLE
+ #include "posix/platform/vendor_interface.hpp"
++#endif
+ 
+ namespace ot {
+ namespace Posix {
