@@ -21,6 +21,8 @@ do_set_firmware_path() {
 do_install:prepend() {
     SRCDIR="${WORKDIR}/srctree"
 
+    cp ${UNPACKDIR}/conf-files/sdiw610_WlanCalData_ext.conf ${SRCDIR}/FwImage_IW610_SD
+
     rm ${SRCDIR}/wifi_mod_para.conf
     cp ${UNPACKDIR}/conf-files/wifi_mod_para.conf ${SRCDIR}
 }
