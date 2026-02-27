@@ -2,6 +2,15 @@
 
 This document describes how to use the MATTER-NCP demos on the i.MX MPU platforms. It shows how to run MATTER-NCP demos on the i.MX MPU platform and how to do wifi-bt commissioning between chip-tool and chip-all-clusters-app-ncp apps.
 
+## Release Version Information
+
+To ensure proper functionality, the MATTER‑NCP must be used in conjunction with the ncp‑device. Therefore, the MATTER‑NCP version released in this cycle is required to match the corresponding SDK release version.
+The SDK release link associated with this MATTER‑NCP version is provided below. You may download the appropriate SDK source code from GitHub and use it to compile the ncp‑device.
+
+MATTER-NCP RELEASE: 2026Q1
+SDK RELEASE:26.03.00 Preview2
+https://github.com/nxp-mcuxpresso/mcuxsdk-manifests
+
 ## Hardware requirements
 
 - Two i.MX8M Mini EVK boards (one board will act as the Matter controller, running chip-tool, and the other will be the end device, running the chip-all-clusters-app-ncp apps.)
