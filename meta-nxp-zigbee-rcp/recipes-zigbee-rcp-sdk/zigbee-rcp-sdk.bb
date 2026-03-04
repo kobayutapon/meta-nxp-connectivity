@@ -14,8 +14,7 @@ DEPENDS += " readline "
 RDEPENDS:${PN} += " readline bash"
 inherit cmake
 
-#SRC_URI = "gitsm://github.com/NXP/nxp_zboss_libs_sdk.git;protocol=https;branch=release/linux;tag=v019.2601.027"
-SRC_URI = "git://bitbucket.sw.nxp.com/connint/nxp_zboss_libs_sdk.git;protocol=ssh;branch=release/linux;tag=v019.2601.027"
+SRC_URI = "gitsm://github.com/NXP/nxp_zboss_libs_sdk.git;protocol=https;branch=release/linux;tag=LINUX-v019.2601.028"
 SRCREV = "${AUTOREV}"
 
 # Add "hello" Zigbee new application
