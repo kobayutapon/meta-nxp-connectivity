@@ -13,8 +13,7 @@ SRC_URI[sha256sum] = "b06bab06bba9a64d09479c1f0453f7d0c75c25480f609dfebe565414a3
 inherit fsl-eula2-unpack2
 LIC_FILES_CHKSUM = "file://COPYING;md5=bc649096ad3928ec06a8713b8d787eac"
 
-#TODO: switch to NXP external url
-SRC_URI = "http://10.12.176.13/files/easymesh-yocto-1.0-M012.bin;fsl-eula=true"
+SRC_URI = "https://www.nxp.com/lgfiles/NMG/SCE/MATTER/easymesh-yocto-1.0-M012.bin;fsl-eula=true"
 S = "${UNPACKDIR}/easymesh-yocto-1.0-M012"
 
 INSANE_SKIP:${PN} = "already-stripped ldflags"
