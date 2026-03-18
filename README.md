@@ -326,10 +326,7 @@ Fetch the latest otbr source code and execute the build for OTBR:
     $ cd ot-br-posix
     $ git checkout 45c847a6b47cef00c9e3d46786127ef87475437d
     $ git submodule update --init
-    $ sed -i -e 's/-march=armv8-a+crc+crypto //g' \
-             -e 's/-Wno-error  -fvisibility/-Wno-error -Wno-error=attributes  -fvisibility/' \
-             -e 's/Werror=format-security " CACHE STRING "CXXFLAGS"/Werror=format-security -Wno-attributes " CACHE STRING "CXXFLAGS"/' \
-             examples/platforms/nxp/linux-imx/aarch64.cmake
+    $ git cherry-pick ecd9519e469ff4addeb4c5287a6c9445acfba299
 
     # For i.MX8M Mini EVK and i.MX8ULP EVK
     $ ./script/cmake-build -DOTBR_BORDER_ROUTING=ON -DOTBR_REST=ON -DOTBR_WEB=OFF -DBUILD_TESTING=OFF -DOTBR_DBUS=ON \
@@ -573,6 +570,8 @@ Since the i.MX Matter 2023 Q3 release, the built-in security subsystem [ELE (Edg
 ## Known issue in i.MX Matter 2026 Q1 release
 
 - Due to a known issue in the 8987 firmware, when the i.MX 8MM acts as the commissioner and performs two consecutive ble-wifi pairing procedures, or when running chip-tool on the 8MM as the commissioner to perform two consecutive ble-thread pairing operations, BLE-related issue may occur. It is recommended to update the firmware to a version that includes the fix.
+
+- Due to a known issue in BlueZ, when performing ble-wifi pairing between two devices using the i.MX8M Mini platform (as commissioner or commissionee), the other i.MX device must also run the current release image. Using an older i.MX Matter release image on the peer device may result in BLE pairing failures.
 
 <a name="FAQ"></a>
 

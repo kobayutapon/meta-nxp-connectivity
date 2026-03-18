@@ -634,10 +634,6 @@ Clicking on a device node in the topology view will display detailed information
 
 <a name="note"></a>
 
-## Known Issue
-
-
-
 ## Additional Notes
 
 - Deleting the `/tmp/chip_tool_config.ini` file and any other `.ini` files in the `/tmp` directory may help to resolve problems caused by outdated configuration.
